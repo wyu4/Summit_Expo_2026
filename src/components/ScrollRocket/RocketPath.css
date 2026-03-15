@@ -1,0 +1,143 @@
+/* ============================================================
+   ROCKET PATH — fixed position, margin-only
+   ============================================================ */
+
+/* The rocket container — positioned via JS transform */
+.rocket-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 52;
+  pointer-events: none;
+  /* 68×68px box, JS translates to path position then shifts -34,-34 */
+  width: 68px;
+  height: 68px;
+  will-change: transform, opacity;
+  transition: opacity 0.4s ease;
+}
+
+/* Rocket PNG — black bg removed via mix-blend-mode */
+.rocket-img-fixed {
+  width: 68px;
+  height: 68px;
+  object-fit: contain;
+  mix-blend-mode: screen;
+  display: block;
+  filter:
+    drop-shadow(0 0 10px rgba(206,48,114,0.65))
+    drop-shadow(0 0 24px rgba(206,48,114,0.28));
+}
+
+/* Exhaust flame 
+   The flame sits below the rocket body.
+   Since the whole .rocket-fixed rotates with the path tangent,
+   the flame always correctly trails behind the nose direction.
+ */
+.rocket-flame-wrap {
+  position: absolute;
+  /* Place at bottom-centre of the 68px box */
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  pointer-events: none;
+}
+
+/* Outer flame — widest, most transparent */
+.rocket-flame-outer {
+  width: 28px;
+  height: 38px;
+  background: radial-gradient(
+    ellipse 55% 100% at 50% 0%,
+    rgba(249,115,22,0.75)  0%,
+    rgba(239,68,68,0.55)   35%,
+    rgba(220,38,38,0.20)   65%,
+    transparent            100%
+  );
+  border-radius: 0 0 50% 50%;
+  animation: flamePulse 0.11s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+/* Mid flame */
+.rocket-flame-mid {
+  position: absolute;
+  top: 0;
+  width: 18px;
+  height: 28px;
+  background: radial-gradient(
+    ellipse 55% 100% at 50% 0%,
+    #fbbf24  0%,
+    #f97316  40%,
+    rgba(249,115,22,0.30) 75%,
+    transparent 100%
+  );
+  border-radius: 0 0 50% 50%;
+  animation: flamePulse 0.09s ease-in-out infinite alternate-reverse;
+}
+
+/* Inner flame — bright yellow */
+.rocket-flame-inner {
+  position: absolute;
+  top: 0;
+  width: 10px;
+  height: 18px;
+  background: radial-gradient(
+    ellipse 55% 100% at 50% 0%,
+    #fef08a  0%,
+    #fde047  40%,
+    #fbbf24  70%,
+    transparent 100%
+  );
+  border-radius: 0 0 50% 50%;
+  animation: flamePulse 0.07s ease-in-out infinite alternate;
+}
+
+/* Core — hot white */
+.rocket-flame-core {
+  position: absolute;
+  top: 0;
+  width: 5px;
+  height: 10px;
+  background: radial-gradient(
+    ellipse at 50% 20%,
+    #ffffff 0%,
+    #fef9c3 50%,
+    transparent 100%
+  );
+  border-radius: 0 0 50% 50%;
+  animation: flamePulse 0.06s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes flamePulse {
+  from { transform: scaleX(1.00) scaleY(1.00); opacity: 1; }
+  to   { transform: scaleX(0.82) scaleY(1.12); opacity: 0.88; }
+}
+
+/* Burst particles */
+.rburst-particle {
+  position: absolute;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 6px currentColor;
+  animation: burstFly 1.0s ease-out forwards;
+}
+
+@keyframes burstFly {
+  0%   {
+    transform: translate(-50%, -50%) translate(0px, 0px) scale(1);
+    opacity: 1;
+  }
+  60%  {
+    transform: translate(-50%, -50%) translate(var(--tx), var(--ty)) scale(0.8);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(-50%, -50%) translate(var(--tx), var(--ty)) scale(0);
+    opacity: 0;
+  }
+}

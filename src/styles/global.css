@@ -1,0 +1,31 @@
+@import './vars.css';
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: auto; /* GSAP handles smooth scrolling */
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text-2);
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar         { width: 4px; }
+::-webkit-scrollbar-track   { background: var(--bg); }
+::-webkit-scrollbar-thumb   {
+  background: linear-gradient(to bottom, var(--c-bright-magenta), var(--c-dark-purple));
+  border-radius: 99px;
+}
+
+::selection { background: rgba(206,48,114,0.30); color: var(--text-1); }
+
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; border: none; background: none; font-family: inherit; }
+img, canvas, svg { display: block; }

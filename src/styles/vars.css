@@ -1,0 +1,73 @@
+/* ============================================================
+   SUMMIT EXPO — Design Tokens
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Syne:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600;700&family=Chakra+Petch:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Raw Palette (user-defined) */
+  --c-darkest-blue:       #323278;
+  --c-dark-blue:          #2B4884;
+  --c-blue:               #357AA1;
+  --c-dark-purple:        #453076;
+  --c-dark-blue-purple:   #3D4883;
+  --c-lighter-blue:       #407FA1;
+  --c-medium-purple:      #562F76;
+  --c-medium-blue-purple: #4F4883;
+  --c-mid-magenta:        #6C2F74;
+  --c-purple:             #684A82;
+  --c-light-blue:         #6789A3;
+  --c-dark-magenta:       #8D2F73;
+  --c-magenta-blue:       #8B4B81;
+  --c-murky-blue:         #8E92A4;
+  --c-lighter-magenta:    #9F3073;
+  --c-light-magenta-blue: #A04C82;
+  --c-magenta:            #B02F72;
+  --c-light-magenta:      #B24D81;
+  --c-sad-murky:          #BA9EA7;
+  --c-bright-magenta:     #CE3072;
+
+  /* Backgrounds */
+  --bg:         #06040f;   /* slightly lifted from pure black */
+  --bg-2:       #0d0a1e;
+  --bg-3:       #13103a;
+  --bg-surface: rgba(255,255,255,0.03);
+  --bg-border:  rgba(255,255,255,0.07);
+
+  /* TEXT — the key fix. High contrast on dark bg */
+  --text-1: #f2eeff;          /* headings: near-white */
+  --text-2: #cfc4e8;          /* body: light lavender — readable */
+  --text-3: #9b90b8;          /* secondary: still legible */
+  --text-4: #6a6090;          /* muted: decorative only */
+
+  /* legacy aliases kept for old code */
+  --text-primary:   #f2eeff;
+  --text-secondary: #cfc4e8;
+  --text-muted:     #9b90b8;
+  --text-dim:       #6a6090;
+  --text-faint:     #8a7eaa;
+
+  /* Glow */
+  --glow-magenta: rgba(206,48,114,0.55);
+  --glow-purple:  rgba(104,74,130,0.45);
+  --glow-blue:    rgba(103,137,163,0.45);
+
+  /* Typography */
+  --font-display: 'Orbitron',     sans-serif;
+  --font-ui:      'Chakra Petch', sans-serif;
+  --font-tagline: 'Syne',         sans-serif;
+  --font-body:    'Outfit',       sans-serif;
+
+  /* Spacing */
+  --sp-1: 0.25rem;  --sp-2: 0.5rem;  --sp-3: 0.75rem;
+  --sp-4: 1rem;     --sp-6: 1.5rem;  --sp-8: 2rem;
+  --sp-12: 3rem;    --sp-16: 4rem;   --sp-24: 6rem;
+
+  /* Radius */
+  --radius-sm: 2px;
+  --radius-md: 6px;
+  --radius-lg: 12px;
+
+  /* Easing */
+  --ease-out-expo:    cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-sine: cubic-bezier(0.37, 0, 0.63, 1);
+}

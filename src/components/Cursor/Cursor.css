@@ -1,0 +1,60 @@
+/* Hide default cursor site-wide */
+/* *, *::before, *::after { cursor: none !important; } */
+
+/* Full-viewport particle canvas */
+.cursor-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* Inner star dot — centred on cursor */
+.cursor-dot {
+  position: fixed;
+  top: 0; left: 0;
+  z-index: 9999;
+  pointer-events: none;
+  /* offset so the star tip is at the true cursor point */
+  margin: -5px 0 0 -5px;
+  will-change: transform;
+  filter: drop-shadow(0 0 4px rgb(206, 48, 114));
+}
+
+/* Outer ring — follows with lag */
+.cursor-ring {
+  position: fixed;
+  top: 0; left: 0;
+  z-index: 9997;
+  pointer-events: none;
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;
+  border-radius: 50%;
+  border: 1px solid rgba(248, 136, 183, 0.907);
+  will-change: transform;
+  transition:
+    width  0.20s var(--ease-out-expo),
+    height 0.20s var(--ease-out-expo),
+    margin 0.20s var(--ease-out-expo),
+    border-color 0.20s ease;
+}
+
+/* Expand ring on hover over interactive elements */
+.cursor-ring--hover {
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  border-color: rgba(206, 48, 114, 0.75);
+  background: rgba(206, 48, 114, 0.04);
+}
+
+/* Hide cursor elements on touch devices */
+@media (hover: none) {
+  .cursor-canvas,
+  .cursor-dot,
+  .cursor-ring { display: none; }
+  *, *::before, *::after { cursor: auto !important; }
+}

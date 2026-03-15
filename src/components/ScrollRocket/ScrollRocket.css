@@ -1,0 +1,80 @@
+/* ============================================================
+   SCROLL ROCKET — right-side constellation trail
+   ============================================================ */
+
+.sr-container {
+  position: fixed;
+  right: 2.2rem;
+  top: 0;
+  width: 56px;
+  /* Full viewport height so trail can span the whole scroll */
+  height: 100vh;
+  z-index: 400;
+  pointer-events: none;
+  will-change: opacity, transform;
+}
+
+/* The SVG trail — positioned at top of container */
+.sr-svg {
+  position: absolute;
+  top: 10%;  /* offset to match rocket start */
+  left: 0;
+  /* overflow visible so the glow filter doesn't clip */
+  overflow: visible;
+}
+
+/* The rocket — positioned via JS (top + left inline styles) */
+.sr-rocket {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateX(-50%) translateY(-50%);
+  /* Bob animation */
+  animation: rocketBob 3s ease-in-out infinite;
+  will-change: transform, top, left;
+  filter: drop-shadow(0 0 8px rgba(206,48,114,0.5));
+}
+@keyframes rocketBob {
+  0%,100% { margin-top: 0px; }
+  50%     { margin-top: -4px; }
+}
+
+/* Exhaust (below rocket in flex column) */
+.sr-exhaust {
+  order: 2;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  height: 16px;
+  margin-top: -2px;
+}
+.sr-flame-outer {
+  width: 9px;
+  height: 16px;
+  background: radial-gradient(ellipse 60% 100% at 50% 0%,
+    rgba(249,115,22,0.85), rgba(239,68,68,0.55) 50%, transparent 100%
+  );
+  border-radius: 50%;
+  animation: flameTick 0.12s ease-in-out infinite alternate;
+}
+.sr-flame-inner {
+  position: absolute;
+  top: 0;
+  width: 5px;
+  height: 10px;
+  background: radial-gradient(ellipse 55% 100% at 50% 0%,
+    #fef08a 0%, #fbbf24 40%, transparent 100%
+  );
+  border-radius: 50%;
+  animation: flameTick 0.09s ease-in-out infinite alternate-reverse;
+}
+@keyframes flameTick {
+  from { transform: scaleX(1.0) scaleY(1.0); }
+  to   { transform: scaleX(0.8) scaleY(1.1); }
+}
+
+/* Mobile: hide on small screens */
+@media (max-width: 768px) {
+  .sr-container { display: none; }
+}
