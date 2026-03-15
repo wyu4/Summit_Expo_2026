@@ -184,18 +184,18 @@ export function About() {
       gsap.fromTo(headRef.current,
         { opacity: 0, y: 60 },
         { opacity: 1, y: 0, duration: 1.0, ease: 'power3.out',
-          scrollTrigger: { trigger: headRef.current, start: 'top 85%', toggleActions: 'play none none none' } }
+          scrollTrigger: { trigger: headRef.current, start: 'top 85%', toggleActions: 'play none none reverse' } }
       );
 
       gsap.fromTo(leftRef.current,
         { opacity: 0, x: -50 },
         { opacity: 1, x: 0, duration: 0.9, ease: 'power2.out',
-          scrollTrigger: { trigger: leftRef.current, start: 'top 83%', toggleActions: 'play none none none' } }
+          scrollTrigger: { trigger: leftRef.current, start: 'top 83%', toggleActions: 'play none none reverse' } }
       );
       gsap.fromTo(rightRef.current,
         { opacity: 0, x: 50 },
         { opacity: 1, x: 0, duration: 0.9, ease: 'power2.out', delay: 0.1,
-          scrollTrigger: { trigger: rightRef.current, start: 'top 83%', toggleActions: 'play none none none' } }
+          scrollTrigger: { trigger: rightRef.current, start: 'top 83%', toggleActions: 'play none none reverse' } }
       );
 
       const cards = gridRef.current?.querySelectorAll<HTMLDivElement>('.about-card') ?? [];
@@ -204,19 +204,19 @@ export function About() {
         { opacity: 1, y: 0, scale: 1,
           stagger: { each: 0.055, from: 'start' },
           duration: 0.55, ease: 'back.out(1.7)',
-          scrollTrigger: { trigger: gridRef.current, start: 'top 82%', toggleActions: 'play none none none' } }
+          scrollTrigger: { trigger: gridRef.current, start: 'top 82%', toggleActions: 'play none none reverse' } }
       );
 
       gsap.fromTo(statsRef.current?.querySelectorAll<HTMLDivElement>('.about-stat') ?? [],
         { opacity: 0, y: 28 },
         { opacity: 1, y: 0, stagger: 0.12, duration: 0.7, ease: 'power2.out',
-          scrollTrigger: { trigger: statsRef.current, start: 'top 83%', toggleActions: 'play none none none' } }
+          scrollTrigger: { trigger: statsRef.current, start: 'top 83%', toggleActions: 'play none none reverse' } }
       );
 
       gsap.fromTo(closingRef.current,
         { opacity: 0, y: 18 },
         { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out',
-          scrollTrigger: { trigger: closingRef.current, start: 'top 88%', toggleActions: 'play none none none' } }
+          scrollTrigger: { trigger: closingRef.current, start: 'top 88%', toggleActions: 'play none none reverse' } }
       );
 
     }, sectionRef);
