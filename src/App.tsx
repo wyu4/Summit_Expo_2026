@@ -1,21 +1,20 @@
-import { Nav }            from './components/Navbar/Nav';
-import { Hero }           from './components/Hero/Hero';
-import { Lineup } from './components/Lineup/Lineup';
-import { Cursor }         from './components/Cursor/Cursor';
-import { About }          from './components/About/About';
-import { StarTransition } from './components/StarTransition/StarTransition';
-import { RocketPath }     from './components/ScrollRocket/RocketPath';
-import { PathMapper } from './components/StarTransition/Pathmapper';
+import { Nav } from "./components/Navbar/Nav";
+import { Hero } from "./components/Hero/Hero";
+import { Lineup } from "./components/Lineup/Lineup";
+import { Cursor } from "./components/Cursor/Cursor";
+import { About } from "./components/About/About";
+import { WaypointEditor } from "./components/Waypoint/WaypointEditor";
+import { FAQ } from "./components/FAQ/FAQ";
 export default function App() {
   return (
-    
     <>
-    {/* <PathMapper /> */}
+      {/* <PathMapper /> */}
       {/* Custom star cursor */}
       <Cursor />
 
       {/* Rocket flies in page MARGINS, position:fixed, never clips content */}
       {/* <RocketPath /> */}
+      <WaypointEditor />
 
       {/* Fixed nav — hidden until hero scroll ends */}
       <Nav />
@@ -26,7 +25,8 @@ export default function App() {
         {/* <StarTransition /> */}
         <About />
         <Lineup />
-        
+        {/* <FAQ /> */}
+
         {/* TODO: Lineup, Logistics, Judges, FAQ */}
       </main>
     </>

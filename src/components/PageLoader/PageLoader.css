@@ -1,0 +1,174 @@
+/* ── Loader shell ────────────────────────────────────────────────── */
+.pl-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: #06040f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* ── Stars SVG ───────────────────────────────────────────────────── */
+.pl-stars {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+@keyframes pl-twinkle {
+  from { opacity: 0.15; }
+  to   { opacity: 0.85; }
+}
+
+/* ── Nebula glows ────────────────────────────────────────────────── */
+.pl-glow {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(90px);
+}
+.pl-glow--a {
+  width: 500px; height: 500px;
+  top: -10%; right: -8%;
+  background: radial-gradient(circle,
+    rgba(206,48,114,0.18) 0%, rgba(104,74,130,0.10) 45%, transparent 70%);
+}
+.pl-glow--b {
+  width: 400px; height: 400px;
+  bottom: -8%; left: -5%;
+  background: radial-gradient(circle,
+    rgba(53,122,161,0.15) 0%, rgba(69,48,118,0.08) 50%, transparent 70%);
+}
+
+/* ── Content column ──────────────────────────────────────────────── */
+.pl-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.4rem;
+  text-align: center;
+  padding: 2rem;
+}
+
+/* ── Rocket ──────────────────────────────────────────────────────── */
+.pl-rocket-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.pl-rocket {
+  width: 120px;
+  height: auto;
+  filter:
+    drop-shadow(0 0 10px rgba(206,140,255,0.55))
+    drop-shadow(0 0 28px rgba(160,80,206,0.30));
+}
+
+/* Cartoon exhaust puffs beneath rocket */
+.pl-exhaust {
+  display: flex;
+  gap: 5px;
+  margin-top: 4px;
+}
+.pl-exhaust span {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: #ff6a00;
+  border: 2px solid #c93a00;
+  animation: pl-puff 0.7s ease-in-out infinite alternate;
+}
+.pl-exhaust span:nth-child(1) { animation-delay: 0s;    background: #fff;    border-color: #ffe680; width: 8px; height: 8px; }
+.pl-exhaust span:nth-child(2) { animation-delay: 0.12s; background: #ffd200; border-color: #e08a00; }
+.pl-exhaust span:nth-child(3) { animation-delay: 0.24s; background: #ff6a00; border-color: #c93a00; width: 8px; height: 8px; }
+@keyframes pl-puff {
+  from { transform: scaleY(0.7) translateY(0);    opacity: 0.5; }
+  to   { transform: scaleY(1.3) translateY(4px);  opacity: 1;   }
+}
+
+/* ── Site name ───────────────────────────────────────────────────── */
+.pl-name {
+  font-family: var(--font-display, 'Bebas Neue', sans-serif);
+  font-size: clamp(2.4rem, 7vw, 5rem);
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  color: var(--text-1, #f2eeff);
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.04em;
+  min-height: 1.1em;
+}
+.pl-letter {
+  display: inline-block;
+  animation: pl-letter-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes pl-letter-in {
+  from { opacity: 0; transform: translateY(18px) scale(0.7); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);   }
+}
+.pl-cursor {
+  display: inline-block;
+  color: #CE3072;
+  animation: pl-blink 0.8s step-end infinite;
+  margin-left: 2px;
+}
+@keyframes pl-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* ── Tagline ─────────────────────────────────────────────────────── */
+.pl-tagline {
+  font-family: var(--font-tagline, Georgia, serif);
+  font-size: clamp(1rem, 2.2vw, 1.4rem);
+  font-weight: 300;
+  font-style: italic;
+  color: var(--text-2, #cfc4e8);
+  letter-spacing: 0.06em;
+  margin: 0;
+}
+
+/* ── Enter button ────────────────────────────────────────────────── */
+.pl-enter-btn {
+  background: transparent;
+  border: 1px solid rgba(206, 48, 114, 0.55);
+  border-radius: 4px;
+  padding: 0;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: border-color 0.25s, box-shadow 0.25s, transform 0.2s;
+  animation: pl-pulse 2.2s ease-in-out infinite;
+}
+.pl-enter-btn:hover {
+  border-color: rgba(206, 48, 114, 0.95);
+  box-shadow: 0 0 22px rgba(206, 48, 114, 0.40);
+  transform: scale(1.04);
+  animation: none;
+}
+@keyframes pl-pulse {
+  0%,100% { box-shadow: 0 0 0   rgba(206,48,114,0);    }
+  50%      { box-shadow: 0 0 18px rgba(206,48,114,0.30); }
+}
+.pl-enter-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.65rem 1.8rem;
+  font-family: var(--font-ui, monospace);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #f0e4ff;
+}
+.pl-enter-star {
+  font-size: 0.6rem;
+  color: #CE3072;
+  opacity: 0.8;
+}
