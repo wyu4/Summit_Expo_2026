@@ -1,9 +1,3 @@
-/* ============================================================
-   HERO — Summit EXPO 2026
-   Key design decision: stars live ONLY on the edges.
-   The centre is kept dark and clear for text legibility.
-   ============================================================ */
-
 /* Scroll wrapper */
 .hero-wrap {
   position: relative;
@@ -532,7 +526,7 @@
 }
 .hscta-eyebrow {
   font-family: var(--font-ui);
-  font-size: 0.42rem;
+  font-size: var(--sp-3);
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: rgb(219, 225, 229);
@@ -540,7 +534,7 @@
 }
 .hscta-title {
   font-family: var(--font-display);
-  font-size: clamp(0.72rem, 1.25vw, 0.96rem);
+  font-size: clamp(var(--sp-4), 1.5vw, var(--sp-5));
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;

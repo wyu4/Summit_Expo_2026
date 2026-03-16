@@ -1,11 +1,11 @@
 import { Nav }            from './components/Navbar/Nav';
 import { Hero }           from './components/Hero/Hero';
-import { StarTransition } from './components/StarTransition/StarTransition';
-import { About }          from './components/About/About';
+import { Lineup } from './components/Lineup/Lineup';
 import { Cursor }         from './components/Cursor/Cursor';
+import { About }          from './components/About/About';
+import { StarTransition } from './components/StarTransition/StarTransition';
 import { RocketPath }     from './components/ScrollRocket/RocketPath';
 import { PathMapper } from './components/StarTransition/Pathmapper';
-import { Lineup } from './components/Lineup/Lineup';
 export default function App() {
   return (
     

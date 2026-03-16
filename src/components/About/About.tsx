@@ -249,7 +249,7 @@ export function About() {
           <div ref={leftRef} className="about-manifesto-block">
             <span className="about-block-label">Vision</span>
             <p className="about-block-text">
-              Where dreamers connect<br/>and ideas collide.
+             Where explorers connect and ideas collide.
             </p>
           </div>
 
@@ -258,10 +258,8 @@ export function About() {
           <div ref={rightRef} className="about-manifesto-block">
             <span className="about-block-label">Mission</span>
             <p className="about-block-body">
-              To catalyse idea exchange and spark STEM dialogue among Kanata youth —
-              a community fair where professional guests speak and judge,
-              and every exhibitor competes for awards at a closing ceremony.
-              Open to all students, not just Earl&nbsp;of&nbsp;March.
+              Summit EXPO celebrates Kanata youth innovation across engineering and STEM research, under the theme “All That Can Be.” The evening unfolds in two Acts: the “pitch night” and the “science fair.” Throughout, professional guests look for outstanding projects, culminating in an awards ceremony.
+
             </p>
           </div>
         </div>

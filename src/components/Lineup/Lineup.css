@@ -12,8 +12,10 @@
 /* CSS-only star field (replaces canvas for performance) */
 
 .lu__stars {
-  position: absolute; inset: 0;
-  pointer-events: none; z-index: 0;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
   overflow: hidden;
 }
 
@@ -25,70 +27,121 @@
 }
 
 @keyframes luStarTwinkle {
-  0%,100% { opacity: var(--so, 0.3); transform: scale(1);   }
-  50%      { opacity: 1;             transform: scale(1.5); }
+  0%,
+  100% {
+    opacity: var(--so, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.5);
+  }
 }
 
 /* Nebula */
 
 .lu__nebula {
-  position: absolute; inset: 0;
-  pointer-events: none; z-index: 1;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
   background:
-    radial-gradient(ellipse 70% 55% at 50% 50%, rgba(206,48,114,0.07) 0%, transparent 65%),
-    radial-gradient(ellipse 45% 60% at 18% 55%, rgba(104,74,130,0.09) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 50% at 82% 42%, rgba(53,122,161,0.07) 0%, transparent 55%);
+    radial-gradient(
+      ellipse 70% 55% at 50% 50%,
+      rgba(206, 48, 114, 0.07) 0%,
+      transparent 65%
+    ),
+    radial-gradient(
+      ellipse 45% 60% at 18% 55%,
+      rgba(104, 74, 130, 0.09) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 40% 50% at 82% 42%,
+      rgba(53, 122, 161, 0.07) 0%,
+      transparent 55%
+    );
   animation: luNebula 10s ease-in-out infinite alternate;
 }
-@keyframes luNebula { from { opacity: 0.65; } to { opacity: 1.0; } }
+@keyframes luNebula {
+  from {
+    opacity: 0.65;
+  }
+  to {
+    opacity: 1;
+  }
+}
 
 /* Header */
 
 .lu__header {
-  position: relative; z-index: 2;
+  position: relative;
+  z-index: 2;
   text-align: center;
   margin-bottom: 3rem;
   flex-shrink: 0;
 }
 
 .lu-eyebrow {
-  display: flex; align-items: center; justify-content: center; gap: 0.75rem;
-  font-family: var(--font-ui, 'Chakra Petch', monospace);
-  font-size: 0.58rem; letter-spacing: 0.3em; text-transform: uppercase;
-  color: rgba(103,137,163,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  font-family: var(--font-ui, "Chakra Petch", monospace);
+  font-size: 0.58rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(103, 137, 163, 0.5);
   margin-bottom: 0.85rem;
 }
 
 .lu-pip {
-  display: inline-block; width: 5px; height: 5px; border-radius: 50%;
-  background: rgba(206,48,114,0.9);
-  box-shadow: 0 0 8px rgba(206,48,114,0.8);
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(206, 48, 114, 0.9);
+  box-shadow: 0 0 8px rgba(206, 48, 114, 0.8);
 }
-.lu-pip--sm { width: 4px; height: 4px; }
+.lu-pip--sm {
+  width: 4px;
+  height: 4px;
+}
 
 .lu-title {
-  font-family: var(--font-display, 'Orbitron', sans-serif);
+  font-family: var(--font-display, "Orbitron", sans-serif);
   font-size: clamp(2.6rem, 6vw, 5.5rem);
-  font-weight: 900; letter-spacing: 0.1em; margin: 0 0 0.85rem;
-  background: linear-gradient(148deg,
-    #ffffff 0%, #f0e8f4 18%, #BA9EA7 38%,
-    #CE3072 62%, #9F3073 82%, #562F76 100%);
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  margin: 0 0 0.85rem;
+  background: linear-gradient(
+    148deg,
+    #ffffff 0%,
+    #f0e8f4 18%,
+    #ba9ea7 38%,
+    #ce3072 62%,
+    #9f3073 82%,
+    #562f76 100%
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .lu-sub {
-  font-family: var(--font-tagline, 'Cormorant Garamond', Georgia, serif);
+  font-family: var(--font-tagline, "Cormorant Garamond", Georgia, serif);
   font-size: clamp(0.9rem, 1.5vw, 1.15rem);
-  font-style: italic; font-weight: 300;
-  color: rgba(186, 158, 167, 0.842); letter-spacing: 0.06em;
+  font-style: italic;
+  font-weight: 300;
+  color: rgba(186, 158, 167, 0.842);
+  letter-spacing: 0.06em;
 }
 
 /* Constellation map */
 
 .lu__map {
-  position: relative; z-index: 2;
+  position: relative;
+  z-index: 2;
   width: 100%;
   max-width: 1000px;
   /* Height: base 560px + 32px per star beyond 4 */
@@ -99,8 +152,10 @@
 /* SVG lines */
 
 .lu__svg {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   overflow: visible;
   pointer-events: none;
 }
@@ -109,33 +164,40 @@
 .lu-edge {
   fill: none;
   stroke-linecap: round;
-  transition: stroke 0.3s ease, stroke-opacity 0.3s ease, stroke-width 0.3s ease;
+  transition:
+    stroke 0.3s ease,
+    stroke-opacity 0.3s ease,
+    stroke-width 0.3s ease;
 }
 
 /* Glow copy — blurred duplicate */
 .lu-edge--glow {
-  stroke: rgba(103,137,163,0.18);
+  stroke: rgba(103, 137, 163, 0.18);
   stroke-width: 6;
   filter: blur(4px);
 }
 .lu-edge--glow.lu-edge--lit {
-  stroke: rgba(206,48,114,0.35);
+  stroke: rgba(206, 48, 114, 0.35);
   stroke-width: 10;
 }
 
 /* Dashed animated line */
 .lu-edge--dash {
-  stroke: rgba(160,210,255,0.40);
-  stroke-width: 1.0;
+  stroke: rgba(160, 210, 255, 0.4);
+  stroke-width: 1;
   stroke-dasharray: 6 10;
   animation: luDashMarch 20s linear infinite;
 }
 .lu-edge--dash.lu-edge--lit {
-  stroke: rgba(230,120,180,0.90);
+  stroke: rgba(230, 120, 180, 0.9);
   stroke-width: 1.6;
 }
 
-@keyframes luDashMarch { to { stroke-dashoffset: -200; } }
+@keyframes luDashMarch {
+  to {
+    stroke-dashoffset: -200;
+  }
+}
 
 /* Star node */
 
@@ -143,7 +205,11 @@
   position: absolute;
   transform: translate(-50%, -50%);
   z-index: 3;
-  background: none; border: none; cursor: pointer; padding: 0; outline: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  outline: none;
   /* will-change only on transform — keeps compositor layer small */
   will-change: transform;
 }
@@ -151,12 +217,17 @@
 /* Outer diffuse halo — large, very faint */
 .lu-node__outer {
   position: absolute;
-  width: 80px; height: 80px;
-  top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 80px;
+  height: 80px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   border-radius: 50%;
-  background: radial-gradient(circle,
-    color-mix(in srgb, var(--nc, #CE3072) 15%, transparent) 0%,
-    transparent 68%);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--nc, #ce3072) 15%, transparent) 0%,
+    transparent 68%
+  );
   animation: luHalo 3.5s ease-in-out infinite alternate;
   pointer-events: none;
 }
@@ -164,12 +235,17 @@
 /* Mid glow */
 .lu-node__mid {
   position: absolute;
-  width: 28px; height: 28px;
-  top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 28px;
+  height: 28px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   border-radius: 50%;
-  background: radial-gradient(circle,
-    color-mix(in srgb, var(--nc, #CE3072) 60%, white) 0%,
-    transparent 72%);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--nc, #ce3072) 60%, white) 0%,
+    transparent 72%
+  );
   animation: luMid 2.6s ease-in-out infinite alternate;
   pointer-events: none;
 }
@@ -177,112 +253,217 @@
 /* Core — bigger for easier click targets */
 .lu-node__core {
   display: block;
-  width: 14px; height: 14px;
+  width: 14px;
+  height: 14px;
   position: relative;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--nc, #CE3072) 50%, white);
+  background: color-mix(in srgb, var(--nc, #ce3072) 50%, white);
   box-shadow:
-    0 0 10px color-mix(in srgb, var(--nc, #CE3072) 90%, transparent),
-    0 0 26px color-mix(in srgb, var(--nc, #CE3072) 50%, transparent);
+    0 0 10px color-mix(in srgb, var(--nc, #ce3072) 90%, transparent),
+    0 0 26px color-mix(in srgb, var(--nc, #ce3072) 50%, transparent);
   animation: luCore 2.2s ease-in-out infinite alternate;
-  transition: width 0.2s ease, height 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    width 0.2s ease,
+    height 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 @keyframes luHalo {
-  from { opacity: 0.2; transform: translate(-50%,-50%) scale(0.85); }
-  to   { opacity: 0.7; transform: translate(-50%,-50%) scale(1.18); }
+  from {
+    opacity: 0.2;
+    transform: translate(-50%, -50%) scale(0.85);
+  }
+  to {
+    opacity: 0.7;
+    transform: translate(-50%, -50%) scale(1.18);
+  }
 }
-@keyframes luMid  { from { opacity: 0.4; } to { opacity: 1.0; } }
-@keyframes luCore { from { opacity: 0.7; } to { opacity: 1.0; } }
+@keyframes luMid {
+  from {
+    opacity: 0.4;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes luCore {
+  from {
+    opacity: 0.7;
+  }
+  to {
+    opacity: 1;
+  }
+}
 
 /* Staggered twinkle */
-.lu-node:nth-child(5n+1) .lu-node__core { animation-delay: 0.0s; animation-duration: 2.7s; }
-.lu-node:nth-child(5n+2) .lu-node__core { animation-delay: 0.6s; animation-duration: 3.4s; }
-.lu-node:nth-child(5n+3) .lu-node__core { animation-delay: 1.1s; animation-duration: 2.0s; }
-.lu-node:nth-child(5n+4) .lu-node__core { animation-delay: 0.3s; animation-duration: 4.1s; }
-.lu-node:nth-child(5n+5) .lu-node__core { animation-delay: 0.9s; animation-duration: 2.8s; }
+.lu-node:nth-child(5n + 1) .lu-node__core {
+  animation-delay: 0s;
+  animation-duration: 2.7s;
+}
+.lu-node:nth-child(5n + 2) .lu-node__core {
+  animation-delay: 0.6s;
+  animation-duration: 3.4s;
+}
+.lu-node:nth-child(5n + 3) .lu-node__core {
+  animation-delay: 1.1s;
+  animation-duration: 2s;
+}
+.lu-node:nth-child(5n + 4) .lu-node__core {
+  animation-delay: 0.3s;
+  animation-duration: 4.1s;
+}
+.lu-node:nth-child(5n + 5) .lu-node__core {
+  animation-delay: 0.9s;
+  animation-duration: 2.8s;
+}
 
 /* Hover / active: bigger brighter */
 .lu-node--hov .lu-node__core,
 .lu-node--active .lu-node__core {
-  width: 20px; height: 20px;
+  width: 20px;
+  height: 20px;
   background: white;
   box-shadow:
-    0 0 16px color-mix(in srgb, var(--nc, #CE3072) 95%, transparent),
-    0 0 40px color-mix(in srgb, var(--nc, #CE3072) 60%, transparent),
-    0 0 70px color-mix(in srgb, var(--nc, #CE3072) 28%, transparent);
+    0 0 16px color-mix(in srgb, var(--nc, #ce3072) 95%, transparent),
+    0 0 40px color-mix(in srgb, var(--nc, #ce3072) 60%, transparent),
+    0 0 70px color-mix(in srgb, var(--nc, #ce3072) 28%, transparent);
 }
 
 .lu-node--hov .lu-node__outer,
 .lu-node--active .lu-node__outer {
-  width: 110px; height: 110px; opacity: 1;
+  width: 110px;
+  height: 110px;
+  opacity: 1;
 }
 
 /* Diffraction spikes — hidden by default, shown on hover/active */
 .lu-node__spikes {
   position: absolute;
-  top: 50%; left: 50%; transform: translate(-50%, -50%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.2s ease;
 }
 
-.lu-node--hov   .lu-node__spikes,
-.lu-node--active .lu-node__spikes { opacity: 1; }
+.lu-node--hov .lu-node__spikes,
+.lu-node--active .lu-node__spikes {
+  opacity: 1;
+}
 
 .s {
-  position: absolute; top: 50%; left: 50%; border-radius: 99px;
-  background: linear-gradient(to right, transparent, rgba(255,255,255,0.7), transparent);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: 99px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.7),
+    transparent
+  );
 }
-.s--h  { width: 80px; height: 1px; margin-top: -0.5px; margin-left: -40px; opacity: 0.55; }
-.s--v  { width: 1px; height: 80px; margin-top: -40px; margin-left: -0.5px;
-         background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.7), transparent); opacity: 0.55; }
-.s--d1 { width: 50px; height: 0.7px; margin-top: -0.35px; margin-left: -25px;
-         transform: rotate(45deg); opacity: 0.25; }
-.s--d2 { width: 50px; height: 0.7px; margin-top: -0.35px; margin-left: -25px;
-         transform: rotate(-45deg); opacity: 0.25; }
+.s--h {
+  width: 80px;
+  height: 1px;
+  margin-top: -0.5px;
+  margin-left: -40px;
+  opacity: 0.55;
+}
+.s--v {
+  width: 1px;
+  height: 80px;
+  margin-top: -40px;
+  margin-left: -0.5px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(255, 255, 255, 0.7),
+    transparent
+  );
+  opacity: 0.55;
+}
+.s--d1 {
+  width: 50px;
+  height: 0.7px;
+  margin-top: -0.35px;
+  margin-left: -25px;
+  transform: rotate(45deg);
+  opacity: 0.25;
+}
+.s--d2 {
+  width: 50px;
+  height: 0.7px;
+  margin-top: -0.35px;
+  margin-left: -25px;
+  transform: rotate(-45deg);
+  opacity: 0.25;
+}
 
 /* Pulse rings on active */
 .lu-node__ring {
   position: absolute;
-  width: 60px; height: 60px;
-  top: 50%; left: 50%;
-  transform: translate(-50%,-50%) scale(0.4);
+  width: 60px;
+  height: 60px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.4);
   border-radius: 50%;
-  border: 1.5px solid color-mix(in srgb, var(--nc, #CE3072) 65%, transparent);
+  border: 1.5px solid color-mix(in srgb, var(--nc, #ce3072) 65%, transparent);
   animation: luRing 2.8s ease-out infinite;
   pointer-events: none;
 }
-.lu-node__ring--2 { animation-delay: 1.4s; border-color: rgba(103,137,163,0.35); }
+.lu-node__ring--2 {
+  animation-delay: 1.4s;
+  border-color: rgba(103, 137, 163, 0.35);
+}
 
 @keyframes luRing {
-  0%   { transform: translate(-50%,-50%) scale(0.4);  opacity: 0.9; }
-  100% { transform: translate(-50%,-50%) scale(3.5);  opacity: 0;   }
+  0% {
+    transform: translate(-50%, -50%) scale(0.4);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(3.5);
+    opacity: 0;
+  }
 }
 
 /* Name tag */
 .lu-node__tag {
   position: absolute;
   top: calc(100% + 18px);
-  left: 50%; transform: translateX(-50%);
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-  white-space: nowrap; pointer-events: none;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 .lu-node__tag-id {
-  font-family: var(--font-ui, 'Chakra Petch', monospace);
-  font-size: 0.44rem; letter-spacing: 0.2em;
-  color: rgba(103,137,163,0.32); text-transform: uppercase;
+  font-family: var(--font-ui, "Chakra Petch", monospace);
+  font-size: 0.44rem;
+  letter-spacing: 0.2em;
+  color: rgba(103, 137, 163, 0.32);
+  text-transform: uppercase;
 }
 
 .lu-node__tag-name {
-  font-family: var(--font-display, 'Orbitron', sans-serif);
-  font-size: 0.62rem; font-weight: 600; letter-spacing: 0.1em;
-  color: rgba(210,228,255,0.65);
+  font-family: var(--font-display, "Orbitron", sans-serif);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: rgba(210, 228, 255, 0.65);
   transition: color 0.2s ease;
 }
 .lu-node--hov .lu-node__tag-name,
-.lu-node--active .lu-node__tag-name { color: #fff; }
+.lu-node--active .lu-node__tag-name {
+  color: #fff;
+}
 
 /* Hover tooltip */
 
@@ -293,75 +474,112 @@
   padding: 1rem 1.1rem 0.9rem;
   border-radius: 12px;
   background: rgba(4, 2, 16, 0.94);
-  border: 1px solid rgba(103,137,163,0.22);
+  border: 1px solid rgba(103, 137, 163, 0.22);
   backdrop-filter: blur(20px);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 40px rgba(206,48,114,0.07);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.6),
+    0 0 40px rgba(206, 48, 114, 0.07);
   pointer-events: none;
 }
 
 .lu-tooltip__top {
-  display: flex; align-items: center; gap: 0.7rem;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
   margin-bottom: 0.65rem;
 }
 
 .lu-tooltip__photo {
-  width: 42px; height: 42px; border-radius: 50%;
-  object-fit: cover; flex-shrink: 0;
-  border: 1.5px solid rgba(206,48,114,0.45);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1.5px solid rgba(206, 48, 114, 0.45);
 }
 
 .lu-tooltip__avatar {
-  width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
-  background: rgba(206,48,114,0.2);
-  border: 1.5px solid var(--tc, #CE3072);
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-display, 'Orbitron', sans-serif);
-  font-size: 0.75rem; font-weight: 700; color: #fff;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: rgba(206, 48, 114, 0.2);
+  border: 1.5px solid var(--tc, #ce3072);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display, "Orbitron", sans-serif);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #fff;
 }
 
 .lu-tooltip__name {
-  font-family: var(--font-display, 'Orbitron', sans-serif);
-  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em;
-  color: #fff; margin: 0 0 0.2rem;
+  font-family: var(--font-display, "Orbitron", sans-serif);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #fff;
+  margin: 0 0 0.2rem;
 }
 
 .lu-tooltip__role {
-  font-family: var(--font-ui, 'Chakra Petch', monospace);
-  font-size: 0.5rem; letter-spacing: 0.14em; text-transform: uppercase;
-  color: rgba(206,48,114,0.75); margin: 0;
+  font-family: var(--font-ui, "Chakra Petch", monospace);
+  font-size: 0.5rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(206, 48, 114, 0.75);
+  margin: 0;
 }
 
 .lu-tooltip__bio {
-  font-family: var(--font-body, 'Inter', sans-serif);
-  font-size: 0.72rem; font-weight: 300; line-height: 1.6;
-  color: rgba(186,158,167,0.70); margin: 0 0 0.6rem;
+  font-family: var(--font-body, "Inter", sans-serif);
+  font-size: 0.72rem;
+  font-weight: 300;
+  line-height: 1.6;
+  color: rgba(186, 158, 167, 0.7);
+  margin: 0 0 0.6rem;
 }
 
 .lu-tooltip__cta {
-  font-family: var(--font-ui, 'Chakra Petch', monospace);
-  font-size: 0.5rem; letter-spacing: 0.16em; text-transform: uppercase;
-  color: rgba(205, 233, 255, 0.45); margin: 0;
+  font-family: var(--font-ui, "Chakra Petch", monospace);
+  font-size: 0.5rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(205, 233, 255, 0.45);
+  margin: 0;
 }
 
 .lu-tooltip__corner {
-  position: absolute; width: 8px; height: 8px; pointer-events: none;
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  pointer-events: none;
 }
 .lu-tooltip__corner--tl {
-  top: -1px; left: -1px;
-  border-top: 1.5px solid var(--tc, #CE3072); border-left: 1.5px solid var(--tc, #CE3072);
+  top: -1px;
+  left: -1px;
+  border-top: 1.5px solid var(--tc, #ce3072);
+  border-left: 1.5px solid var(--tc, #ce3072);
 }
 .lu-tooltip__corner--tr {
-  top: -1px; right: -1px;
-  border-top: 1.5px solid var(--tc, #CE3072); border-right: 1.5px solid var(--tc, #CE3072);
+  top: -1px;
+  right: -1px;
+  border-top: 1.5px solid var(--tc, #ce3072);
+  border-right: 1.5px solid var(--tc, #ce3072);
 }
 
 /* Modal backdrop */
 
 .lu-modal-backdrop {
-  position: fixed; inset: 0; z-index: 900;
+  position: fixed;
+  inset: 0;
+  z-index: 900;
   background: rgba(1, 0, 8, 0.85);
   backdrop-filter: blur(8px) saturate(1.4);
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 1.5rem;
 }
 
@@ -369,28 +587,37 @@
 
 .lu-modal {
   position: relative;
-  width: 100%; max-width: 520px;
+  width: 100%;
+  max-width: 520px;
   max-height: 92vh;
   overflow-y: auto;
   overflow-x: hidden;
   padding: 0 0 2rem;
   border-radius: 20px;
-  background:
-    linear-gradient(160deg, rgba(14, 6, 35, 0.98) 0%, rgba(4, 2, 16, 0.98) 100%);
-  border: 1px solid color-mix(in srgb, var(--mc, #CE3072) 40%, rgba(103,137,163,0.15));
+  background: linear-gradient(
+    160deg,
+    rgba(14, 6, 35, 0.98) 0%,
+    rgba(4, 2, 16, 0.98) 100%
+  );
+  border: 1px solid
+    color-mix(in srgb, var(--mc, #ce3072) 40%, rgba(103, 137, 163, 0.15));
   box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,0.04),
-    0 0 0 1px color-mix(in srgb, var(--mc, #CE3072) 20%, transparent),
-    0 24px 80px rgba(0,0,0,0.8),
-    0 0 120px color-mix(in srgb, var(--mc, #CE3072) 15%, transparent);
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 0 0 1px color-mix(in srgb, var(--mc, #ce3072) 20%, transparent),
+    0 24px 80px rgba(0, 0, 0, 0.8),
+    0 0 120px color-mix(in srgb, var(--mc, #ce3072) 15%, transparent);
   transform-origin: center center;
   perspective: 1000px;
 }
 
-.lu-modal::-webkit-scrollbar { width: 3px; }
-.lu-modal::-webkit-scrollbar-track { background: transparent; }
+.lu-modal::-webkit-scrollbar {
+  width: 3px;
+}
+.lu-modal::-webkit-scrollbar-track {
+  background: transparent;
+}
 .lu-modal::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--mc, #CE3072) 30%, transparent);
+  background: color-mix(in srgb, var(--mc, #ce3072) 30%, transparent);
   border-radius: 2px;
 }
 
@@ -398,17 +625,19 @@
 
 .lu-modal__scan {
   position: absolute;
-  top: 0; left: 0; right: 0;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 2px;
   background: linear-gradient(
     90deg,
     transparent 0%,
-    color-mix(in srgb, var(--mc, #CE3072) 60%, transparent) 30%,
-    rgba(255,255,255,0.6) 50%,
-    color-mix(in srgb, var(--mc, #CE3072) 60%, transparent) 70%,
+    color-mix(in srgb, var(--mc, #ce3072) 60%, transparent) 30%,
+    rgba(255, 255, 255, 0.6) 50%,
+    color-mix(in srgb, var(--mc, #ce3072) 60%, transparent) 70%,
     transparent 100%
   );
-  box-shadow: 0 0 12px color-mix(in srgb, var(--mc, #CE3072) 80%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--mc, #ce3072) 80%, transparent);
   transform-origin: left center;
   border-radius: 0 0 2px 2px;
   z-index: 2;
@@ -417,53 +646,74 @@
 /* Close */
 
 .lu-modal__close {
-  position: absolute; top: 1rem; right: 1.1rem;
+  position: absolute;
+  top: 1rem;
+  right: 1.1rem;
   z-index: 3;
-  background: rgba(255,255,255,0.04); 
-  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 50%;
-  width: 32px; height: 32px;
-  display: flex; align-items: center; justify-content: center;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  color: rgba(103,137,163,0.55); font-size: 0.78rem;
-  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  color: rgba(103, 137, 163, 0.55);
+  font-size: 0.78rem;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    border-color 0.2s;
 }
 .lu-modal__close:hover {
-  background: rgba(206,48,114,0.12);
-  border-color: rgba(206,48,114,0.4);
+  background: rgba(206, 48, 114, 0.12);
+  border-color: rgba(206, 48, 114, 0.4);
   color: #fff;
 }
 
 /* Designation */
 
 .lu-modal__desig-wrap {
-  display: flex; align-items: center; gap: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
   padding: 1.4rem 1.8rem 0.8rem;
 }
 
 .lu-modal__desig-dot {
-  width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0;
-  background: var(--mc, #CE3072);
-  box-shadow: 0 0 8px var(--mc, #CE3072);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--mc, #ce3072);
+  box-shadow: 0 0 8px var(--mc, #ce3072);
   animation: modalDotPulse 2s ease-in-out infinite;
 }
 @keyframes modalDotPulse {
-  0%,100% { opacity: 0.7; transform: scale(1); }
-  50%     { opacity: 1;   transform: scale(1.4); }
+  0%,
+  100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.4);
+  }
 }
 
 .lu-modal__desig {
-  font-family: var(--font-ui, 'Chakra Petch', monospace);
-  font-size: 0.52rem; letter-spacing: 0.28em; text-transform: uppercase;
+  font-family: var(--font-ui, "Chakra Petch", monospace);
+  font-size: 0.52rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
   color: var(--c-sad-murky);
 }
 
 .lu-modal__desig-line {
-  flex: 1; height: 1px;
-  background: linear-gradient(90deg,
-    rgba(103,137,163,0.25),
-    transparent
-  );
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(103, 137, 163, 0.25), transparent);
 }
 
 /* Hero row */
@@ -477,108 +727,157 @@
 
 /* Photo */
 .lu-modal__photo-wrap {
-  position: relative; flex-shrink: 0;
-  width: 96px; height: 96px;
+  position: relative;
+  flex-shrink: 0;
+  width: 96px;
+  height: 96px;
 }
 
 .lu-modal__photo {
-  width: 100%; height: 100%; border-radius: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
   object-fit: cover;
-  border: 2px solid var(--mc, #CE3072);
-  filter:
-    drop-shadow(0 0 8px color-mix(in srgb, var(--mc, #CE3072) 60%, transparent))
-    drop-shadow(0 0 20px color-mix(in srgb, var(--mc, #CE3072) 30%, transparent));
+  border: 2px solid var(--mc, #ce3072);
+  filter: drop-shadow(
+      0 0 8px color-mix(in srgb, var(--mc, #ce3072) 60%, transparent)
+    )
+    drop-shadow(
+      0 0 20px color-mix(in srgb, var(--mc, #ce3072) 30%, transparent)
+    );
 }
 
 .lu-modal__avatar {
-  width: 100%; height: 100%; border-radius: 50%;
-  background: color-mix(in srgb, var(--mc, #CE3072) 18%, rgba(5,2,18,0.9));
-  border: 2px solid var(--mc, #CE3072);
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-display, 'Orbitron', sans-serif);
-  font-size: 1.4rem; font-weight: 700; color: #fff;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--mc, #ce3072) 18%, rgba(5, 2, 18, 0.9));
+  border: 2px solid var(--mc, #ce3072);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display, "Orbitron", sans-serif);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #fff;
 }
 
 /* Orbit rings */
 .lu-modal__orbit {
-  position: absolute; border-radius: 50%; pointer-events: none;
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
 }
 .lu-modal__orbit--1 {
   inset: -10px;
-  border: 1px solid color-mix(in srgb, var(--mc, #CE3072) 25%, transparent);
+  border: 1px solid color-mix(in srgb, var(--mc, #ce3072) 25%, transparent);
   animation: modalOrbit 3.2s ease-out infinite;
 }
 .lu-modal__orbit--2 {
   inset: -20px;
-  border: 1px solid rgba(103,137,163,0.15);
+  border: 1px solid rgba(103, 137, 163, 0.15);
   animation: modalOrbit 3.2s ease-out infinite;
   animation-delay: 1.6s;
 }
 @keyframes modalOrbit {
-  0%   { transform: scale(0.85); opacity: 0.8; }
-  100% { transform: scale(1.15); opacity: 0;   }
+  0% {
+    transform: scale(0.85);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.15);
+    opacity: 0;
+  }
 }
 
 /* Crosshair */
 .lu-modal__crosshair {
-  position: absolute; inset: -18px; pointer-events: none;
+  position: absolute;
+  inset: -18px;
+  pointer-events: none;
 }
-.lu-modal__ch-h, .lu-modal__ch-v {
-  position: absolute; border-radius: 99px;
+.lu-modal__ch-h,
+.lu-modal__ch-v {
+  position: absolute;
+  border-radius: 99px;
 }
 .lu-modal__ch-h {
-  top: 50%; left: 0; right: 0; height: 1px; margin-top: -0.5px;
-  background: linear-gradient(90deg,
-    transparent 0%, 
-    color-mix(in srgb, var(--mc, #CE3072) 35%, transparent) 30%,
-    color-mix(in srgb, var(--mc, #CE3072) 35%, transparent) 70%,
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  margin-top: -0.5px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--mc, #ce3072) 35%, transparent) 30%,
+    color-mix(in srgb, var(--mc, #ce3072) 35%, transparent) 70%,
     transparent 100%
   );
 }
 .lu-modal__ch-v {
-  left: 50%; top: 0; bottom: 0; width: 1px; margin-left: -0.5px;
-  background: linear-gradient(180deg,
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  margin-left: -0.5px;
+  background: linear-gradient(
+    180deg,
     transparent 0%,
-    color-mix(in srgb, var(--mc, #CE3072) 35%, transparent) 30%,
-    color-mix(in srgb, var(--mc, #CE3072) 35%, transparent) 70%,
+    color-mix(in srgb, var(--mc, #ce3072) 35%, transparent) 30%,
+    color-mix(in srgb, var(--mc, #ce3072) 35%, transparent) 70%,
     transparent 100%
   );
 }
 
 /* Identity */
-.lu-modal__identity { flex: 1; min-width: 0; }
+.lu-modal__identity {
+  flex: 1;
+  min-width: 0;
+}
 
 .lu-modal__name {
-  font-family: var(--font-display, 'Orbitron', sans-serif);
+  font-family: var(--font-display, "Orbitron", sans-serif);
   font-size: clamp(1rem, 3vw, 1.25rem);
-  font-weight: 700; letter-spacing: 0.06em;
-  color: #fff; margin: 0 0 0.4rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #fff;
+  margin: 0 0 0.4rem;
   line-height: 1.2;
 }
 
 .lu-modal__role {
-  font-family: var(--font-ui, 'Chakra Petch', monospace);
-  font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--mc, #CE3072); margin: 0 0 0.75rem;
+  font-family: var(--font-ui, "Chakra Petch", monospace);
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mc, #ce3072);
+  margin: 0 0 0.75rem;
   opacity: 0.9;
 }
 
 /* Magnitude dots */
-.lu-modal__mag {
-  display: flex; align-items: center; gap: 5px;
+/* .lu-modal__mag {
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 .lu-modal__mag-dot {
-  width: 6px; height: 6px; border-radius: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
   background: rgba(188, 213, 233, 0.51);
   transition: background 0.3s ease;
 }
 .lu-modal__mag-dot--on {
-  background: var(--mc, #CE3072);
-  box-shadow: 0 0 6px var(--mc, #CE3072);
-}
+  background: var(--mc, #ce3072);
+  box-shadow: 0 0 6px var(--mc, #ce3072);
+} */
 .lu-modal__mag-label {
-  font-family: var(--font-ui, 'Chakra Petch', monospace);
-  font-size: 0.5rem; letter-spacing: 0.18em; text-transform: uppercase;
+  font-family: var(--font-ui, "Chakra Petch", monospace);
+  font-size: 0.5rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   color: var(--c-murky-blue);
   margin-left: 2px;
 }
@@ -590,8 +889,8 @@
   margin: 0 1.8rem 1.4rem;
   background: linear-gradient(
     90deg,
-    color-mix(in srgb, var(--mc, #CE3072) 40%, transparent) 0%,
-    rgba(103,137,163,0.2) 40%,
+    color-mix(in srgb, var(--mc, #ce3072) 40%, transparent) 0%,
+    rgba(103, 137, 163, 0.2) 40%,
     transparent 100%
   );
   transform-origin: left center;
@@ -600,82 +899,140 @@
 /* Bio */
 
 .lu-modal__bio {
-  font-family: var(--font-tagline, 'Cormorant Garamond', Georgia, serif);
+  font-family: var(--font-tagline, "Cormorant Garamond", Georgia, serif);
   font-size: clamp(0.9rem, 1.6vw, 1.05rem);
-  font-weight: 300; font-style: italic;
+  font-weight: 300;
+  font-style: italic;
   line-height: 1.8;
-  color: rgba(200, 185, 215, 0.80);
+  color: rgba(200, 185, 215, 0.8);
   margin: 0 1.8rem 1.6rem;
   padding-left: 1rem;
-  border-left: 2px solid color-mix(in srgb, var(--mc, #CE3072) 35%, transparent);
+  border-left: 2px solid color-mix(in srgb, var(--mc, #ce3072) 35%, transparent);
 }
 
 /* Links */
 
 .lu-modal__links {
-  display: flex; flex-wrap: wrap; gap: 0.55rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
   padding: 0 1.8rem;
 }
 
 .lu-modal__link {
-  display: inline-flex; align-items: center; gap: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   padding: 0.5rem 1.1rem;
   border-radius: 99px;
-  border: 1px solid color-mix(in srgb, var(--lc, #CE3072) 30%, rgba(103,137,163,0.18));
-  background: color-mix(in srgb, var(--lc, #CE3072) 6%, rgba(6,3,20,0.6));
-  font-family: var(--font-ui, 'Chakra Petch', monospace);
-  font-size: 0.58rem; font-weight: 600;
-  letter-spacing: 0.16em; text-transform: uppercase;
-  color: rgba(200,220,255,0.75); text-decoration: none;
-  transition: border-color 0.22s, background 0.22s, color 0.22s, transform 0.18s, box-shadow 0.22s;
-  position: relative; overflow: hidden;
+  border: 1px solid
+    color-mix(in srgb, var(--lc, #ce3072) 30%, rgba(103, 137, 163, 0.18));
+  background: color-mix(in srgb, var(--lc, #ce3072) 6%, rgba(6, 3, 20, 0.6));
+  font-family: var(--font-ui, "Chakra Petch", monospace);
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(200, 220, 255, 0.75);
+  text-decoration: none;
+  transition:
+    border-color 0.22s,
+    background 0.22s,
+    color 0.22s,
+    transform 0.18s,
+    box-shadow 0.22s;
+  position: relative;
+  overflow: hidden;
 }
 
 .lu-modal__link::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.07) 50%, transparent 70%);
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.07) 50%,
+    transparent 70%
+  );
   transform: translateX(-100%);
   transition: transform 0.4s ease;
 }
-.lu-modal__link:hover::before { transform: translateX(100%); }
-
-.lu-modal__link:hover {
-  border-color: var(--lc, #CE3072);
-  background: color-mix(in srgb, var(--lc, #CE3072) 14%, rgba(6,3,20,0.8));
-  color: #fff;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px color-mix(in srgb, var(--lc, #CE3072) 25%, transparent);
+.lu-modal__link:hover::before {
+  transform: translateX(100%);
 }
 
-.lu-modal__link-icon { font-size: 0.82rem; opacity: 0.85; width: 14px; text-align: center; }
+.lu-modal__link:hover {
+  border-color: var(--lc, #ce3072);
+  background: color-mix(in srgb, var(--lc, #ce3072) 14%, rgba(6, 3, 20, 0.8));
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--lc, #ce3072) 25%, transparent);
+}
+
+.lu-modal__link-icon {
+  font-size: 0.82rem;
+  opacity: 0.85;
+  width: 14px;
+  text-align: center;
+}
 
 /* Hint */
 
 .lu__hint {
-  position: relative; z-index: 2;
-  display: flex; align-items: center; gap: 0.55rem;
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
   margin-top: 2rem;
-  font-family: var(--font-ui, 'Chakra Petch', monospace);
-  font-size: 0.55rem; letter-spacing: 0.22em; text-transform: uppercase;
+  font-family: var(--font-ui, "Chakra Petch", monospace);
+  font-size: 0.55rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
   color: rgba(225, 242, 255, 0.562);
   animation: luHintPulse 3.5s ease-in-out infinite;
 }
-@keyframes luHintPulse { 0%,100% { opacity: 0.6; } 50% { opacity: 0.9; } }
+@keyframes luHintPulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
 
 /* Responsive */
 
 @media (max-width: 600px) {
-  .lu { padding: 5rem 1rem 4rem; }
-  .lu__map { max-width: 100%; }
+  .lu {
+    padding: 5rem 1rem 4rem;
+  }
+  .lu__map {
+    max-width: 100%;
+  }
 
   /* On mobile, tooltip becomes invisible (tap = modal anyway) */
-  .lu-tooltip { display: none; }
+  .lu-tooltip {
+    display: none;
+  }
 
-  .lu-node__tag-name { font-size: 0.5rem; }
+  .lu-node__tag-name {
+    font-size: 0.5rem;
+  }
 
-  .lu-modal { padding: 1.8rem 1.4rem 1.8rem; }
-  .lu-modal__top { flex-direction: column; text-align: center; }
-  .lu-modal__photo-wrap { align-self: center; }
-  .lu-modal__links { justify-content: center; }
+  .lu-modal {
+    padding: 1.8rem 1.4rem 1.8rem;
+  }
+  .lu-modal__top {
+    flex-direction: column;
+    text-align: center;
+  }
+  .lu-modal__photo-wrap {
+    align-self: center;
+  }
+  .lu-modal__links {
+    justify-content: center;
+  }
 }
