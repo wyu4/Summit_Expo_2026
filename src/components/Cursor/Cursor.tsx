@@ -1,10 +1,3 @@
-/**
- * Cursor.tsx
- * Custom star cursor: hides the default OS cursor site-wide,
- * renders a small magenta crosshair that follows the mouse,
- * and leaves a fading particle trail.
- * Uses requestAnimationFrame + canvas for zero-jank rendering.
- */
 import { useEffect, useRef } from 'react';
 import './Cursor.css';
 

@@ -1,22 +1,3 @@
-/**
- * PageLoader — full-screen space intro that plays once on first visit.
- *
- * Sequence:
- *  0.0s  Dark screen. Stars fade in.
- *  0.6s  Rocket flies in from bottom-right.
- *  1.2s  Site name types out letter by letter.
- *  2.4s  Tagline fades in.
- *  3.2s  "ENTER" button pulses into view.
- *  (user clicks OR auto-dismisses after 4.8s)
- *        Loader wipes upward, page content revealed.
- *
- * Props:
- *   onComplete — called when loader finishes (set app state to "loaded")
- *   siteName   — e.g. "SUMMIT EXPO"
- *   tagline    — e.g. "All That Can Be"
- *   rocketSrc  — path to rocket.png
- */
-
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import './PageLoader.css';

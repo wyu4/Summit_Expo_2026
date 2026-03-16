@@ -5,8 +5,6 @@ import "./Lineup.css";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// Types
-
 export interface Exhibitor {
   id: string;
   name: string;
@@ -17,8 +15,6 @@ export interface Exhibitor {
   designation: string;
   color: string;
 }
-
-// Data — add more objects here, layout auto-recalculates
 
 export const DEMO_EXHIBITORS: Exhibitor[] = [
   {
@@ -107,13 +103,11 @@ export const DEMO_EXHIBITORS: Exhibitor[] = [
   },
 ];
 
-// Layout engine
-
+//  Layout engine 
 interface StarPos {
   x: number;
   y: number;
 }
-
 function seededRand(seed: number) {
   return ((seed * 1664525 + 1013904223) >>> 0) / 0xffffffff;
 }
@@ -125,11 +119,11 @@ function buildLayout(n: number): StarPos[] {
   return Array.from({ length: n }, (_, i) => {
     const r = Math.sqrt((i + 0.5) / n);
     const th = i * golden;
-    const jx = (seededRand(42 + i * 2) - 0.5) * 7;
-    const jy = (seededRand(42 + i * 2 + 1) - 0.5) * 7;
+    const jx = (seededRand(42 + i * 2) - 0.5) * 9;
+    const jy = (seededRand(42 + i * 2 + 1) - 0.5) * 9;
     return {
-      x: Math.min(87, Math.max(13, 50 + r * 38 * Math.cos(th) + jx)),
-      y: Math.min(87, Math.max(13, 50 + r * 38 * Math.sin(th) + jy)),
+      x: Math.min(90, Math.max(10, 50 + r * 40 * Math.cos(th) + jx)),
+      y: Math.min(88, Math.max(12, 50 + r * 38 * Math.sin(th) + jy)),
     };
   });
 }
@@ -138,8 +132,6 @@ function buildEdges(pos: StarPos[]): [number, number][] {
   const n = pos.length;
   if (n < 2) return [];
   const d = (a: StarPos, b: StarPos) => Math.hypot(a.x - b.x, a.y - b.y);
-
-  // Prim's MST
   const inTree = new Set([0]);
   const edges: [number, number][] = [];
   while (inTree.size < n) {
@@ -161,15 +153,13 @@ function buildEdges(pos: StarPos[]): [number, number][] {
     edges.push([bu, bv]);
     inTree.add(bv);
   }
-
-  // Bonus cross-edges
   for (let i = 0; i < n; i++) {
     const sorted = Array.from({ length: n }, (_, j) => j)
       .filter((j) => j !== i)
       .sort((a, b) => d(pos[i], pos[a]) - d(pos[i], pos[b]));
     let added = 0;
     for (const j of sorted) {
-      if (added >= 1 || d(pos[i], pos[j]) > 40) break;
+      if (added >= 2 || d(pos[i], pos[j]) > 45) break;
       if (
         !edges.some(([a, b]) => (a === i && b === j) || (a === j && b === i))
       ) {
@@ -181,14 +171,205 @@ function buildEdges(pos: StarPos[]): [number, number][] {
   return edges;
 }
 
-// Component
+//  Animated space canvas 
+function useSpaceCanvas(ref: React.RefObject<HTMLCanvasElement | null>) {
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d")!;
+    interface Star {
+      x: number;
+      y: number;
+      r: number;
+      vx: number;
+      vy: number;
+      op: number;
+      ph: number;
+      sp: number;
+      layer: number;
+      hue: number;
+    }
+    interface Shooter {
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      life: number;
+      max: number;
+      len: number;
+    }
+    const LAYERS = [
+      { count: 140, speed: 0.007, rMax: 0.55, opMax: 0.4 },
+      { count: 80, speed: 0.02, rMax: 0.95, opMax: 0.6 },
+      { count: 35, speed: 0.045, rMax: 1.45, opMax: 0.85 },
+    ];
+    let stars: Star[] = [],
+      shooters: Shooter[] = [];
+    let raf = 0,
+      t = 0,
+      scrollY = 0,
+      lastScrollY = 0;
 
+    const resize = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+      stars = [];
+      LAYERS.forEach((cfg, li) => {
+        for (let i = 0; i < cfg.count; i++) {
+          const angle = Math.random() * Math.PI * 2,
+            speed = cfg.speed * (0.5 + Math.random());
+          stars.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            r: Math.random() * cfg.rMax + 0.15,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            op: Math.random() * cfg.opMax + 0.15,
+            ph: Math.random() * Math.PI * 2,
+            sp: Math.random() * 1.1 + 0.25,
+            layer: li,
+            hue: 200 + Math.random() * 80,
+          });
+        }
+      });
+    };
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(canvas);
+    const onScroll = () => {
+      scrollY = window.scrollY;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    const spawnShooter = () => {
+      const W = canvas.width,
+        fromRight = Math.random() < 0.5;
+      const angle =
+        (Math.random() * 20 + 10) * (Math.PI / 180) * (fromRight ? 1 : -1) +
+        Math.PI / 2;
+      const speed = 9 + Math.random() * 9;
+      shooters.push({
+        x: fromRight
+          ? W * (0.55 + Math.random() * 0.45)
+          : W * (Math.random() * 0.45),
+        y: -10,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 0,
+        max: 40 + Math.random() * 30,
+        len: 55 + Math.random() * 75,
+      });
+    };
+    let shooterTimer = 0,
+      SHOOTER_INTERVAL = 200 + Math.random() * 200;
+
+    const loop = () => {
+      t += 0.011;
+      const sd = (scrollY - lastScrollY) * 0.5;
+      lastScrollY = scrollY;
+      const W = canvas.width,
+        H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+      for (const s of stars) {
+        s.x += s.vx;
+        s.y += s.vy + sd * (s.layer === 0 ? 0.03 : s.layer === 1 ? 0.09 : 0.22);
+        if (s.x < -2) s.x = W + 2;
+        if (s.x > W + 2) s.x = -2;
+        if (s.y < -2) s.y = H + 2;
+        if (s.y > H + 2) s.y = -2;
+        const tw = 0.5 + 0.5 * Math.sin(t * s.sp + s.ph),
+          al = s.op * (0.35 + 0.65 * tw);
+        if (s.layer >= 1) {
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r * (s.layer === 2 ? 5.5 : 3.5), 0, Math.PI * 2);
+          ctx.fillStyle = `hsla(${s.hue},65%,75%,${al * (s.layer === 2 ? 0.11 : 0.05)})`;
+          ctx.fill();
+        }
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle =
+          s.layer === 2
+            ? `hsla(${s.hue},55%,92%,${al})`
+            : `rgba(200,215,255,${al})`;
+        ctx.fill();
+        if (s.layer === 2 && al > 0.5) {
+          const sp = s.r * 7 * al;
+          ctx.strokeStyle = `hsla(${s.hue},55%,85%,${al * 0.45})`;
+          ctx.lineWidth = 0.55;
+          ctx.beginPath();
+          ctx.moveTo(s.x - sp, s.y);
+          ctx.lineTo(s.x + sp, s.y);
+          ctx.moveTo(s.x, s.y - sp);
+          ctx.lineTo(s.x, s.y + sp);
+          ctx.stroke();
+        }
+      }
+      shooterTimer++;
+      if (shooterTimer > SHOOTER_INTERVAL) {
+        spawnShooter();
+        shooterTimer = 0;
+        SHOOTER_INTERVAL = 180 + Math.random() * 220;
+      }
+      shooters = shooters.filter((s) => s.life < s.max);
+      for (const s of shooters) {
+        const prog = s.life / s.max,
+          alpha = 0.75 * (1 - prog) * Math.min(1, s.life / 4),
+          spd = Math.hypot(s.vx, s.vy);
+        const tx = s.x - s.vx * (s.len / spd),
+          ty = s.y - s.vy * (s.len / spd);
+        const grad = ctx.createLinearGradient(tx, ty, s.x, s.y);
+        grad.addColorStop(0, "rgba(180,215,255,0)");
+        grad.addColorStop(0.6, `rgba(180,215,255,${alpha * 0.45})`);
+        grad.addColorStop(1, `rgba(255,255,255,${alpha})`);
+        ctx.beginPath();
+        ctx.moveTo(tx, ty);
+        ctx.lineTo(s.x, s.y);
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 1.4 * (1 - prog * 0.5);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, 1.4 * (1 - prog * 0.7), 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+        ctx.fill();
+        s.x += s.vx;
+        s.y += s.vy;
+        s.life++;
+      }
+      raf = requestAnimationFrame(loop);
+    };
+    loop();
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, [ref]);
+}
+
+//  Bridge particles data 
+const BRIDGE_PARTICLES = Array.from({ length: 18 }, (_, i) => ({
+  left: `${5 + seededRand(i * 7) * 90}%`,
+  delay: `${seededRand(i * 3) * 4}s`,
+  dur: `${2.5 + seededRand(i * 5) * 3}s`,
+  size: 2 + seededRand(i * 11) * 3,
+  color:
+    i % 3 === 0
+      ? "rgba(206,48,114,0.6)"
+      : i % 3 === 1
+        ? "rgba(120,80,220,0.6)"
+        : "rgba(80,140,255,0.55)",
+}));
+
+//  Component 
 export function Lineup({
   exhibitors = DEMO_EXHIBITORS,
 }: {
   exhibitors?: Exhibitor[];
 }) {
   const sectionRef = useRef<HTMLElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const bridgeRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const nodeRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -205,102 +386,181 @@ export function Lineup({
     [exhibitors.length],
   );
   const edges = useMemo(() => buildEdges(positions), [positions]);
-
-  // SVG edge draw-on progress
-  const edgeProgs = useRef<number[]>(edges.map(() => 0));
-  useEffect(() => {
-    edgeProgs.current = edges.map(() => 0);
-  }, [edges.length]);
-
-  // SVG line animation (no canvas, no RAF — just CSS stroke-dashoffset)
-  // We drive dashoffset via GSAP on the SVG paths directly — far cheaper.
   const svgLineRefs = useRef<(SVGLineElement | null)[]>([]);
 
-  // Scroll entrance
+  useSpaceCanvas(canvasRef);
+
+  //  Entrance animations 
   useEffect(() => {
-    gsap.set([".lu-eyebrow", ".lu-title", ".lu-sub"], { opacity: 0, y: 22 });
-    const nodes = nodeRefs.current.filter(Boolean);
-    if (nodes.length) gsap.set(nodes, { scale: 0, opacity: 0 });
-
-    const lines = svgLineRefs.current.filter(Boolean);
-    if (lines.length) {
-      lines.forEach((l) => {
-        if (!l) return;
-        const len = l.getTotalLength?.() ?? 200;
-        l.style.strokeDasharray = `${len}`;
-        l.style.strokeDashoffset = `${len}`;
-      });
-    }
-
-    ScrollTrigger.create({
-      trigger: sectionRef.current,
-      start: "top 72%",
-      onEnter() {
-        gsap
-          .timeline()
-          .to(".lu-eyebrow", {
-            opacity: 1,
-            y: 0,
-            duration: 0.5,
-            ease: "power3.out",
-          })
-          .to(
-            ".lu-title",
-            { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" },
-            "-=0.28",
-          )
-          .to(
-            ".lu-sub",
-            { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" },
-            "-=0.28",
+    const ctx = gsap.context(() => {
+      // Bridge entrance — scan line wipes across on scroll-into-view
+      ScrollTrigger.create({
+        trigger: bridgeRef.current,
+        start: "top 90%",
+        onEnter() {
+          gsap.fromTo(
+            ".lu__bridge-line",
+            { scaleX: 0, opacity: 0 },
+            {
+              scaleX: 1,
+              opacity: 1,
+              duration: 1.2,
+              ease: "power3.inOut",
+              transformOrigin: "left center",
+            },
           );
+          gsap.fromTo(
+            ".lu__bridge-particle",
+            { opacity: 0, scale: 0 },
+            {
+              opacity: 1,
+              scale: 1,
+              stagger: { each: 0.06, from: "random" },
+              duration: 0.4,
+              ease: "back.out(2)",
+            },
+          );
+          gsap.fromTo(
+            ".lu__bridge-label",
+            { opacity: 0, letterSpacing: "0.8em" },
+            {
+              opacity: 0.6,
+              letterSpacing: "0.4em",
+              duration: 1.0,
+              ease: "power2.out",
+              delay: 0.4,
+            },
+          );
+        },
+      });
 
-        gsap.to(nodes, {
-          scale: 1,
-          opacity: 1,
-          stagger: { each: 0.1, from: "center" },
-          duration: 0.6,
-          ease: "back.out(2.5)",
-          delay: 0.4,
-          onComplete() {
-            svgLineRefs.current.forEach((l, ei) => {
-              if (!l) return;
-              const len = parseFloat(l.style.strokeDasharray) || 200;
-              gsap.to(l, {
-                strokeDashoffset: 0,
-                duration: 0.6,
-                delay: ei * 0.12,
-                ease: "power2.inOut",
-                onComplete: () => {
-                  if (ei === svgLineRefs.current.length - 1) setDrawn(true);
-                },
+      // Header — eyebrow slides up, title scales in with a character-by-character feel
+      ScrollTrigger.create({
+        trigger: headerRef.current,
+        start: "top 80%",
+        onEnter() {
+          gsap
+            .timeline()
+            .fromTo(
+              ".lu-eyebrow",
+              { opacity: 0, y: 30, scale: 0.95 },
+              { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "power3.out" },
+            )
+            .fromTo(
+              ".lu-title",
+              { opacity: 0, y: 40, scale: 0.9, filter: "blur(8px)" },
+              {
+                opacity: 1,
+                y: 0,
+                scale: 1,
+                filter: "blur(0px)",
+                duration: 0.8,
+                ease: "power3.out",
+              },
+              "-=0.3",
+            )
+            .fromTo(
+              ".lu-sub",
+              { opacity: 0, y: 20 },
+              { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" },
+              "-=0.4",
+            );
+        },
+        onLeaveBack() {
+          gsap.set([".lu-eyebrow", ".lu-title", ".lu-sub"], {
+            opacity: 0,
+            y: 30,
+          });
+        },
+      });
+
+      // Map container itself slides up
+      ScrollTrigger.create({
+        trigger: mapRef.current,
+        start: "top 85%",
+        onEnter() {
+          gsap.fromTo(
+            mapRef.current,
+            { opacity: 0, y: 60 },
+            { opacity: 1, y: 0, duration: 0.9, ease: "power3.out" },
+          );
+        },
+        onLeaveBack() {
+          gsap.set(mapRef.current, { opacity: 0, y: 60 });
+        },
+      });
+
+      // Star nodes burst in from centre with stagger
+      const nodes = nodeRefs.current.filter(Boolean);
+      gsap.set(nodes, { scale: 0, opacity: 0 });
+
+      ScrollTrigger.create({
+        trigger: mapRef.current,
+        start: "top 75%",
+        onEnter() {
+          // SVG edges draw on first
+          const lines = svgLineRefs.current.filter(Boolean);
+          lines.forEach((l) => {
+            if (!l) return;
+            const len = l.getTotalLength?.() ?? 200;
+            l.style.strokeDasharray = `${len}`;
+            l.style.strokeDashoffset = `${len}`;
+          });
+
+          gsap.to(nodes, {
+            scale: 1,
+            opacity: 1,
+            stagger: { each: 0.08, from: "center" },
+            duration: 0.7,
+            ease: "back.out(2.8)",
+            delay: 0.2,
+            onComplete() {
+              lines.forEach((l, ei) => {
+                if (!l) return;
+                const len = parseFloat(l.style.strokeDasharray) || 200;
+                gsap.to(l, {
+                  strokeDashoffset: 0,
+                  duration: 0.7,
+                  delay: ei * 0.09,
+                  ease: "power2.inOut",
+                  onComplete: () => {
+                    if (ei === lines.length - 1) setDrawn(true);
+                  },
+                });
               });
+            },
+          });
+        },
+        onLeaveBack() {
+          setDrawn(false);
+          gsap.to(nodes, { scale: 0, opacity: 0, duration: 0.35 });
+          svgLineRefs.current.forEach((l) => {
+            if (!l) return;
+            gsap.set(l, {
+              strokeDashoffset: parseFloat(l.style.strokeDasharray) || 200,
             });
-          },
-        });
-      },
-      onLeaveBack() {
-        // Reset everything so it replays on re-enter
-        setDrawn(false);
-        gsap.to([".lu-eyebrow", ".lu-title", ".lu-sub"], {
-          opacity: 0,
-          y: 22,
-          duration: 0.3,
-        });
-        gsap.to(nodes, { scale: 0, opacity: 0, duration: 0.3 });
-        svgLineRefs.current.forEach((l) => {
-          if (!l) return;
-          const len = parseFloat(l.style.strokeDasharray) || 200;
-          gsap.set(l, { strokeDashoffset: len });
-        });
-      },
-    });
+          });
+        },
+      });
 
-    return () => ScrollTrigger.getAll().forEach((t) => t.kill());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      // Hint line at bottom
+      ScrollTrigger.create({
+        trigger: ".lu__hint",
+        start: "top 95%",
+        onEnter() {
+          gsap.fromTo(
+            ".lu__hint",
+            { opacity: 0, y: 16 },
+            { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" },
+          );
+        },
+      });
+    }, sectionRef);
+
+    return () => ctx.revert();
   }, []);
 
-  // Hover tooltip
+  //  Hover tooltip 
   const handleMouseEnter = useCallback((idx: number) => {
     setHovered(idx);
     const tip = tooltipRef.current;
@@ -308,7 +568,7 @@ export function Lineup({
     gsap.killTweensOf(tip);
     gsap.fromTo(
       tip,
-      { opacity: 0, y: 8, scale: 0.94 },
+      { opacity: 0, y: 8, scale: 0.92 },
       { opacity: 1, y: 0, scale: 1, duration: 0.22, ease: "power2.out" },
     );
   }, []);
@@ -321,157 +581,172 @@ export function Lineup({
     gsap.to(tip, {
       opacity: 0,
       y: 6,
-      scale: 0.94,
+      scale: 0.93,
       duration: 0.18,
       ease: "power2.in",
     });
   }, []);
 
-  // Modal open/close
+  //  Modal 
   const openModal = useCallback((idx: number) => {
     setModal(idx);
     document.body.style.overflow = "hidden";
-
     requestAnimationFrame(() =>
       requestAnimationFrame(() => {
         const m = modalRef.current;
         if (!m) return;
-
-        gsap.killTweensOf(m.querySelectorAll("*"));
-
+        const inner = m.querySelector(".lu-modal__inner") as HTMLElement | null;
         const bd = m.closest(".lu-modal-backdrop") as HTMLElement | null;
+
         if (bd)
           gsap.fromTo(
             bd,
             { opacity: 0 },
-            { opacity: 1, duration: 0.3, ease: "power2.out" },
+            { opacity: 1, duration: 0.35, ease: "power2.out" },
           );
-
         gsap.fromTo(
           m,
-          { opacity: 0, scale: 0.88, y: 40, rotateX: -6 },
+          { opacity: 0, scale: 0.85, y: 50, rotateX: -8 },
           {
             opacity: 1,
             scale: 1,
             y: 0,
             rotateX: 0,
-            duration: 0.5,
-            ease: "power3.out",
-          },
-        );
-
-        const tl = gsap.timeline({ delay: 0.1 });
-
-        tl.fromTo(
-          ".lu-modal__scan",
-          { scaleX: 0 },
-          {
-            scaleX: 1,
             duration: 0.55,
             ease: "power3.out",
-            transformOrigin: "left center",
           },
-        );
-        tl.fromTo(
-          ".lu-modal__desig",
-          { opacity: 0, x: -16 },
-          { opacity: 1, x: 0, duration: 0.35, ease: "power3.out" },
-          "-=0.3",
-        );
-        tl.fromTo(
-          ".lu-modal__photo-wrap",
-          { scale: 0.6, opacity: 0, rotation: -8 },
-          {
-            scale: 1,
-            opacity: 1,
-            rotation: 0,
-            duration: 0.5,
-            ease: "back.out(1.8)",
-          },
-          "-=0.15",
-        );
-        tl.fromTo(
-          [".lu-modal__name", ".lu-modal__role"],
-          { opacity: 0, x: 20 },
-          {
-            opacity: 1,
-            x: 0,
-            stagger: 0.08,
-            duration: 0.4,
-            ease: "power3.out",
-          },
-          "-=0.3",
-        );
-        tl.fromTo(
-          ".lu-modal__divider",
-          { scaleX: 0 },
-          {
-            scaleX: 1,
-            duration: 0.4,
-            ease: "power2.inOut",
-            transformOrigin: "left center",
-          },
-          "-=0.1",
-        );
-        tl.fromTo(
-          ".lu-modal__bio",
-          { opacity: 0, y: 12, filter: "blur(4px)" },
-          {
-            opacity: 1,
-            y: 0,
-            filter: "blur(0px)",
-            duration: 0.45,
-            ease: "power2.out",
-          },
-          "-=0.1",
-        );
-        tl.fromTo(
-          ".lu-modal__link",
-          { opacity: 0, y: 14, scale: 0.9 },
-          {
-            opacity: 1,
-            y: 0,
-            scale: 1,
-            stagger: 0.07,
-            duration: 0.35,
-            ease: "back.out(1.5)",
-          },
-          "-=0.1",
-        );
-        tl.fromTo(
-          [".lu-c--tl", ".lu-c--tr", ".lu-c--bl", ".lu-c--br"],
-          { opacity: 0, scale: 0 },
-          {
-            opacity: 1,
-            scale: 1,
-            stagger: 0.04,
-            duration: 0.25,
-            ease: "back.out(2)",
-          },
-          "-=0.2",
         );
 
-        // Magnitude dots fill in one by one from left
-        tl.fromTo(
-          ".lu-modal__mag-dot",
-          { scale: 0, opacity: 0 },
-          {
-            scale: 1,
-            opacity: 1,
-            stagger: 0.08,
-            duration: 0.28,
-            ease: "back.out(3)",
-          },
-          "-=0.15",
-        );
-
-        // Mag label fades in last
-        tl.fromTo(
-          ".lu-modal__mag-label",
-          { opacity: 0, x: -8 },
-          { opacity: 1, x: 0, duration: 0.25, ease: "power2.out" },
-          "-=0.05",
-        );
+        const tl = gsap.timeline({ delay: 0.12 });
+        tl
+          // Scan line sweeps across
+          .fromTo(
+            ".lu-modal__scan",
+            { scaleX: 0 },
+            {
+              scaleX: 1,
+              duration: 0.6,
+              ease: "power3.out",
+              transformOrigin: "left center",
+            },
+          )
+          // Designation badge slides in from left
+          .fromTo(
+            ".lu-modal__desig-wrap",
+            { opacity: 0, x: -24 },
+            { opacity: 1, x: 0, duration: 0.4, ease: "power3.out" },
+            "-=0.35",
+          )
+          // Photo pops in with rotation
+          .fromTo(
+            ".lu-modal__photo-wrap",
+            { scale: 0.5, opacity: 0, rotation: -12 },
+            {
+              scale: 1,
+              opacity: 1,
+              rotation: 0,
+              duration: 0.55,
+              ease: "back.out(2)",
+            },
+            "-=0.2",
+          )
+          // Orbit rings pulse out one after another
+          .fromTo(
+            ".lu-modal__orbit",
+            { scale: 0.3, opacity: 0 },
+            {
+              scale: 1,
+              opacity: 1,
+              stagger: 0.12,
+              duration: 0.4,
+              ease: "power2.out",
+            },
+            "-=0.25",
+          )
+          // Name + role cascade from right
+          .fromTo(
+            ".lu-modal__name",
+            { opacity: 0, x: 28, filter: "blur(4px)" },
+            {
+              opacity: 1,
+              x: 0,
+              filter: "blur(0px)",
+              duration: 0.45,
+              ease: "power3.out",
+            },
+            "-=0.3",
+          )
+          .fromTo(
+            ".lu-modal__role",
+            { opacity: 0, x: 20 },
+            { opacity: 1, x: 0, duration: 0.35, ease: "power3.out" },
+            "-=0.25",
+          )
+          // Magnitude dots fill left-to-right
+          .fromTo(
+            ".lu-modal__mag-dot",
+            { scale: 0, opacity: 0 },
+            {
+              scale: 1,
+              opacity: 1,
+              stagger: 0.07,
+              duration: 0.25,
+              ease: "back.out(3)",
+            },
+            "-=0.15",
+          )
+          // Divider wipes from left
+          .fromTo(
+            ".lu-modal__divider",
+            { scaleX: 0 },
+            {
+              scaleX: 1,
+              duration: 0.45,
+              ease: "power2.inOut",
+              transformOrigin: "left center",
+            },
+            "-=0.05",
+          )
+          // Bio blurs in
+          .fromTo(
+            ".lu-modal__bio",
+            { opacity: 0, y: 14, filter: "blur(5px)" },
+            {
+              opacity: 1,
+              y: 0,
+              filter: "blur(0px)",
+              duration: 0.5,
+              ease: "power2.out",
+            },
+            "-=0.1",
+          )
+          // Links pop up staggered
+          .fromTo(
+            ".lu-modal__link",
+            { opacity: 0, y: 16, scale: 0.88 },
+            {
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              stagger: 0.075,
+              duration: 0.38,
+              ease: "back.out(1.6)",
+            },
+            "-=0.15",
+          )
+          // Corner accents snap in
+          .fromTo(
+            [".lu-c--tl", ".lu-c--tr", ".lu-c--bl", ".lu-c--br"],
+            { opacity: 0, scale: 0 },
+            {
+              opacity: 1,
+              scale: 1,
+              stagger: 0.05,
+              duration: 0.22,
+              ease: "back.out(2.5)",
+            },
+            "-=0.2",
+          );
       }),
     );
   }, []);
@@ -488,16 +763,15 @@ export function Lineup({
     });
     tl.to(m, {
       opacity: 0,
-      scale: 0.92,
-      y: 20,
-      duration: 0.28,
+      scale: 0.9,
+      y: 24,
+      duration: 0.3,
       ease: "power2.in",
     });
     if (bd)
-      tl.to(bd, { opacity: 0, duration: 0.2, ease: "power2.in" }, "-=0.1");
+      tl.to(bd, { opacity: 0, duration: 0.22, ease: "power2.in" }, "-=0.12");
   }, []);
 
-  // Close modal on Escape
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") closeModal();
@@ -509,12 +783,10 @@ export function Lineup({
   const hovEx = hovered !== null ? exhibitors[hovered] : null;
   const modalEx = modal !== null ? exhibitors[modal] : null;
 
-  // Get tooltip position relative to map
   const tooltipStyle = useMemo(() => {
     if (hovered === null) return {};
     const pos = positions[hovered];
     if (!pos) return {};
-    // If star is in the right half, show tooltip to the left
     const leftSide = pos.x < 55;
     return {
       left: leftSide ? `calc(${pos.x}% + 32px)` : "auto",
@@ -525,44 +797,55 @@ export function Lineup({
 
   return (
     <section ref={sectionRef} id="lineup" className="lu">
-      {/* CSS-only starfield — much cheaper than canvas RAF */}
-      {/* <div className="lu__stars" aria-hidden="true">
-        {Array.from({ length: 60 }, (_, i) => (
-          <span
-            key={i}
-            className="lu__star"
-            style={{
-              left:            `${seededRand(i * 3)     * 100}%`,
-              top:             `${seededRand(i * 3 + 1) * 100}%`,
-              width:           `${seededRand(i * 3 + 2) * 2 + 0.5}px`,
-              height:          `${seededRand(i * 3 + 2) * 2 + 0.5}px`,
-              animationDelay:  `${seededRand(i * 7) * 4}s`,
-              animationDuration:`${seededRand(i * 5) * 3 + 2}s`,
-              opacity:          seededRand(i * 4) * 0.5 + 0.1,
-            }}
-          />
-        ))}
-      </div> */}
+      {/* Animated canvas background */}
+      <canvas ref={canvasRef} className="lu__space-canvas" aria-hidden="true" />
+
+      {/* Section bridge */}
+      <div ref={bridgeRef} className="lu__bridge" aria-hidden="true">
+        <div className="lu__bridge-inner">
+          <div className="lu__bridge-line" />
+          {BRIDGE_PARTICLES.map((p, i) => (
+            <div
+              key={i}
+              className="lu__bridge-particle"
+              style={{
+                left: p.left,
+                width: p.size,
+                height: p.size,
+                background: p.color,
+                animationDelay: p.delay,
+                animationDuration: p.dur,
+                boxShadow: `0 0 ${p.size * 2}px ${p.color}`,
+              }}
+            />
+          ))}
+          <div className="lu__bridge-label">— entering the lineup —</div>
+        </div>
+      </div>
+
       <div className="lu__nebula" aria-hidden="true" />
 
       {/* Header */}
-      <header className="lu__header">
-        <p className="lu-eyebrow">
+      <header ref={headerRef} className="lu__header">
+        <p className="lu-eyebrow" style={{ opacity: 0 }}>
           <span className="lu-pip" />
           EXHIBITOR CONSTELLATION · {exhibitors.length} STARS
           <span className="lu-pip" />
         </p>
-        <h2 className="lu-title">THE LINEUP</h2>
-        <p className="lu-sub">Hover to preview · click to explore.</p>
+        <h2 className="lu-title" style={{ opacity: 0 }}>
+          THE LINEUP
+        </h2>
+        <p className="lu-sub" style={{ opacity: 0 }}>
+          Hover to preview · click to explore.
+        </p>
       </header>
 
       {/* Map */}
       <div
         ref={mapRef}
         className="lu__map"
-        style={{ "--n": exhibitors.length } as React.CSSProperties}
+        style={{ "--n": exhibitors.length, opacity: 0 } as React.CSSProperties}
       >
-        {/* SVG constellation lines — GSAP animates stroke-dashoffset directly */}
         <svg ref={svgRef} className="lu__svg" aria-hidden="true">
           <defs>
             <filter id="lu-glow" x="-50%" y="-50%" width="200%" height="200%">
@@ -573,27 +856,21 @@ export function Lineup({
               </feMerge>
             </filter>
           </defs>
-
           {edges.map(([ai, bi], ei) => {
             const a = positions[ai],
               b = positions[bi];
             if (!a || !b) return null;
-
             const isLit =
               hovered === ai || hovered === bi || modal === ai || modal === bi;
-
-            // Positions in % — SVG uses percentage viewBox via CSS
             return (
               <g key={ei}>
-                {/* Glow layer */}
                 <line
                   x1={`${a.x}%`}
                   y1={`${a.y}%`}
                   x2={`${b.x}%`}
                   y2={`${b.y}%`}
-                  className={`lu-edge lu-edge--glow ${isLit ? "lu-edge--lit" : ""}`}
+                  className={`lu-edge lu-edge--glow${isLit ? " lu-edge--lit" : ""}`}
                 />
-                {/* Animated dashed line */}
                 <line
                   ref={(el) => {
                     svgLineRefs.current[ei] = el;
@@ -602,26 +879,24 @@ export function Lineup({
                   y1={`${a.y}%`}
                   x2={`${b.x}%`}
                   y2={`${b.y}%`}
-                  className={`lu-edge lu-edge--dash ${isLit ? "lu-edge--lit" : ""}`}
+                  className={`lu-edge lu-edge--dash${isLit ? " lu-edge--lit" : ""}`}
                 />
               </g>
             );
           })}
         </svg>
 
-        {/* Star nodes */}
         {exhibitors.map((e, i) => {
           const pos = positions[i] ?? { x: 50, y: 50 };
-          const isHov = hovered === i;
-          const isMod = modal === i;
-
+          const isHov = hovered === i,
+            isMod = modal === i;
           return (
             <button
               key={e.id}
               ref={(el) => {
                 nodeRefs.current[i] = el;
               }}
-              className={`lu-node ${isHov ? "lu-node--hov" : ""} ${isMod ? "lu-node--active" : ""}`}
+              className={`lu-node${isHov ? " lu-node--hov" : ""}${isMod ? " lu-node--active" : ""}`}
               style={
                 {
                   left: `${pos.x}%`,
@@ -634,28 +909,21 @@ export function Lineup({
               onClick={() => openModal(i)}
               aria-label={`View ${e.name}`}
             >
-              {/* Halo layers */}
               <span className="lu-node__outer" />
               <span className="lu-node__mid" />
               <span className="lu-node__core" />
-
-              {/* Spikes — CSS only, no conditional render for perf */}
               <span className="lu-node__spikes" aria-hidden="true">
                 <span className="s s--h" />
                 <span className="s s--v" />
                 <span className="s s--d1" />
                 <span className="s s--d2" />
               </span>
-
-              {/* Pulse rings when active */}
               {isMod && (
                 <>
                   <span className="lu-node__ring" />
                   <span className="lu-node__ring lu-node__ring--2" />
                 </>
               )}
-
-              {/* Name tag below */}
               <span className="lu-node__tag" aria-hidden="true">
                 <span className="lu-node__tag-id">{e.designation}</span>
                 <span className="lu-node__tag-name">{e.name}</span>
@@ -664,7 +932,7 @@ export function Lineup({
           );
         })}
 
-        {/* Hover tooltip — absolutely positioned inside map */}
+        {/* Tooltip */}
         <div
           ref={tooltipRef}
           className="lu-tooltip"
@@ -726,13 +994,13 @@ export function Lineup({
       </div>
 
       {drawn && modal === null && hovered === null && (
-        <p className="lu__hint">
+        <p className="lu__hint" style={{ opacity: 0 }}>
           <span className="lu-pip lu-pip--sm" /> Hover to preview · click to
           explore
         </p>
       )}
 
-      {/* Modal overlay */}
+      {/* Modal */}
       {modal !== null && modalEx && (
         <div className="lu-modal-backdrop" onClick={closeModal}>
           <div
@@ -741,106 +1009,90 @@ export function Lineup({
             style={{ "--mc": modalEx.color } as React.CSSProperties}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Scan line — animates across top on open */}
-            <div className="lu-modal__scan" />
-
-            {/* Close */}
-            <button
-              className="lu-modal__close"
-              onClick={closeModal}
-              aria-label="Close"
-            >
-              <i className="fa-solid fa-xmark" />
-            </button>
-
-            {/* Designation badge */}
-            <div className="lu-modal__desig-wrap">
-              <span className="lu-modal__desig-dot" />
-              <span className="lu-modal__desig">{modalEx.designation}</span>
-              <span className="lu-modal__desig-line" />
-            </div>
-
-            {/* Hero row: photo + identity */}
-            <div className="lu-modal__hero">
-              <div className="lu-modal__photo-wrap">
-                {imgFailed.has(modalEx.id) ? (
-                  <div
-                    className="lu-modal__avatar"
-                    style={{ "--mc": modalEx.color } as React.CSSProperties}
-                  >
-                    {modalEx.name
-                      .split(" ")
-                      .map((w: string) => w[0])
-                      .join("")
-                      .slice(0, 2)}
-                  </div>
-                ) : (
-                  <img
-                    src={modalEx.photo}
-                    alt={modalEx.name}
-                    className="lu-modal__photo"
-                    onError={() =>
-                      setImgFailed((s) => new Set([...s, modalEx.id]))
-                    }
-                  />
-                )}
-                {/* Orbit rings */}
-                <div className="lu-modal__orbit lu-modal__orbit--1" />
-                <div className="lu-modal__orbit lu-modal__orbit--2" />
-                {/* Cross-hair spikes */}
-                <div className="lu-modal__crosshair" aria-hidden="true">
-                  <span className="lu-modal__ch-h" />
-                  <span className="lu-modal__ch-v" />
-                </div>
+            {/* Scrollbar is INSIDE this inner div — outer keeps border-radius clean */}
+            <div className="lu-modal__inner">
+              <div className="lu-modal__scan" />
+              <button
+                className="lu-modal__close"
+                onClick={closeModal}
+                aria-label="Close"
+              >
+                <i className="fa-solid fa-xmark" />
+              </button>
+              <div className="lu-modal__desig-wrap">
+                <span className="lu-modal__desig-dot" />
+                <span className="lu-modal__desig">{modalEx.designation}</span>
+                <span className="lu-modal__desig-line" />
               </div>
-
-              <div className="lu-modal__identity">
-                <h3 className="lu-modal__name">{modalEx.name}</h3>
-                <p className="lu-modal__role">{modalEx.role}</p>
-                {/* Stellar magnitude rating */}
-                <div className="lu-modal__mag" aria-hidden="true">
-                  {Array.from({ length: 5 }, (_, mi) => (
-                    <span
-                      key={mi}
-                      className={`lu-modal__mag-dot ${mi < 4 ? "lu-modal__mag-dot--on" : ""}`}
-                      style={
-                        {
-                          animationDelay: `${mi * 0.08}s`,
-                        } as React.CSSProperties
+              <div className="lu-modal__hero">
+                <div className="lu-modal__photo-wrap">
+                  {imgFailed.has(modalEx.id) ? (
+                    <div
+                      className="lu-modal__avatar"
+                      style={{ "--mc": modalEx.color } as React.CSSProperties}
+                    >
+                      {modalEx.name
+                        .split(" ")
+                        .map((w: string) => w[0])
+                        .join("")
+                        .slice(0, 2)}
+                    </div>
+                  ) : (
+                    <img
+                      src={modalEx.photo}
+                      alt={modalEx.name}
+                      className="lu-modal__photo"
+                      onError={() =>
+                        setImgFailed((s) => new Set([...s, modalEx.id]))
                       }
                     />
-                  ))}
-                  <span className="lu-modal__mag-label">Stellar Magnitude</span>
+                  )}
+                  <div className="lu-modal__orbit lu-modal__orbit--1" />
+                  <div className="lu-modal__orbit lu-modal__orbit--2" />
+                  <div className="lu-modal__crosshair" aria-hidden="true">
+                    <span className="lu-modal__ch-h" />
+                    <span className="lu-modal__ch-v" />
+                  </div>
+                </div>
+                <div className="lu-modal__identity">
+                  <h3 className="lu-modal__name">{modalEx.name}</h3>
+                  <p className="lu-modal__role">{modalEx.role}</p>
+                  <div className="lu-modal__mag" aria-hidden="true">
+                    {Array.from({ length: 5 }, (_, mi) => (
+                      <span
+                        key={mi}
+                        className={`lu-modal__mag-dot${mi < 4 ? " lu-modal__mag-dot--on" : ""}`}
+                      />
+                    ))}
+                    <span className="lu-modal__mag-label">
+                      Stellar Magnitude
+                    </span>
+                  </div>
                 </div>
               </div>
+              <div className="lu-modal__divider" />
+              <p className="lu-modal__bio">{modalEx.bio}</p>
+              <div className="lu-modal__links">
+                {modalEx.links.map(
+                  (lk: { label: string; href: string; faIcon: string }) => (
+                    <a
+                      key={lk.label}
+                      href={lk.href}
+                      className="lu-modal__link"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ "--lc": modalEx.color } as React.CSSProperties}
+                    >
+                      <i className={`${lk.faIcon} lu-modal__link-icon`} />
+                      <span>{lk.label}</span>
+                    </a>
+                  ),
+                )}
+              </div>
             </div>
+            {/* end lu-modal__inner */}
 
-            {/* Divider */}
-            <div className="lu-modal__divider" />
-
-            {/* Bio */}
-            <p className="lu-modal__bio">{modalEx.bio}</p>
-
-            {/* Links */}
-            <div className="lu-modal__links">
-              {modalEx.links.map(
-                (lk: { label: string; href: string; faIcon: string }) => (
-                  <a
-                    key={lk.label}
-                    href={lk.href}
-                    className="lu-modal__link"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ "--lc": modalEx.color } as React.CSSProperties}
-                  >
-                    <i className={`${lk.faIcon} lu-modal__link-icon`} />
-                    <span>{lk.label}</span>
-                  </a>
-                ),
-              )}
-            </div>
-
-            {/* Corner accents */}
+            {/* Corner accents sit outside the scroll area, attached to the outer shell */}
             <span className="lu-c lu-c--tl" />
             <span className="lu-c lu-c--tr" />
             <span className="lu-c lu-c--bl" />

@@ -5,8 +5,8 @@
   padding: 8rem 0 10rem;
 }
 
-/* ── Canvas layers ──────────────────────────────────────────────── */
-.about-stars-canvas,
+/* Canvas layers */
+.about-space-canvas,
 .about-constellation-canvas,
 .about-trail-canvas {
   position: absolute;
@@ -15,33 +15,70 @@
   height: 100%;
   pointer-events: none;
 }
-.about-stars-canvas         { z-index: 0; opacity: 0.70; }
-.about-constellation-canvas { z-index: 1; }
+.about-space-canvas         { z-index: 0; opacity: 0.90; }
+.about-constellation-canvas { z-index: 1; opacity: 0.85; }
 .about-trail-canvas         { z-index: 2; }
 
-/* ── Nebula glows ───────────────────────────────────────────────── */
+/* Nebula glows */
 .about-glow {
   position: absolute;
   border-radius: 50%;
   pointer-events: none;
-  filter: blur(80px);
+  filter: blur(90px);
 }
 .about-glow--r {
   top: 5%; right: -8%;
-  width: 600px; height: 600px;
+  width: 650px; height: 650px;
   background: radial-gradient(circle,
-    rgba(206,48,114,0.10) 0%, rgba(104,74,130,0.07) 40%, transparent 70%);
+    rgba(206,48,114,0.13) 0%, rgba(104,74,130,0.08) 40%, transparent 70%);
   z-index: 0;
+  animation: glow-drift-r 12s ease-in-out infinite alternate;
 }
 .about-glow--l {
   bottom: 15%; left: -5%;
-  width: 450px; height: 450px;
+  width: 500px; height: 500px;
   background: radial-gradient(circle,
-    rgba(53,122,161,0.09) 0%, rgba(69,48,118,0.06) 45%, transparent 70%);
+    rgba(53,122,161,0.12) 0%, rgba(69,48,118,0.07) 45%, transparent 70%);
   z-index: 0;
+  animation: glow-drift-l 15s ease-in-out infinite alternate;
+}
+.about-glow--center {
+  top: 40%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 800px; height: 300px;
+  background: radial-gradient(ellipse,
+    rgba(120,50,180,0.06) 0%, rgba(80,30,140,0.03) 50%, transparent 75%);
+  z-index: 0;
+  animation: glow-drift-c 20s ease-in-out infinite alternate;
 }
 
-/* ── Layout ─────────────────────────────────────────────────────── */
+@keyframes glow-drift-r {
+  from { transform: translate(0, 0) scale(1);    }
+  to   { transform: translate(-30px, 40px) scale(1.12); }
+}
+@keyframes glow-drift-l {
+  from { transform: translate(0, 0) scale(1);    }
+  to   { transform: translate(25px, -35px) scale(1.08); }
+}
+@keyframes glow-drift-c {
+  from { opacity: 0.6; transform: translate(-50%, -50%) scale(1);    }
+  to   { opacity: 1.0; transform: translate(-50%, -50%) scale(1.15); }
+}
+
+/* Margin star glyphs */
+.about-glyph {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+  /* float animation added by GSAP */
+}
+.about-glyph svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Layout */
 .about-inner {
   position: relative;
   z-index: 3;
@@ -50,7 +87,7 @@
   padding: 0 3.5rem;
 }
 
-/* ── Eyebrow ────────────────────────────────────────────────────── */
+/* Eyebrow */
 .about-eyebrow {
   display: inline-flex;
   align-items: center;
@@ -71,7 +108,7 @@
   opacity: 0.5;
 }
 
-/* ── Heading ────────────────────────────────────────────────────── */
+/* Heading */
 .about-head { margin-bottom: 5rem; }
 .about-title {
   font-family: var(--font-display);
@@ -91,7 +128,7 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-   padding-right: 0.08em;
+  padding-right: 0.08em;
   padding-bottom: 0.05em;
 }
 .about-rule {
@@ -100,7 +137,7 @@
   border-radius: 1px;
 }
 
-/* ── Manifesto ──────────────────────────────────────────────────── */
+/* Manifesto */
 .about-manifesto {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -148,9 +185,7 @@
   margin: 0;
 }
 
-/* ══════════════════════════════════════════════════════════════════
-   CTA BUTTON — quiet star aesthetic, fits the section
-   ══════════════════════════════════════════════════════════════════ */
+/* CTA Button */
 .about-cta-btn {
   position: relative;
   display: inline-flex;
@@ -169,23 +204,12 @@
   border-color: rgba(200, 160, 255, 0.50);
   background: rgba(160, 100, 220, 0.07);
 }
-
-/* Tiny 4-point star icon — pure CSS, no emoji */
 .about-cta-btn::before {
   content: '';
   display: block;
   flex-shrink: 0;
-  width: 10px;
-  height: 10px;
-  background:
-    /* vertical arm */
-    linear-gradient(to bottom, transparent 30%, rgba(220,180,255,0.90) 30%, rgba(220,180,255,0.90) 70%, transparent 70%),
-    /* horizontal arm */
-    linear-gradient(to right,  transparent 30%, rgba(220,180,255,0.90) 30%, rgba(220,180,255,0.90) 70%, transparent 70%);
-  clip-path: polygon(
-    50% 0%, 55% 42%, 100% 50%, 55% 58%,
-    50% 100%, 45% 58%, 0% 50%, 45% 42%
-  );
+  width: 10px; height: 10px;
+  clip-path: polygon(50% 0%,55% 42%,100% 50%,55% 58%,50% 100%,45% 58%,0% 50%,45% 42%);
   background-color: rgba(220, 180, 255, 0.85);
   transition: background-color 0.25s, transform 0.35s ease;
 }
@@ -193,13 +217,9 @@
   background-color: #d0a0ff;
   transform: rotate(20deg) scale(1.15);
 }
-
-/* Shimmer sweep on hover only */
 .cta-shimmer {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(105deg,
-    transparent 30%, rgba(200,160,255,0.10) 50%, transparent 70%);
+  position: absolute; inset: 0;
+  background: linear-gradient(105deg, transparent 30%, rgba(200,160,255,0.10) 50%, transparent 70%);
   background-size: 220% 100%;
   background-position: 200% 0;
   pointer-events: none;
@@ -209,21 +229,16 @@
   background-position: -40% 0;
   transition: background-position 0.50s ease;
 }
-
-/* Label */
 .cta-label {
   font-family: var(--font-ui);
-  font-size: 0.70rem;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: rgba(210, 175, 255, 0.85);
-  white-space: nowrap;
+  font-size: 0.70rem; font-weight: 600;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: rgba(210, 175, 255, 0.85); white-space: nowrap;
   transition: color 0.25s ease;
 }
 .about-cta-btn:hover .cta-label { color: #ddc8ff; }
 
-/* ── Fields grid ────────────────────────────────────────────────── */
+/* Fields grid */
 .about-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -266,7 +281,7 @@
   color: var(--text-3); line-height: 1.45;
 }
 
-/* ── Quote ──────────────────────────────────────────────────────── */
+/* Quote */
 .about-quote-wrap {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -286,7 +301,7 @@
 }
 .about-quote strong { font-weight: 700; color: var(--text-1); font-style: italic; }
 
-/* ── Stats ──────────────────────────────────────────────────────── */
+/* Stats */
 .about-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -321,7 +336,7 @@
   letter-spacing: 0.22em; text-transform: uppercase; color: var(--text-3);
 }
 
-/* ── Closing ────────────────────────────────────────────────────── */
+/* Closing */
 .about-closing {
   text-align: center; padding: 2.5rem 3.5rem;
   border: 1px solid rgba(103,137,163,0.10);
@@ -338,7 +353,7 @@
 }
 .about-closing em { font-style: italic; color: var(--c-bright-magenta); font-weight: 500; }
 
-/* ── Responsive ─────────────────────────────────────────────────── */
+/* Responsive */
 @media (max-width: 1100px) { .about-inner { padding: 0 2.5rem; } }
 @media (max-width: 900px) {
   .about-manifesto { grid-template-columns: 1fr; gap: 2.5rem 0; }
@@ -348,6 +363,7 @@
   .about-quote-wrap { grid-template-columns: 1fr; gap: 1.5rem; }
   .about-quote-line { display: none; }
   .about-quote { max-width: 100%; }
+  .about-glyph { display: none; } /* glyphs don't fit on mobile */
 }
 @media (max-width: 600px) {
   .about { padding: 5rem 0 7rem; }

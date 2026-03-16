@@ -1,0 +1,15 @@
+.rgate-wrap {
+  position: fixed;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 899; /* below rocket so it flies into the gate */
+}
+
+.rgate-img {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  height: auto;
+  pointer-events: none;
+  user-select: none;
+}

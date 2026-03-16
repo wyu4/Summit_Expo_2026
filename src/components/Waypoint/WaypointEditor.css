@@ -94,7 +94,7 @@
   dominant-baseline: middle;
 }
 
-/* ── Draggable panel ─────────────────────────────────────────────── */
+/* Draggable panel */
 .wpe-panel {
   position: fixed;
   z-index: 99990;

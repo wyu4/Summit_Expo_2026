@@ -3,8 +3,7 @@ import { Hero } from "./components/Hero/Hero";
 import { Lineup } from "./components/Lineup/Lineup";
 import { Cursor } from "./components/Cursor/Cursor";
 import { About } from "./components/About/About";
-import { WaypointEditor } from "./components/Waypoint/WaypointEditor";
-import { FAQ } from "./components/FAQ/FAQ";
+// import { WaypointEditor } from "./components/Waypoint/WaypointEditor";
 export default function App() {
   return (
     <>
@@ -14,7 +13,7 @@ export default function App() {
 
       {/* Rocket flies in page MARGINS, position:fixed, never clips content */}
       {/* <RocketPath /> */}
-      <WaypointEditor />
+      {/* <WaypointEditor /> */}
 
       {/* Fixed nav — hidden until hero scroll ends */}
       <Nav />
