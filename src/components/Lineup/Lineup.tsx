@@ -5,6 +5,11 @@ import "./Lineup.css";
 
 gsap.registerPlugin(ScrollTrigger);
 
+export interface ProjectPhoto {
+  src: string;
+  caption?: string;
+}
+
 export interface Exhibitor {
   id: string;
   name: string;
@@ -14,6 +19,7 @@ export interface Exhibitor {
   links: { label: string; href: string; faIcon: string }[];
   designation: string;
   color: string;
+  projectPhotos?: ProjectPhoto[];
 }
 
 export const DEMO_EXHIBITORS: Exhibitor[] = [
@@ -30,6 +36,14 @@ export const DEMO_EXHIBITORS: Exhibitor[] = [
     ],
     designation: "KSE-01",
     color: "#CE3072",
+    projectPhotos: [
+      { src: "/projects/aria-1.png", caption: "Spectrometer prototype" },
+      {
+        src: "/projects/aria-2.png",
+        caption: "Stellar classification results",
+      },
+      { src: "/projects/aria-3.png", caption: "Lab setup" },
+    ],
   },
   {
     id: "02",
@@ -44,6 +58,10 @@ export const DEMO_EXHIBITORS: Exhibitor[] = [
     ],
     designation: "KSE-02",
     color: "#6789A3",
+    projectPhotos: [
+      { src: "/projects/marcus-1.png", caption: "Rover assembly" },
+      { src: "/projects/marcus-2.png", caption: "Field test" },
+    ],
   },
   {
     id: "03",
@@ -58,6 +76,11 @@ export const DEMO_EXHIBITORS: Exhibitor[] = [
     ],
     designation: "KSE-03",
     color: "#9B5BBF",
+    projectPhotos: [
+      { src: "/projects/priya-1.png", caption: "Biosensor strips" },
+      { src: "/projects/priya-2.png", caption: "Water sample testing" },
+      { src: "/projects/priya-3.png", caption: "Results dashboard" },
+    ],
   },
   {
     id: "04",
@@ -72,6 +95,10 @@ export const DEMO_EXHIBITORS: Exhibitor[] = [
     ],
     designation: "KSE-04",
     color: "#CE3072",
+    projectPhotos: [
+      { src: "/projects/liam-1.png", caption: "Model architecture" },
+      { src: "/projects/liam-2.png", caption: "Prediction overlay" },
+    ],
   },
   {
     id: "05",
@@ -86,6 +113,10 @@ export const DEMO_EXHIBITORS: Exhibitor[] = [
     ],
     designation: "KSE-05",
     color: "#6789A3",
+    projectPhotos: [
+      { src: "/projects/sofia-1.png", caption: "Aerogel sample" },
+      { src: "/projects/sofia-2.png", caption: "Thermal test chamber" },
+    ],
   },
   {
     id: "06",
@@ -100,10 +131,17 @@ export const DEMO_EXHIBITORS: Exhibitor[] = [
     ],
     designation: "KSE-06",
     color: "#9B5BBF",
+    projectPhotos: [
+      { src: "/projects/jordan-1.png", caption: "Sensor deployment" },
+      { src: "/projects/jordan-2.png", caption: "Live dashboard" },
+      { src: "/projects/jordan-3.png", caption: "River sampling" },
+    ],
   },
+
+  
 ];
 
-//  Layout engine 
+// ── Layout engine ──────────────────────────────────────────────────
 interface StarPos {
   x: number;
   y: number;
@@ -171,7 +209,7 @@ function buildEdges(pos: StarPos[]): [number, number][] {
   return edges;
 }
 
-//  Animated space canvas 
+// ── Space canvas ───────────────────────────────────────────────────
 function useSpaceCanvas(ref: React.RefObject<HTMLCanvasElement | null>) {
   useEffect(() => {
     const canvas = ref.current;
@@ -209,7 +247,6 @@ function useSpaceCanvas(ref: React.RefObject<HTMLCanvasElement | null>) {
       t = 0,
       scrollY = 0,
       lastScrollY = 0;
-
     const resize = () => {
       canvas.width = canvas.offsetWidth;
       canvas.height = canvas.offsetHeight;
@@ -240,7 +277,6 @@ function useSpaceCanvas(ref: React.RefObject<HTMLCanvasElement | null>) {
       scrollY = window.scrollY;
     };
     window.addEventListener("scroll", onScroll, { passive: true });
-
     const spawnShooter = () => {
       const W = canvas.width,
         fromRight = Math.random() < 0.5;
@@ -262,7 +298,6 @@ function useSpaceCanvas(ref: React.RefObject<HTMLCanvasElement | null>) {
     };
     let shooterTimer = 0,
       SHOOTER_INTERVAL = 200 + Math.random() * 200;
-
     const loop = () => {
       t += 0.011;
       const sd = (scrollY - lastScrollY) * 0.5;
@@ -346,7 +381,297 @@ function useSpaceCanvas(ref: React.RefObject<HTMLCanvasElement | null>) {
   }, [ref]);
 }
 
-//  Bridge particles data 
+// ── Project Photo Carousel ─────────────────────────────────────────
+function ProjectCarousel({
+  photos,
+  color,
+}: {
+  photos: ProjectPhoto[];
+  color: string;
+}) {
+  const [current, setCurrent] = useState(0);
+  const [imgErrors, setImgErrors] = useState<Set<number>>(new Set());
+  const trackRef = useRef<HTMLDivElement>(null);
+  const captionRef = useRef<HTMLParagraphElement>(null);
+  const dotsRef = useRef<HTMLDivElement>(null);
+  const isAnimating = useRef(false);
+
+  const goTo = useCallback(
+    (next: number, dir: 1 | -1) => {
+      if (isAnimating.current || next === current) return;
+      isAnimating.current = true;
+
+      const track = trackRef.current;
+      const caption = captionRef.current;
+      if (!track) return;
+
+      const slides = track.querySelectorAll<HTMLDivElement>(
+        ".lu-carousel__slide",
+      );
+      const dots =
+        dotsRef.current?.querySelectorAll<HTMLSpanElement>(".lu-carousel__dot");
+
+      // const tl = gsap.timeline({
+      //   onComplete: () => {
+      //     setCurrent(next);
+      //     isAnimating.current = false;
+      //   },
+      // });
+
+      const tl = gsap.timeline({
+        onComplete: () => {
+          isAnimating.current = false;
+        },
+      });
+
+      // Outgoing slide
+      // tl.to(slides[current], {
+      //   x: dir * -60,
+      //   opacity: 0,
+      //   scale: 0.92,
+      //   filter: "blur(4px)",
+      //   duration: 0.32,
+      //   ease: "power2.in",
+      // });
+
+      // Caption fades out
+      // if (caption) tl.to(caption, { opacity: 0, y: -8, duration: 0.2, ease: "power2.in" }, 0);
+
+      tl.to(slides[current], {
+        x: dir * -60,
+        opacity: 0,
+        scale: 0.92,
+        filter: "blur(4px)",
+        duration: 0.32,
+        ease: "power2.in",
+      });
+      if (caption)
+        tl.to(
+          caption,
+          { opacity: 0, y: -8, duration: 0.2, ease: "power2.in" },
+          0,
+        );
+
+      tl.call(
+        () => {
+          setCurrent(next);
+        },
+        [],
+        "+=0",
+      );
+
+      // Incoming slide
+      tl.fromTo(
+        slides[next],
+        { x: dir * 60, opacity: 0, scale: 0.92, filter: "blur(4px)" },
+        {
+          x: 0,
+          opacity: 1,
+          scale: 1,
+          filter: "blur(0px)",
+          duration: 0.4,
+          ease: "power3.out",
+        },
+        "-=0.1",
+      );
+
+      // Caption blurs in
+      if (caption) {
+        tl.fromTo(
+          caption,
+          { opacity: 0, y: 8, filter: "blur(3px)" },
+          {
+            opacity: 1,
+            y: 0,
+            filter: "blur(0px)",
+            duration: 0.35,
+            ease: "power2.out",
+          },
+          "-=0.25",
+        );
+      }
+
+      // Active dot bounces
+      if (dots) {
+        tl.to(
+          dots[current],
+          { scale: 0.6, duration: 0.15, ease: "power2.in" },
+          0,
+        );
+        tl.to(
+          dots[next],
+          { scale: 1.4, duration: 0.2, ease: "back.out(3)" },
+          "-=0.15",
+        );
+        tl.to(dots[next], { scale: 1.0, duration: 0.15, ease: "power2.out" });
+      }
+    },
+    [current],
+  );
+
+  const prev = () => goTo((current - 1 + photos.length) % photos.length, -1);
+  const next = () => goTo((current + 1) % photos.length, 1);
+
+  // Keyboard nav when carousel is focused
+  const onKey = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "ArrowLeft") prev();
+      if (e.key === "ArrowRight") next();
+    },
+    [current],
+  );
+
+  // Initial entrance animation
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const slides = track.querySelectorAll<HTMLDivElement>(
+      ".lu-carousel__slide",
+    );
+
+    // Hide all non-current slides
+    slides.forEach((s, i) => {
+      gsap.set(s, { opacity: i === 0 ? 1 : 0, x: i === 0 ? 0 : 60 });
+    });
+
+    // Entrance: the first slide and the whole carousel
+    gsap.fromTo(
+      track,
+      { opacity: 0, y: 20 },
+      { opacity: 1, y: 0, duration: 0.5, ease: "power3.out", delay: 0.1 },
+    );
+    gsap.fromTo(
+      ".lu-carousel__controls",
+      { opacity: 0, y: 10 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.4,
+        ease: "power2.out",
+        delay: 0.3,
+        stagger: 0.05,
+      },
+    );
+  }, []);
+
+  if (!photos.length) return null;
+
+  return (
+    <div
+      className="lu-carousel"
+      onKeyDown={onKey}
+      tabIndex={0}
+      role="region"
+      aria-label="Project photos"
+    >
+      {/* Section label */}
+      <div className="lu-carousel__header">
+        <span className="lu-carousel__label">◈ Project Photos</span>
+        <span className="lu-carousel__counter">
+          {current + 1} / {photos.length}
+        </span>
+      </div>
+
+      {/* Track */}
+      <div
+        ref={trackRef}
+        className="lu-carousel__track"
+        style={{ "--cc": color } as React.CSSProperties}
+      >
+        {photos.map((p, i) => (
+          <div
+            key={i}
+            className="lu-carousel__slide"
+            style={{
+              opacity: i === current ? 1 : 0,
+              pointerEvents: i === current ? "auto" : "none",
+            }}
+            aria-hidden={i !== current}
+          >
+            {imgErrors.has(i) ? (
+              <div
+                className="lu-carousel__placeholder"
+                style={{ "--cc": color } as React.CSSProperties}
+              >
+                <i className="fa-solid fa-image" />
+                <span>{p.caption ?? "Project photo"}</span>
+              </div>
+            ) : (
+              <img
+                src={p.src}
+                alt={p.caption ?? `Project photo ${i + 1}`}
+                className="lu-carousel__img"
+                onError={() => setImgErrors((s) => new Set([...s, i]))}
+              />
+            )}
+          </div>
+        ))}
+
+        {/* Corner accents on the image frame */}
+        <span
+          className="lu-carousel__corner lu-carousel__corner--tl"
+          style={{ "--cc": color } as React.CSSProperties}
+        />
+        <span
+          className="lu-carousel__corner lu-carousel__corner--tr"
+          style={{ "--cc": color } as React.CSSProperties}
+        />
+        <span
+          className="lu-carousel__corner lu-carousel__corner--bl"
+          style={{ "--cc": color } as React.CSSProperties}
+        />
+        <span
+          className="lu-carousel__corner lu-carousel__corner--br"
+          style={{ "--cc": color } as React.CSSProperties}
+        />
+      </div>
+
+      {/* Caption */}
+      {photos[current]?.caption && (
+        <p ref={captionRef} className="lu-carousel__caption">
+          {photos[current].caption}
+        </p>
+      )}
+
+      {/* Controls */}
+      {photos.length > 1 && (
+        <div className="lu-carousel__controls">
+          <button
+            className="lu-carousel__btn"
+            onClick={prev}
+            aria-label="Previous photo"
+            style={{ "--cc": color } as React.CSSProperties}
+          >
+            <i className="fa-solid fa-chevron-left" />
+          </button>
+
+          <div ref={dotsRef} className="lu-carousel__dots">
+            {photos.map((_, i) => (
+              <span
+                key={i}
+                className={`lu-carousel__dot${i === current ? " lu-carousel__dot--active" : ""}`}
+                style={{ "--cc": color } as React.CSSProperties}
+                onClick={() => goTo(i, i > current ? 1 : -1)}
+                role="button"
+                aria-label={`Go to photo ${i + 1}`}
+              />
+            ))}
+          </div>
+
+          <button
+            className="lu-carousel__btn"
+            onClick={next}
+            aria-label="Next photo"
+            style={{ "--cc": color } as React.CSSProperties}
+          >
+            <i className="fa-solid fa-chevron-right" />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const BRIDGE_PARTICLES = Array.from({ length: 18 }, (_, i) => ({
   left: `${5 + seededRand(i * 7) * 90}%`,
   delay: `${seededRand(i * 3) * 4}s`,
@@ -360,7 +685,7 @@ const BRIDGE_PARTICLES = Array.from({ length: 18 }, (_, i) => ({
         : "rgba(80,140,255,0.55)",
 }));
 
-//  Component 
+// ── Main component ─────────────────────────────────────────────────
 export function Lineup({
   exhibitors = DEMO_EXHIBITORS,
 }: {
@@ -390,10 +715,9 @@ export function Lineup({
 
   useSpaceCanvas(canvasRef);
 
-  //  Entrance animations 
+  // ── Entrance animations ────────────────────────────────────────
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Bridge entrance — scan line wipes across on scroll-into-view
       ScrollTrigger.create({
         trigger: bridgeRef.current,
         start: "top 90%",
@@ -434,7 +758,6 @@ export function Lineup({
         },
       });
 
-      // Header — eyebrow slides up, title scales in with a character-by-character feel
       ScrollTrigger.create({
         trigger: headerRef.current,
         start: "top 80%",
@@ -474,7 +797,6 @@ export function Lineup({
         },
       });
 
-      // Map container itself slides up
       ScrollTrigger.create({
         trigger: mapRef.current,
         start: "top 85%",
@@ -490,7 +812,6 @@ export function Lineup({
         },
       });
 
-      // Star nodes burst in from centre with stagger
       const nodes = nodeRefs.current.filter(Boolean);
       gsap.set(nodes, { scale: 0, opacity: 0 });
 
@@ -498,7 +819,6 @@ export function Lineup({
         trigger: mapRef.current,
         start: "top 75%",
         onEnter() {
-          // SVG edges draw on first
           const lines = svgLineRefs.current.filter(Boolean);
           lines.forEach((l) => {
             if (!l) return;
@@ -506,7 +826,6 @@ export function Lineup({
             l.style.strokeDasharray = `${len}`;
             l.style.strokeDashoffset = `${len}`;
           });
-
           gsap.to(nodes, {
             scale: 1,
             opacity: 1,
@@ -543,7 +862,6 @@ export function Lineup({
         },
       });
 
-      // Hint line at bottom
       ScrollTrigger.create({
         trigger: ".lu__hint",
         start: "top 95%",
@@ -556,11 +874,9 @@ export function Lineup({
         },
       });
     }, sectionRef);
-
     return () => ctx.revert();
   }, []);
 
-  //  Hover tooltip 
   const handleMouseEnter = useCallback((idx: number) => {
     setHovered(idx);
     const tip = tooltipRef.current;
@@ -587,7 +903,6 @@ export function Lineup({
     });
   }, []);
 
-  //  Modal 
   const openModal = useCallback((idx: number) => {
     setModal(idx);
     document.body.style.overflow = "hidden";
@@ -595,9 +910,7 @@ export function Lineup({
       requestAnimationFrame(() => {
         const m = modalRef.current;
         if (!m) return;
-        const inner = m.querySelector(".lu-modal__inner") as HTMLElement | null;
         const bd = m.closest(".lu-modal-backdrop") as HTMLElement | null;
-
         if (bd)
           gsap.fromTo(
             bd,
@@ -618,26 +931,22 @@ export function Lineup({
         );
 
         const tl = gsap.timeline({ delay: 0.12 });
-        tl
-          // Scan line sweeps across
-          .fromTo(
-            ".lu-modal__scan",
-            { scaleX: 0 },
-            {
-              scaleX: 1,
-              duration: 0.6,
-              ease: "power3.out",
-              transformOrigin: "left center",
-            },
-          )
-          // Designation badge slides in from left
+        tl.fromTo(
+          ".lu-modal__scan",
+          { scaleX: 0 },
+          {
+            scaleX: 1,
+            duration: 0.6,
+            ease: "power3.out",
+            transformOrigin: "left center",
+          },
+        )
           .fromTo(
             ".lu-modal__desig-wrap",
             { opacity: 0, x: -24 },
             { opacity: 1, x: 0, duration: 0.4, ease: "power3.out" },
             "-=0.35",
           )
-          // Photo pops in with rotation
           .fromTo(
             ".lu-modal__photo-wrap",
             { scale: 0.5, opacity: 0, rotation: -12 },
@@ -650,7 +959,6 @@ export function Lineup({
             },
             "-=0.2",
           )
-          // Orbit rings pulse out one after another
           .fromTo(
             ".lu-modal__orbit",
             { scale: 0.3, opacity: 0 },
@@ -663,7 +971,6 @@ export function Lineup({
             },
             "-=0.25",
           )
-          // Name + role cascade from right
           .fromTo(
             ".lu-modal__name",
             { opacity: 0, x: 28, filter: "blur(4px)" },
@@ -682,7 +989,6 @@ export function Lineup({
             { opacity: 1, x: 0, duration: 0.35, ease: "power3.out" },
             "-=0.25",
           )
-          // Magnitude dots fill left-to-right
           .fromTo(
             ".lu-modal__mag-dot",
             { scale: 0, opacity: 0 },
@@ -695,7 +1001,6 @@ export function Lineup({
             },
             "-=0.15",
           )
-          // Divider wipes from left
           .fromTo(
             ".lu-modal__divider",
             { scaleX: 0 },
@@ -707,7 +1012,6 @@ export function Lineup({
             },
             "-=0.05",
           )
-          // Bio blurs in
           .fromTo(
             ".lu-modal__bio",
             { opacity: 0, y: 14, filter: "blur(5px)" },
@@ -720,7 +1024,13 @@ export function Lineup({
             },
             "-=0.1",
           )
-          // Links pop up staggered
+          // Carousel section slides up
+          .fromTo(
+            ".lu-carousel",
+            { opacity: 0, y: 24 },
+            { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" },
+            "-=0.1",
+          )
           .fromTo(
             ".lu-modal__link",
             { opacity: 0, y: 16, scale: 0.88 },
@@ -732,9 +1042,8 @@ export function Lineup({
               duration: 0.38,
               ease: "back.out(1.6)",
             },
-            "-=0.15",
+            "-=0.2",
           )
-          // Corner accents snap in
           .fromTo(
             [".lu-c--tl", ".lu-c--tr", ".lu-c--bl", ".lu-c--br"],
             { opacity: 0, scale: 0 },
@@ -797,10 +1106,8 @@ export function Lineup({
 
   return (
     <section ref={sectionRef} id="lineup" className="lu">
-      {/* Animated canvas background */}
       <canvas ref={canvasRef} className="lu__space-canvas" aria-hidden="true" />
 
-      {/* Section bridge */}
       <div ref={bridgeRef} className="lu__bridge" aria-hidden="true">
         <div className="lu__bridge-inner">
           <div className="lu__bridge-line" />
@@ -825,7 +1132,6 @@ export function Lineup({
 
       <div className="lu__nebula" aria-hidden="true" />
 
-      {/* Header */}
       <header ref={headerRef} className="lu__header">
         <p className="lu-eyebrow" style={{ opacity: 0 }}>
           <span className="lu-pip" />
@@ -840,7 +1146,6 @@ export function Lineup({
         </p>
       </header>
 
-      {/* Map */}
       <div
         ref={mapRef}
         className="lu__map"
@@ -932,7 +1237,6 @@ export function Lineup({
           );
         })}
 
-        {/* Tooltip */}
         <div
           ref={tooltipRef}
           className="lu-tooltip"
@@ -1000,7 +1304,6 @@ export function Lineup({
         </p>
       )}
 
-      {/* Modal */}
       {modal !== null && modalEx && (
         <div className="lu-modal-backdrop" onClick={closeModal}>
           <div
@@ -1009,7 +1312,6 @@ export function Lineup({
             style={{ "--mc": modalEx.color } as React.CSSProperties}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Scrollbar is INSIDE this inner div — outer keeps border-radius clean */}
             <div className="lu-modal__inner">
               <div className="lu-modal__scan" />
               <button
@@ -1072,6 +1374,16 @@ export function Lineup({
               </div>
               <div className="lu-modal__divider" />
               <p className="lu-modal__bio">{modalEx.bio}</p>
+
+              {/* ── Project photos carousel ── */}
+              {modalEx.projectPhotos && modalEx.projectPhotos.length > 0 && (
+                <ProjectCarousel
+                  key={modalEx.id}
+                  photos={modalEx.projectPhotos}
+                  color={modalEx.color}
+                />
+              )}
+
               <div className="lu-modal__links">
                 {modalEx.links.map(
                   (lk: { label: string; href: string; faIcon: string }) => (
@@ -1090,9 +1402,6 @@ export function Lineup({
                 )}
               </div>
             </div>
-            {/* end lu-modal__inner */}
-
-            {/* Corner accents sit outside the scroll area, attached to the outer shell */}
             <span className="lu-c lu-c--tl" />
             <span className="lu-c lu-c--tr" />
             <span className="lu-c lu-c--bl" />

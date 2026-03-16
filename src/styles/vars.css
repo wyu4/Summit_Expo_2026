@@ -22,6 +22,7 @@
   --c-light-magenta: #b24d81;
   --c-sad-murky: #ba9ea7;
   --c-bright-magenta: #ce3072;
+  --cc: #63b4f6; /* used for color-mix accents, can be overridden by components */
 
   /* Backgrounds */
   --bg: #06040f; /* slightly lifted from pure black */
