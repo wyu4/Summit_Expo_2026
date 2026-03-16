@@ -141,7 +141,7 @@ export const DEMO_EXHIBITORS: Exhibitor[] = [
   
 ];
 
-// ── Layout engine ──────────────────────────────────────────────────
+//  Layout engine 
 interface StarPos {
   x: number;
   y: number;
@@ -209,7 +209,7 @@ function buildEdges(pos: StarPos[]): [number, number][] {
   return edges;
 }
 
-// ── Space canvas ───────────────────────────────────────────────────
+//  Space canvas 
 function useSpaceCanvas(ref: React.RefObject<HTMLCanvasElement | null>) {
   useEffect(() => {
     const canvas = ref.current;
@@ -381,7 +381,7 @@ function useSpaceCanvas(ref: React.RefObject<HTMLCanvasElement | null>) {
   }, [ref]);
 }
 
-// ── Project Photo Carousel ─────────────────────────────────────────
+//  Project Photo Carousel 
 function ProjectCarousel({
   photos,
   color,
@@ -672,20 +672,7 @@ function ProjectCarousel({
   );
 }
 
-const BRIDGE_PARTICLES = Array.from({ length: 18 }, (_, i) => ({
-  left: `${5 + seededRand(i * 7) * 90}%`,
-  delay: `${seededRand(i * 3) * 4}s`,
-  dur: `${2.5 + seededRand(i * 5) * 3}s`,
-  size: 2 + seededRand(i * 11) * 3,
-  color:
-    i % 3 === 0
-      ? "rgba(206,48,114,0.6)"
-      : i % 3 === 1
-        ? "rgba(120,80,220,0.6)"
-        : "rgba(80,140,255,0.55)",
-}));
-
-// ── Main component ─────────────────────────────────────────────────
+//  Main component 
 export function Lineup({
   exhibitors = DEMO_EXHIBITORS,
 }: {
@@ -715,7 +702,7 @@ export function Lineup({
 
   useSpaceCanvas(canvasRef);
 
-  // ── Entrance animations ────────────────────────────────────────
+  //  Entrance animations 
   useEffect(() => {
     const ctx = gsap.context(() => {
       ScrollTrigger.create({
@@ -1108,27 +1095,6 @@ export function Lineup({
     <section ref={sectionRef} id="lineup" className="lu">
       <canvas ref={canvasRef} className="lu__space-canvas" aria-hidden="true" />
 
-      <div ref={bridgeRef} className="lu__bridge" aria-hidden="true">
-        <div className="lu__bridge-inner">
-          <div className="lu__bridge-line" />
-          {BRIDGE_PARTICLES.map((p, i) => (
-            <div
-              key={i}
-              className="lu__bridge-particle"
-              style={{
-                left: p.left,
-                width: p.size,
-                height: p.size,
-                background: p.color,
-                animationDelay: p.delay,
-                animationDuration: p.dur,
-                boxShadow: `0 0 ${p.size * 2}px ${p.color}`,
-              }}
-            />
-          ))}
-          <div className="lu__bridge-label">— entering the lineup —</div>
-        </div>
-      </div>
 
       <div className="lu__nebula" aria-hidden="true" />
 
@@ -1297,12 +1263,7 @@ export function Lineup({
         </div>
       </div>
 
-      {drawn && modal === null && hovered === null && (
-        <p className="lu__hint" style={{ opacity: 0 }}>
-          <span className="lu-pip lu-pip--sm" /> Hover to preview · click to
-          explore
-        </p>
-      )}
+    
 
       {modal !== null && modalEx && (
         <div className="lu-modal-backdrop" onClick={closeModal}>
@@ -1375,7 +1336,7 @@ export function Lineup({
               <div className="lu-modal__divider" />
               <p className="lu-modal__bio">{modalEx.bio}</p>
 
-              {/* ── Project photos carousel ── */}
+              {/* Project photos carousel */}
               {modalEx.projectPhotos && modalEx.projectPhotos.length > 0 && (
                 <ProjectCarousel
                   key={modalEx.id}

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './About.css';
@@ -423,6 +423,454 @@ function useMouseTrail(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
 }
 
 /* Component */
+
+//  Embedded trailer — lives inside About 
+// Hologram-style transmission frame. States: idle → loading → live
+// HUD: top bar (tag + signal bars + REC), bottom bar (subtitle + coords + ping)
+function AboutTrailer({ youtubeId = 'dQw4w9WgXcQ' }: { youtubeId?: string }) {
+  const wrapRef    = useRef<HTMLDivElement>(null);
+  const frameRef   = useRef<HTMLDivElement>(null);
+  const noiseRef   = useRef<HTMLCanvasElement>(null);
+  const loadingRef = useRef<HTMLDivElement>(null);
+  const [phase, setPhase]       = useState<'idle'|'loading'|'live'>('idle');
+  const [sigPct, setSigPct]     = useState(0);
+  const [ping,   setPing]       = useState('---');
+
+  // Animate signal pct on mount
+  useEffect(() => {
+    gsap.to({ v: 0 }, {
+      v: 85, duration: 2.8, ease: 'power2.out', delay: 1.0,
+      onUpdate() { setSigPct(Math.round((this as any).targets()[0].v)); },
+    });
+    // Ping counter
+    const t = setInterval(() => {
+      setPing(`${18 + Math.floor(Math.random() * 10)}ms`);
+    }, 2000);
+    return () => clearInterval(t);
+  }, []);
+
+  // Noise canvas — idle only
+  useEffect(() => {
+    const canvas = noiseRef.current;
+    if (!canvas || phase !== 'idle') return;
+    const ctx = canvas.getContext('2d')!;
+    let raf = 0;
+    const resize = () => { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; };
+    resize();
+    const ro = new ResizeObserver(resize); ro.observe(canvas);
+    const draw = () => {
+      const { width: W, height: H } = canvas;
+      const img = ctx.createImageData(W, H);
+      for (let i = 0; i < img.data.length; i += 4) {
+        const v = Math.random() < 0.45 ? Math.floor(Math.random() * 18) : 0;
+        img.data[i]   = v * 0.5;
+        img.data[i+1] = v * 0.4;
+        img.data[i+2] = v + Math.floor(Math.random() * 12);
+        img.data[i+3] = 100;
+      }
+      ctx.putImageData(img, 0, 0);
+      raf = requestAnimationFrame(draw);
+    };
+    draw();
+    return () => { cancelAnimationFrame(raf); ro.disconnect(); };
+  }, [phase]);
+
+  // Scroll entrance
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const ctx = gsap.context(() => {
+      ScrollTrigger.create({
+        trigger: el,
+        start: 'top 82%',
+        onEnter() {
+          // Intro headline swings in
+          gsap.fromTo('.about-trailer__intro-eyebrow',
+            { opacity: 0, y: 18 },
+            { opacity: 1, y: 0, duration: 0.55, ease: 'power3.out' }
+          );
+          gsap.fromTo('.about-trailer__intro-title',
+            { opacity: 0, y: 32, filter: 'blur(6px)' },
+            { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.75, ease: 'power3.out', delay: 0.1 }
+          );
+          gsap.fromTo('.about-trailer__intro-sub',
+            { opacity: 0, y: 16 },
+            { opacity: 1, y: 0, duration: 0.55, ease: 'power2.out', delay: 0.28 }
+          );
+          gsap.fromTo('.about-trailer__intro',
+            { opacity: 0 },
+            { opacity: 1, duration: 0.01 }
+          );
+          gsap.fromTo('.about-trailer__eyebrow',
+            { opacity: 0, y: 16 },
+            { opacity: 1, y: 0, duration: 0.55, ease: 'power3.out' }
+          );
+          gsap.fromTo(frameRef.current,
+            { opacity: 0, y: 36, scale: 0.94, rotateX: -4 },
+            { opacity: 1, y: 0,  scale: 1,    rotateX: 0,
+              duration: 0.9, ease: 'power3.out', delay: 0.14 }
+          );
+          gsap.fromTo('.about-trailer__hint',
+            { opacity: 0 }, { opacity: 1, duration: 0.5, delay: 0.6 }
+          );
+          // HUD corners snap in
+          gsap.fromTo('.about-trailer__corner',
+            { scale: 0, opacity: 0 },
+            { scale: 1, opacity: 1, stagger: 0.06, duration: 0.28, ease: 'back.out(2)', delay: 0.4 }
+          );
+          // Signal bars grow
+          gsap.fromTo('.at-hud__sigbar',
+            { scaleY: 0 },
+            { scaleY: 1, stagger: 0.05, duration: 0.2, ease: 'power2.out',
+              transformOrigin: 'bottom center', delay: 0.55 }
+          );
+        },
+      });
+    }, el);
+    return () => ctx.revert();
+  }, []);
+
+  // Loading sequence
+  useEffect(() => {
+    if (phase !== 'loading') return;
+    const ld = loadingRef.current;
+    if (!ld) return;
+
+    gsap.to('.about-trailer__overlay', { opacity: 0, duration: 0.3, ease: 'power2.in' });
+    gsap.fromTo(ld, { opacity: 0 }, { opacity: 1, duration: 0.25, delay: 0.25 });
+
+    // Scan sweep
+    gsap.fromTo('.at-load__scan',
+      { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease: 'power3.inOut',
+        transformOrigin: 'left center', delay: 0.3 }
+    );
+
+    // Bars rise
+    const bars = ld.querySelectorAll<HTMLSpanElement>('.at-load__bar');
+    gsap.fromTo(bars,
+      { scaleY: 0, opacity: 0 },
+      { scaleY: 1, opacity: 1, stagger: 0.07, duration: 0.22,
+        ease: 'power2.out', transformOrigin: 'bottom center', delay: 0.4 }
+    );
+
+    // Status cycle
+    const statuses = ['ACQUIRING SIGNAL…', 'TRIANGULATING SOURCE…', 'SIGNAL LOCKED ✓', 'DECODING STREAM…', 'READY'];
+    const statusEl = ld.querySelector<HTMLSpanElement>('.at-load__status');
+    let si = 0;
+    const cycle = setInterval(() => {
+      si++;
+      if (statusEl) statusEl.textContent = statuses[Math.min(si, statuses.length - 1)];
+      if (si >= statuses.length - 1) clearInterval(cycle);
+    }, 280);
+
+    // Percentage
+    const pctEl = ld.querySelector<HTMLSpanElement>('.at-load__pct');
+    gsap.to({ v: 0 }, {
+      v: 100, duration: 1.5, ease: 'power1.inOut', delay: 0.35,
+      onUpdate() { if (pctEl) pctEl.textContent = `${Math.round((this as any).targets()[0].v)}%`; },
+    });
+
+    // Flash → live
+    const timer = setTimeout(() => {
+      clearInterval(cycle);
+      gsap.to(ld, {
+        opacity: 0, scale: 1.05, filter: 'brightness(4) saturate(0)',
+        duration: 0.3, ease: 'power2.in',
+        onComplete: () => setPhase('live'),
+      });
+    }, 1900);
+
+    return () => { clearTimeout(timer); clearInterval(cycle); };
+  }, [phase]);
+
+  // iframe fade in
+  useEffect(() => {
+    if (phase !== 'live') return;
+    gsap.fromTo('.about-trailer__iframe',
+      { opacity: 0 }, { opacity: 1, duration: 0.6, ease: 'power2.out' }
+    );
+  }, [phase]);
+
+  const SIG_BARS = 8;
+
+  return (
+    <div ref={wrapRef} className="about-trailer">
+      {/* Sway-in headline above the frame */}
+      <div className="about-trailer__intro" style={{ opacity: 0 }}>
+        <p className="about-trailer__intro-eyebrow">
+          <i className="fa-solid fa-satellite-dish" />
+          Incoming Transmission
+        </p>
+        <h3 className="about-trailer__intro-title">
+          A Glimpse of<br />
+          <em>What Awaits.</em>
+        </h3>
+        <p className="about-trailer__intro-sub">
+          One evening. One stage. Unlimited discovery.
+        </p>
+      </div>
+
+      {/* Divider into frame */}
+      <div className="about-trailer__eyebrow" style={{ opacity: 0 }}>
+        <span className="about-trailer__line" />
+        <span className="about-trailer__label">
+          <i className="fa-solid fa-film" style={{ marginRight: '0.4em', fontSize: '0.7em' }} />
+          Preview Transmission · Summit EXPO 2026
+        </span>
+        <span className="about-trailer__line" />
+      </div>
+
+      {/* Frame */}
+      <div ref={frameRef} className="about-trailer__frame" style={{ opacity: 0 }}>
+
+        {/* TOP HUD */}
+        <div className="about-trailer__hud about-trailer__hud--top">
+          <span className="at-hud__tag">
+            <i className="fa-solid fa-circle at-hud__dot-icon" />
+            // SUMMIT EXPO · 2026
+          </span>
+
+          {/* Signal bars + pct */}
+          <div className="at-hud__signal">
+            <span className="at-hud__sig-label">SIG</span>
+            <div className="at-hud__sigbars">
+              {Array.from({ length: SIG_BARS }, (_, i) => (
+                <span
+                  key={i}
+                  className="at-hud__sigbar"
+                  style={{
+                    height: `${5 + i * 2}px`,
+                    opacity: (i / (SIG_BARS - 1)) * 100 <= sigPct ? 1 : 0.15,
+                  }}
+                />
+              ))}
+            </div>
+            <span className="at-hud__sig-pct">{sigPct}%</span>
+          </div>
+
+          {/* Network latency bar */}
+          <div className="at-hud__net">
+            <span className="at-hud__net-label">
+              <i className="fa-solid fa-wifi" />
+            </span>
+            <div className="at-hud__net-bar">
+              <div className="at-hud__net-fill" style={{ width: `${sigPct}%` }} />
+            </div>
+          </div>
+
+          <span className="at-hud__rec">
+            <i className="fa-solid fa-circle at-hud__rec-dot" />
+            REC
+          </span>
+        </div>
+
+        {/* Corner brackets */}
+        <span className="about-trailer__corner about-trailer__corner--tl" />
+        <span className="about-trailer__corner about-trailer__corner--tr" />
+        <span className="about-trailer__corner about-trailer__corner--bl" />
+        <span className="about-trailer__corner about-trailer__corner--br" />
+
+        {/* Video area */}
+        <div className="about-trailer__video">
+
+          {/* IDLE */}
+          {phase === 'idle' && (
+            <button className="about-trailer__overlay" onClick={() => setPhase('loading')} aria-label="Play preview">
+              <canvas ref={noiseRef} className="about-trailer__noise" aria-hidden="true" />
+              <div className="about-trailer__scanlines" aria-hidden="true" />
+              {/* Hologram tint overlay */}
+              <div className="about-trailer__holo" aria-hidden="true" />
+              <div className="about-trailer__play">
+                <div className="about-trailer__play-ring" aria-hidden="true" />
+                <div className="about-trailer__play-btn">
+                  <i className="fa-solid fa-play" />
+                </div>
+                <p className="about-trailer__play-label">Watch the Trailer</p>
+                <p className="about-trailer__play-sub">
+                  <i className="fa-solid fa-lock-open" style={{ marginRight: '0.3em' }} />
+                  Click to decode signal
+                </p>
+              </div>
+            </button>
+          )}
+
+          {/* LOADING */}
+          {phase === 'loading' && (
+            <div ref={loadingRef} className="about-trailer__loading" style={{ opacity: 0 }}>
+              <div className="about-trailer__scanlines" aria-hidden="true" />
+              <div className="at-load__scan" />
+
+              <div className="at-load__bars" aria-hidden="true">
+                {Array.from({ length: 14 }, (_, i) => (
+                  <span key={i} className="at-load__bar" style={{ height: `${14 + i * 3.5}px` }} />
+                ))}
+              </div>
+
+              <div className="at-load__center">
+                <div className="at-load__ring">
+                  <div className="at-load__ring-inner" />
+                  <i className="fa-solid fa-satellite at-load__icon" />
+                </div>
+                <div className="at-load__info">
+                  <span className="at-load__status">ACQUIRING SIGNAL…</span>
+                  <span className="at-load__pct">0%</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* LIVE */}
+          {phase === 'live' && (
+            <iframe
+              src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0&modestbranding=1`}
+              title="Summit EXPO 2026 Preview"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="about-trailer__iframe"
+            />
+          )}
+        </div>
+
+        {/* BOTTOM HUD */}
+        <div className="about-trailer__hud about-trailer__hud--bottom">
+          <span className="at-hud__tag at-hud__tag--sub">
+            <i className="fa-solid fa-film" style={{ marginRight: '0.35em' }} />
+            The future begins here
+          </span>
+          <div className="at-hud__coords">
+            <i className="fa-solid fa-location-dot" style={{ marginRight: '0.3em', opacity: 0.5 }} />
+            <span>45.3232° N · 75.8951° W</span>
+          </div>
+          <span className="at-hud__ping">
+            <i className="fa-solid fa-signal" style={{ marginRight: '0.3em' }} />
+            {ping}
+          </span>
+        </div>
+      </div>
+
+      <p className="about-trailer__hint" style={{ opacity: 0 }}>
+        Summit EXPO 2026 · Earl of March Secondary School · Kanata, ON
+      </p>
+    </div>
+  );
+}
+
+//  About → Lineup transition component 
+// Scatter of constellation nodes + connecting lines that visually
+// carry the eye from About's magenta-purple stars into Lineup's blue.
+// Lives at the bottom of the About section with a negative margin
+// so it overlaps the very top of Lineup.
+const TRANS_NODES = [
+  { x: '8%',  y: '22%', size: 3,   color: 'rgba(206,48,114,0.7)',  delay: '0s',    dur: '2.8s', spike: false },
+  { x: '18%', y: '55%', size: 5,   color: 'rgba(180,80,200,0.8)',  delay: '0.4s',  dur: '3.5s', spike: true  },
+  { x: '29%', y: '35%', size: 2.5, color: 'rgba(140,90,220,0.6)',  delay: '0.8s',  dur: '2.2s', spike: false },
+  { x: '38%', y: '70%', size: 4,   color: 'rgba(110,100,240,0.75)',delay: '1.1s',  dur: '4.0s', spike: true  },
+  { x: '50%', y: '25%', size: 6,   color: 'rgba(90,120,255,0.85)', delay: '0.2s',  dur: '3.2s', spike: true  },
+  { x: '50%', y: '75%', size: 3,   color: 'rgba(100,110,245,0.6)', delay: '1.5s',  dur: '2.6s', spike: false },
+  { x: '62%', y: '45%', size: 4.5, color: 'rgba(80,140,255,0.80)', delay: '0.6s',  dur: '3.8s', spike: true  },
+  { x: '73%', y: '62%', size: 2.5, color: 'rgba(70,150,255,0.65)', delay: '1.2s',  dur: '2.4s', spike: false },
+  { x: '82%', y: '30%', size: 5,   color: 'rgba(80,160,255,0.80)', delay: '0.9s',  dur: '3.1s', spike: true  },
+  { x: '92%', y: '58%', size: 3,   color: 'rgba(80,160,255,0.60)', delay: '0.3s',  dur: '2.9s', spike: false },
+];
+
+// Edges connecting the nodes — indices into TRANS_NODES
+const TRANS_EDGES = [
+  [0,1],[1,2],[2,3],[3,4],[4,5],[4,6],[6,7],[7,8],[8,9],
+  [1,4],[4,8],[2,6],
+];
+
+function AboutToLineupTransition() {
+  const transRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = transRef.current;
+    if (!el) return;
+    const ctx = gsap.context(() => {
+      ScrollTrigger.create({
+        trigger: el,
+        start: 'top 90%',
+        onEnter() {
+          // Nodes burst in staggered from center outward
+          gsap.fromTo('.about-transition__node',
+            { scale: 0, opacity: 0 },
+            { scale: 1, opacity: 1, stagger: { each: 0.06, from: 'center' }, duration: 0.6, ease: 'back.out(2.5)' }
+          );
+          // Edges draw on after nodes
+          const edges = el.querySelectorAll<SVGLineElement>('.about-transition__edge');
+          edges.forEach((edge, i) => {
+            const len = edge.getTotalLength?.() ?? 100;
+            gsap.set(edge, { strokeDasharray: len, strokeDashoffset: len });
+            gsap.to(edge, { strokeDashoffset: 0, duration: 0.5, delay: 0.4 + i * 0.06, ease: 'power2.inOut' });
+          });
+          // Lines fade in
+          gsap.fromTo('.about-transition__line',
+            { scaleX: 0, opacity: 0 },
+            { scaleX: 1, opacity: 1, stagger: 0.15, duration: 0.9, ease: 'power3.out', transformOrigin: 'center center', delay: 0.2 }
+          );
+          // Label fades in last
+          gsap.fromTo('.about-transition__label',
+            { opacity: 0, letterSpacing: '0.8em' },
+            { opacity: 0.45, letterSpacing: '0.55em', duration: 1.0, ease: 'power2.out', delay: 0.8 }
+          );
+        },
+      });
+    }, el);
+    return () => ctx.revert();
+  }, []);
+
+  return (
+    <div ref={transRef} className="about-transition" aria-hidden="true">
+      <div className="about-transition__fade" />
+
+      {/* Constellation lines */}
+      <div className="about-transition__line about-transition__line--1" />
+      <div className="about-transition__line about-transition__line--2" />
+      <div className="about-transition__line about-transition__line--3" />
+
+      {/* SVG edges between nodes */}
+      <svg className="about-transition__svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+        {TRANS_EDGES.map(([ai, bi], ei) => {
+          const a = TRANS_NODES[ai], b = TRANS_NODES[bi];
+          const ax = parseFloat(a.x), ay = parseFloat(a.y);
+          const bx = parseFloat(b.x), by = parseFloat(b.y);
+          // Blend color from node a
+          return (
+            <line
+              key={ei}
+              className="about-transition__edge"
+              x1={`${ax}%`} y1={`${ay}%`}
+              x2={`${bx}%`} y2={`${by}%`}
+              stroke={ei < 6 ? 'rgba(160,80,220,0.35)' : 'rgba(80,140,255,0.30)'}
+              strokeWidth="0.3"
+              strokeDasharray="3 4"
+            />
+          );
+        })}
+      </svg>
+
+      {/* Star nodes */}
+      {TRANS_NODES.map((n, i) => (
+        <div
+          key={i}
+          className={`about-transition__node${n.spike ? ' about-transition__node--spike' : ''}`}
+          style={{
+            left: n.x, top: n.y,
+            width: n.size, height: n.size,
+            transform: 'translate(-50%, -50%)',
+            background: n.color,
+            boxShadow: `0 0 ${n.size * 3}px ${n.color}`,
+            animationDelay: n.delay,
+            animationDuration: n.dur,
+            '--tn-color': n.color,
+          } as React.CSSProperties}
+        />
+      ))}
+
+      <span className="about-transition__label">— summit expo 2026 —</span>
+    </div>
+  );
+}
+
 export function About() {
   const sectionRef = useRef<HTMLElement>(null);
   const spaceRef   = useRef<HTMLCanvasElement>(null);
@@ -572,7 +1020,7 @@ export function About() {
           </div>
         </div>
 
-        <p className="about-eyebrow" style={{ marginBottom: '1.2rem' }}>What gets exhibited</p>
+        <p className="about-eyebrow" style={{ marginBottom: '1.2rem' }}>What could be exhibited</p>
         <div ref={gridRef} className="about-grid">
           {FIELDS.map((f) => (
             <div key={f.label} className="about-card">
@@ -610,7 +1058,13 @@ export function About() {
           </p>
         </div>
 
+        {/* Embedded trailer  sits inside About, shares its canvas */}
+        <AboutTrailer />
+
       </div>
+
+      {/* About → Lineup transition */}
+      <AboutToLineupTransition />
     </section>
   );
 }

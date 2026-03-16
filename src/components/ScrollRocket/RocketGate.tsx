@@ -22,7 +22,7 @@ interface Props {
    * 0          = first point (entry portal — rocket flies OUT of here)
    * -1 or omit = last point  (exit portal  — rocket flies INTO here)
    * Any other number = that index
-  */
+ */
   pointIndex?: number;
 }
 

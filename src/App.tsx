@@ -3,6 +3,10 @@ import { Hero } from "./components/Hero/Hero";
 import { Lineup } from "./components/Lineup/Lineup";
 import { Cursor } from "./components/Cursor/Cursor";
 import { About } from "./components/About/About";
+import { FAQ } from "./components/FAQ/FAQ";
+import { PracticalInfo } from "./components/PracticalInfo/PracticalInfo";
+import {Register} from "./components/Register/Register";
+import { WaypointEditor } from "./components/Waypoint/WaypointEditor";
 // import { WaypointEditor } from "./components/Waypoint/WaypointEditor";
 export default function App() {
   return (
@@ -15,7 +19,6 @@ export default function App() {
       {/* <RocketPath /> */}
       {/* <WaypointEditor /> */}
 
-      {/* Fixed nav — hidden until hero scroll ends */}
       <Nav />
 
       <main>
@@ -23,8 +26,11 @@ export default function App() {
         {/* Star explosion bridge between hero and about */}
         {/* <StarTransition /> */}
         <About />
+        {/* <Trailer /> */}
         <Lineup />
-        {/* <FAQ /> */}
+        <PracticalInfo />
+        <FAQ />
+        <Register />
 
         {/* TODO: Lineup, Logistics, Judges, FAQ */}
       </main>

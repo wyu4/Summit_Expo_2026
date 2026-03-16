@@ -120,7 +120,7 @@ export function Hero() {
     /* Clear / trail 
        Semi-transparent fill = comet trails during warp.
        Near-transparent fill = clean twinkling when idle.
-  */
+ */
     ctx.globalAlpha = 1;
     if (warp > 0.06) {
       ctx.fillStyle = `rgba(6,4,15,${Math.min(0.12 + warp * 0.18, 0.42)})`;

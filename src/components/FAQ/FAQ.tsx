@@ -1,574 +1,506 @@
-/**
- * FAQ.tsx — Summit EXPO 2026
- *
- * ORBIT SYSTEM FAQ
- * ─────────────────
- * A central glowing star (the expo) sits in the middle of a dark canvas.
- * 16 FAQ items orbit it as planets on elliptical paths at varying radii +
- * speeds. Three orbit rings, colour-coded by category:
- *   Inner ring  — General (blue)
- *   Middle ring — Attendee (magenta)
- *   Outer ring  — Exhibitor (purple)
- *
- * INTERACTIONS
- * ─────────────
- * • Scroll entry: planets spiral in from random off-screen positions
- *   with back.out stagger via GSAP
- * • Hover: planet brightens, label appears
- * • Click: planet docks to the right panel, other planets slow + dim,
- *   answer typewriter-decodes in with blinking cursor
- * • Click active planet / press Esc / click close: re-enters orbit,
- *   brief warp streak on canvas as it accelerates back
- *
- * CANVAS
- * ───────
- * rAF loop draws the star field (static twinkling background stars) +
- * the orbital paths as faint ellipses + planets as glowing circles.
- * When a planet is "docked" a brief streak burst fires on canvas.
- *
- * GSAP
- * ─────
- * ScrollTrigger: pins the section, triggers planet entry animation.
- * Orbital motion: gsap.ticker drives angle increments each frame.
- * Planet dock/undock: gsap.to on the planet DOM element position.
- * Typewriter: RAF-based character reveal with random-char scramble.
- */
-
-import React, {
-  useEffect, useRef, useCallback, useState,
-} from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './FAQ.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
-/* ── FAQ DATA ─────────────────────────────────────────────── */
-type Category = 'general' | 'attendee' | 'exhibitor';
-
-interface FAQItem {
-  id: number;
-  category: Category;
+//  Data 
+export interface FaqItem {
+  id: string;
+  category: string;
+  color: string;
   q: string;
-  a: string | React.ReactNode;
+  a: string; // supports inline <a> tags rendered via dangerouslySetInnerHTML
 }
 
-const FAQS: FAQItem[] = [
-  // General
+export const FAQ_DATA: FaqItem[] = [
+  // GENERAL
   {
-    id: 1, category: 'general',
-    q: "I'm not from Earl of March. Can I still attend or exhibit?",
-    a: "Yes! Summit EXPO is a community event open to everyone — younger students, students from other schools, alumni, and parents. Exhibitors can come from other schools too, but must be under 19.",
+    id: 'g1', category: 'General', color: '#CE3072',
+    q: "I'm not a student from Earl of March SS. Can I still attend, or be an exhibitor?",
+    a: "Yes! Summit EXPO is a community event open to everyone, including younger students, students from other schools, alumni, and parents. Exhibitors can also come from other schools, but must be under the age of nineteen (19).",
   },
   {
-    id: 2, category: 'general',
-    q: "Where and when is Summit EXPO? How long is it?",
-    a: "See the Practical Info section below for date, time, location, and duration details.",
+    id: 'g2', category: 'General', color: '#CE3072',
+    q: 'Where and when is Summit EXPO happening? How long is the event?',
+    a: 'See the Practical Info section on this page for full venue and schedule details.',
   },
   {
-    id: 3, category: 'general',
-    q: "I need to contact the organizing team!",
-    a: "Shoot us an email at contact@summitexpo.ca — questions, concerns, suggestions, we want to hear it all :)",
-  },
-
-  // Attendees
-  {
-    id: 4, category: 'attendee',
-    q: "How do I attend?",
-    a: "Sign up by filling out the attendee form and come to Earl of March Secondary School on the event date. It takes two minutes.",
-  },
-  {
-    id: 5, category: 'attendee',
-    q: "Is Summit EXPO free to attend?",
-    a: "Absolutely! Admission is completely free. Just show up.",
-  },
-  {
-    id: 6, category: 'attendee',
-    q: "What cool things can I expect to see?",
-    a: "Check out our lineup of exhibitors — software that learns, circuits that sense, comets named after students, steak grown from plants. The range is genuinely infinite.",
-  },
-  {
-    id: 7, category: 'attendee',
-    q: "How does the event actually unfold?",
-    a: "Summit EXPO runs in two Acts. Act I: each exhibitor delivers a short pitch and demo. Act II: the exhibition opens as a fair-style showcase — explore booths, meet exhibitors and judges, watch live demos.",
-  },
-  {
-    id: 8, category: 'attendee',
-    q: "Do I get to vote on exhibits?",
-    a: "More than that — you can score exhibits like a professional judge! Audience scores count toward the awards ceremony. Judges' evaluations are weighted more heavily, but your votes matter.",
-  },
-  {
-    id: 9, category: 'attendee',
-    q: "Can I connect with exhibitors and judges?",
-    a: "Yes! During Act II, the fair opens up and you can explore booths, chat with exhibitors, and talk directly with professional judges from industry, research, and academia.",
-  },
-  {
-    id: 10, category: 'attendee',
-    q: "Is there food? Any liquid-nitrogen ice cream?",
-    a: "Maybe :P",
+    id: 'g3', category: 'General', color: '#CE3072',
+    q: 'Questions, concerns, suggestions — how do I contact the organizing team?',
+    a: 'Shoot us an email at XXXXXX — we\'d love to hear from you!',
   },
 
-  // Exhibitors
+  // ATTENDEES
   {
-    id: 11, category: 'exhibitor',
-    q: "How do I apply to be an Exhibitor?",
-    a: "Fill out the exhibitor application form. The team will review all applications and contact selected exhibitors for next steps.",
+    id: 'a1', category: 'Attendees', color: '#6789A3',
+    q: 'How do I attend?',
+    a: 'Sign up by filling out the attendee form, and come to Earl of March Secondary School on the event date. Doors open at the start of Act I.',
   },
   {
-    id: 12, category: 'exhibitor',
-    q: "What kinds of projects can be exhibited?",
-    a: "Anything across science, tech, math, and engineering — software, robotics, experiments, research, discoveries, interdisciplinary projects. Plant-based steak? Quantum simulator? New comet discovery? Yes, yes, and yes.",
+    id: 'a2', category: 'Attendees', color: '#6789A3',
+    q: 'Is Summit EXPO free to attend?',
+    a: 'Absolutely! Admission is completely free.',
   },
   {
-    id: 13, category: 'exhibitor',
-    q: "My exhibit needs a projector / power supply / special equipment.",
-    a: "The application form asks exactly this. We'll accommodate all reasonable requests and arrange logistics meetings with exhibitors if needed.",
+    id: 'a3', category: 'Attendees', color: '#6789A3',
+    q: 'What cool things can I expect to see?',
+    a: 'Check out our lineup of exhibitors on this page! Summit EXPO unfolds in two Acts. In Act I, each exhibitor delivers a short pitch and demo to introduce their ideas and discoveries. In Act II, the exhibition opens into a fair-style showcase where attendees can explore project booths, connect with exhibitors and professional judges, and experience demonstrations firsthand.',
   },
   {
-    id: 14, category: 'exhibitor',
-    q: "Can teams apply, or only individuals?",
-    a: "Both! If your project was built by three friends, all three can manage the exhibit. For Act I pitches, the team decides whether everyone presents together or just part of the team.",
+    id: 'a4', category: 'Attendees', color: '#6789A3',
+    q: 'Do I get to vote on who has the coolest exhibit?',
+    a: "More than that — if you want, you can score exhibits like professional judges do! While judges' evaluations are weighed more than audience evaluations, your votes still count towards the exciting awards ceremony, happening near the event's end.",
   },
   {
-    id: 15, category: 'exhibitor',
-    q: "Do projects need to be finished?",
-    a: "Not at all. MVPs, prototypes, proof-of-concepts, research proposals, works-in-progress — these are the heart of Summit EXPO. Demonstrate progress and vision; that's what matters.",
+    id: 'a5', category: 'Attendees', color: '#6789A3',
+    q: 'Do I have the opportunity to connect with exhibitors and judges?',
+    a: 'Yes! During Act II of Summit EXPO, the exhibition opens into a fair-style showcase where attendees can explore project booths, connect with exhibitors and professional judges, and experience demonstrations firsthand.',
   },
   {
-    id: 16, category: 'exhibitor',
-    q: "I have so many logistics questions — stage, arrival, power, dress code...",
-    a: "We're with you every step. Once selected, we'll communicate every detail you need. No formal dress code — business casual is popular. Focus on wowing the crowd; we handle logistics. Email us at contact@summitexpo.ca anytime.",
+    id: 'a6', category: 'Attendees', color: '#6789A3',
+    q: 'I tasted the most delicious liquid-nitrogen ice cream at the Science and Technology Summit, back in 2024. Is there anything similar at Summit EXPO?',
+    a: 'Maybe :P',
+  },
+
+  // EXHIBITORS
+  {
+    id: 'e1', category: 'Exhibitors', color: '#9B5BBF',
+    q: 'How do I apply to be an Exhibitor?',
+    a: "Simply fill out the exhibitor application form. The organizing team will review all applications and contact selected exhibitors for next steps.",
+  },
+  {
+    id: 'e2', category: 'Exhibitors', color: '#9B5BBF',
+    q: 'What kinds of projects can be exhibited?',
+    a: "Anything across science, technology, mathematics, and engineering — software, robotics, experiments, research, discoveries, and interdisciplinary projects. Examples: plant-based steak; quantum computing simulator; discovery of new comets; AI applications; caretaker robot; medicine research proposal; literature review of recent advancements in category theory.",
+  },
+  {
+    id: 'e3', category: 'Exhibitors', color: '#9B5BBF',
+    q: 'I have a cool exhibit idea but it requires a projector / power supply / other physical resource.',
+    a: "That is why, when you fill out the exhibitor application form, we ask you what physical resources you might require! We will endeavour to accommodate all reasonable requests, and arrange meetings with exhibitors to discuss the logistics of their exhibits, if necessary.",
+  },
+  {
+    id: 'e4', category: 'Exhibitors', color: '#9B5BBF',
+    q: 'Can teams apply, or only individuals?',
+    a: "Both individuals and small teams are welcome. For example, if your super-cool project was built among three friends, it is natural that they all manage the same exhibit. For a team project, you can decide if you want the whole team to formally pitch together during Act I, or a part of the team.",
+  },
+  {
+    id: 'e5', category: 'Exhibitors', color: '#9B5BBF',
+    q: 'Do projects have to be finished?',
+    a: "Minimum viable products (MVPs), proof-of-concepts, prototypes, research proposals, works-in-progress, and other early-stage projects are all welcome — in fact, they constitute the heart of Summit EXPO! This is an exhibition of All That Can Be. Clearly explain your vision, demonstrate progress and drive, and you will have yourself an amazing exhibit.",
+  },
+  {
+    id: 'e6', category: 'Exhibitors', color: '#9B5BBF',
+    q: 'Will exhibitors receive feedback from judges?',
+    a: "Judges may offer feedback and discuss projects with exhibitors during the exhibition.",
+  },
+  {
+    id: 'e7', category: 'Exhibitors', color: '#9B5BBF',
+    q: 'Are the judges from professional backgrounds?',
+    a: "Yes. Judges are professionals from industry, research, and academia across STEM fields.",
+  },
+  {
+    id: 'e8', category: 'Exhibitors', color: '#9B5BBF',
+    q: 'Is there a dress code?',
+    a: "No formal dress code — come as you are! Many exhibitors and guests choose business casual.",
+  },
+  {
+    id: 'e9', category: 'Exhibitors', color: '#9B5BBF',
+    q: 'What will I need to bring? How does the pitch night work? What about logistics?',
+    a: "If you become an exhibitor, we are here every step of the way. Through continuous communication, we will let you know every detail you need to make your exhibit a stratospheric success. Focus on wowing the crowd — we'll handle the logistics. Shoot us an email at XXXXXX if you have any questions, concerns, or suggestions.",
   },
 ];
 
-/* ── ORBIT CONFIG ─────────────────────────────────────────── */
-interface OrbitConfig {
-  radiusX: number;   // ellipse semi-major (horizontal)
-  radiusY: number;   // ellipse semi-minor (vertical)
-  speed: number;     // radians per second (positive = counter-clockwise)
-  tilt: number;      // rotation of ellipse in degrees
-}
-
-const ORBIT_RINGS: Record<Category, OrbitConfig> = {
-  general:   { radiusX: 165, radiusY: 54,  speed: 0.28, tilt: -8  },
-  attendee:  { radiusX: 240, radiusY: 82,  speed: 0.18, tilt: 6   },
-  exhibitor: { radiusX: 318, radiusY: 110, speed: 0.12, tilt: -4  },
+const CATEGORIES = ['All', 'General', 'Attendees', 'Exhibitors'];
+const CAT_COLORS: Record<string, string> = {
+  All: '#a0a8c0',
+  General: '#CE3072',
+  Attendees: '#6789A3',
+  Exhibitors: '#9B5BBF',
 };
 
-/* Colour per category */
-const CAT_COLOUR: Record<Category, { core: string; glow: string; ring: string }> = {
-  general:   { core: '#6789A3', glow: 'rgba(103,137,163,0.55)', ring: 'rgba(103,137,163,0.18)' },
-  attendee:  { core: '#CE3072', glow: 'rgba(206,48,114,0.60)',  ring: 'rgba(206,48,114,0.18)'  },
-  exhibitor: { core: '#8B4B81', glow: 'rgba(139,75,129,0.55)', ring: 'rgba(139,75,129,0.18)'  },
-};
-
-/* Starting angle offsets so planets don't stack */
-function startAngle(id: number, cat: Category): number {
-  const offset: Record<Category, number[]> = {
-    general:   [0.2,  1.4,  3.8],
-    attendee:  [0.6,  1.8,  3.1,  4.2,  5.0,  5.8,  0.3],
-    exhibitor: [0.4,  1.2,  2.2,  3.3,  4.4,  5.5],
-  };
-  const byCategory = FAQS.filter(f => f.category === cat);
-  const idx = byCategory.findIndex(f => f.id === id);
-  return (offset[cat][idx] ?? idx * 1.1);
-}
-
-/* ── STAR CANVAS ──────────────────────────────────────────── */
-interface BgStar { x: number; y: number; r: number; a: number; phase: number; speed: number; }
-
-/* ── COMPONENT ────────────────────────────────────────────── */
-export function FAQ() {
-  const sectionRef  = useRef<HTMLElement>(null);
-  const canvasRef   = useRef<HTMLCanvasElement>(null);
-  const orbitAreaRef = useRef<HTMLDivElement>(null);
-
-  /* angle state — one per FAQ item */
-  const anglesRef = useRef<Record<number, number>>({});
-  FAQS.forEach(f => {
-    anglesRef.current[f.id] = startAngle(f.id, f.category);
-  });
-
-  /* planet DOM refs */
-  const planetRefs = useRef<Record<number, HTMLDivElement | null>>({});
-
-  /* background stars */
-  const bgStarsRef = useRef<BgStar[]>([]);
-  const clockRef   = useRef(0);
-  const rafRef     = useRef(0);
-
-  /* active item */
-  const [activeId, setActiveId] = useState<number | null>(null);
-  const [displayedAnswer, setDisplayedAnswer] = useState('');
-  const [typewriterDone, setTypewriterDone] = useState(false);
-  const typeRafRef  = useRef(0);
-  const isDockedRef = useRef(false);
-
-  /* track size */
-  const sizeRef = useRef({ w: 0, h: 0 });
-
-  /* ── background star canvas ─────────────────────────────── */
-  const renderCanvas = useCallback(() => {
-    const canvas = canvasRef.current;
+//  Star canvas 
+function useFaqCanvas(ref: React.RefObject<HTMLCanvasElement | null>) {
+  useEffect(() => {
+    const canvas = ref.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d')!;
-    const { w: W, h: H } = sizeRef.current;
-    if (!W) { rafRef.current = requestAnimationFrame(renderCanvas); return; }
 
-    clockRef.current += 0.012;
-    const t = clockRef.current;
+    interface Star { x:number; y:number; r:number; vx:number; vy:number; op:number; ph:number; sp:number; layer:number; hue:number; }
+    interface Shooter { x:number; y:number; vx:number; vy:number; life:number; max:number; len:number; }
 
-    ctx.clearRect(0, 0, W, H);
+    const LAYERS = [
+      { count:100, speed:0.006, rMax:0.5,  opMax:0.38 },
+      { count: 60, speed:0.018, rMax:0.9,  opMax:0.58 },
+      { count: 25, speed:0.042, rMax:1.4,  opMax:0.82 },
+    ];
 
-    for (const s of bgStarsRef.current) {
-      const tw = 0.5 + 0.5 * Math.sin(t * s.speed + s.phase);
-      const al = s.a * tw;
-      ctx.fillStyle = `rgba(255,255,255,${al * 0.06})`;
-      ctx.beginPath(); ctx.arc(s.x, s.y, s.r * 3, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = `rgba(255,255,255,${al})`;
-      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fill();
-    }
+    let stars: Star[] = [], shooters: Shooter[] = [];
+    let raf=0, t=0, scrollY=0, lastScrollY=0;
 
-    rafRef.current = requestAnimationFrame(renderCanvas);
-  }, []);
-
-  /* ── mount canvas ───────────────────────────────────────── */
-  useEffect(() => {
-    const canvas = canvasRef.current!;
     const resize = () => {
-      const section = sectionRef.current;
-      if (!section) return;
-      canvas.width  = section.offsetWidth;
-      canvas.height = section.offsetHeight;
-      sizeRef.current = { w: canvas.width, h: canvas.height };
+      canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
+      stars = [];
+      LAYERS.forEach((cfg, li) => {
+        for (let i=0; i<cfg.count; i++) {
+          const angle = Math.random()*Math.PI*2, speed = cfg.speed*(0.5+Math.random());
+          stars.push({
+            x: Math.random()*canvas.width, y: Math.random()*canvas.height,
+            r: Math.random()*cfg.rMax+0.15, vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed,
+            op: Math.random()*cfg.opMax+0.15, ph: Math.random()*Math.PI*2,
+            sp: Math.random()*1.0+0.25, layer: li,
+            // Near-layer stars: amber/gold (30-80) — distinct from other sections
+            hue: li===2 ? 30+Math.random()*50 : 200+Math.random()*60,
+          });
+        }
+      });
     };
     resize();
-    window.addEventListener('resize', resize, { passive: true });
+    const ro = new ResizeObserver(resize); ro.observe(canvas);
+    window.addEventListener('scroll', ()=>{ scrollY=window.scrollY; }, { passive:true });
 
-    /* spawn background stars */
-    bgStarsRef.current = Array.from({ length: 120 }, () => ({
-      x: Math.random() * (sizeRef.current.w || 1200),
-      y: Math.random() * (sizeRef.current.h || 800),
-      r: Math.random() * 0.9 + 0.15,
-      a: Math.random() * 0.30 + 0.08,
-      phase: Math.random() * Math.PI * 2,
-      speed: 0.3 + Math.random() * 0.9,
-    }));
-
-    rafRef.current = requestAnimationFrame(renderCanvas);
-    return () => {
-      cancelAnimationFrame(rafRef.current);
-      window.removeEventListener('resize', resize);
+    const spawnShooter = () => {
+      const W=canvas.width, fromRight=Math.random()<0.5;
+      const angle=(Math.random()*20+10)*(Math.PI/180)*(fromRight?1:-1)+Math.PI/2;
+      const speed=8+Math.random()*8;
+      shooters.push({ x:fromRight?W*(0.5+Math.random()*0.5):W*Math.random()*0.5, y:-10, vx:Math.cos(angle)*speed, vy:Math.sin(angle)*speed, life:0, max:38+Math.random()*28, len:50+Math.random()*70 });
     };
-  }, [renderCanvas]);
+    let shooterTimer=0, SHOOTER_INTERVAL=220+Math.random()*200;
 
-  /* ── GSAP orbital ticker ────────────────────────────────── */
+    const loop = () => {
+      t+=0.010;
+      const sd=(scrollY-lastScrollY)*0.45; lastScrollY=scrollY;
+      const W=canvas.width, H=canvas.height;
+      ctx.clearRect(0,0,W,H);
+
+      for (const s of stars) {
+        s.x+=s.vx; s.y+=s.vy+sd*(s.layer===0?0.02:s.layer===1?0.08:0.20);
+        if(s.x<-2)s.x=W+2; if(s.x>W+2)s.x=-2; if(s.y<-2)s.y=H+2; if(s.y>H+2)s.y=-2;
+        const tw=0.5+0.5*Math.sin(t*s.sp+s.ph), al=s.op*(0.35+0.65*tw);
+        if(s.layer>=1){ctx.beginPath();ctx.arc(s.x,s.y,s.r*(s.layer===2?5:3.2),0,Math.PI*2);ctx.fillStyle=`hsla(${s.hue},70%,72%,${al*(s.layer===2?0.10:0.04)})`;ctx.fill();}
+        ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+        ctx.fillStyle=s.layer===2?`hsla(${s.hue},65%,92%,${al})`:`rgba(210,220,255,${al})`;ctx.fill();
+        if(s.layer===2&&al>0.55){const sp=s.r*7*al;ctx.strokeStyle=`hsla(${s.hue},65%,85%,${al*0.40})`;ctx.lineWidth=0.55;ctx.beginPath();ctx.moveTo(s.x-sp,s.y);ctx.lineTo(s.x+sp,s.y);ctx.moveTo(s.x,s.y-sp);ctx.lineTo(s.x,s.y+sp);ctx.stroke();}
+      }
+
+      shooterTimer++;
+      if(shooterTimer>SHOOTER_INTERVAL){spawnShooter();shooterTimer=0;SHOOTER_INTERVAL=180+Math.random()*240;}
+      shooters=shooters.filter(s=>s.life<s.max);
+      for(const s of shooters){
+        const prog=s.life/s.max,alpha=0.7*(1-prog)*Math.min(1,s.life/4),spd=Math.hypot(s.vx,s.vy);
+        const tx=s.x-s.vx*(s.len/spd),ty=s.y-s.vy*(s.len/spd);
+        const grad=ctx.createLinearGradient(tx,ty,s.x,s.y);
+        grad.addColorStop(0,'rgba(255,220,150,0)');grad.addColorStop(0.6,`rgba(255,220,150,${alpha*0.4})`);grad.addColorStop(1,`rgba(255,255,255,${alpha})`);
+        ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(s.x,s.y);ctx.strokeStyle=grad;ctx.lineWidth=1.3*(1-prog*0.5);ctx.stroke();
+        ctx.beginPath();ctx.arc(s.x,s.y,1.3,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${alpha})`;ctx.fill();
+        s.x+=s.vx;s.y+=s.vy;s.life++;
+      }
+      raf=requestAnimationFrame(loop);
+    };
+    loop();
+    return ()=>{ cancelAnimationFrame(raf); ro.disconnect(); };
+  }, [ref]);
+}
+
+//  Single FAQ row 
+function FaqRow({ item, isOpen, onToggle, onKeyNav }: {
+  item: FaqItem;
+  isOpen: boolean;
+  onToggle: () => void;
+  onKeyNav: (dir: 1 | -1) => void;
+}) {
+  const bodyRef   = useRef<HTMLDivElement>(null);
+  const answerRef = useRef<HTMLSpanElement>(null);
+  const scanRef   = useRef<HTMLDivElement>(null);
+  const rowRef    = useRef<HTMLDivElement>(null);
+  const prevOpen  = useRef(false);
+  const typeTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
   useEffect(() => {
-    const ticker = gsap.ticker.add(() => {
-      if (isDockedRef.current) return;
-      const dt = gsap.ticker.deltaRatio(60) * (1 / 60); // seconds per frame
+    const body   = bodyRef.current;
+    const answer = answerRef.current;
+    const scan   = scanRef.current;
+    const row    = rowRef.current;
+    if (!body || !answer || !scan || !row) return;
 
-      FAQS.forEach(f => {
-        const cfg = ORBIT_RINGS[f.category];
-        /* slow down non-active planets when one is docked */
-        const mult = activeId !== null && activeId !== f.id ? 0.18 : 1;
-        anglesRef.current[f.id] += cfg.speed * dt * mult;
+    if (isOpen && !prevOpen.current) {
+      //  OPEN 
+      // Clear any running typewriter
+      if (typeTimer.current) clearInterval(typeTimer.current);
+      answer.textContent = '';
 
-        const el = planetRefs.current[f.id];
-        if (!el || (activeId === f.id)) return;
+      // Measure full height
+      gsap.set(body, { height: 'auto', opacity: 1 });
+      const fullH = body.scrollHeight;
+      gsap.fromTo(body,
+        { height: 0, opacity: 0 },
+        { height: fullH, opacity: 1, duration: 0.38, ease: 'power3.out',
+          onComplete: () => { gsap.set(body, { height: 'auto' }); } }
+      );
 
-        const angle  = anglesRef.current[f.id];
-        const tiltRad = cfg.tilt * (Math.PI / 180);
-        const lx = Math.cos(angle) * cfg.radiusX;
-        const ly = Math.sin(angle) * cfg.radiusY;
-        /* apply tilt rotation */
-        const rx = lx * Math.cos(tiltRad) - ly * Math.sin(tiltRad);
-        const ry = lx * Math.sin(tiltRad) + ly * Math.cos(tiltRad);
+      // Scan line
+      gsap.fromTo(scan,
+        { scaleX: 0, opacity: 1 },
+        { scaleX: 1, duration: 0.38, ease: 'power3.inOut', transformOrigin: 'left center',
+          onComplete: () => { gsap.to(scan, { opacity: 0, duration: 0.25 }); } }
+      );
 
-        el.style.transform = `translate(calc(-50% + ${rx}px), calc(-50% + ${ry}px))`;
-        /* depth: planets "behind" centre are smaller + more transparent */
-        const depth = (Math.sin(angle) + 1) * 0.5; // 0=back, 1=front
-        const scale = 0.65 + depth * 0.45;
-        const alpha = activeId !== null ? 0.22 + depth * 0.18 : 0.55 + depth * 0.45;
-        el.style.transform += ` scale(${scale.toFixed(3)})`;
-        el.style.opacity    = alpha.toFixed(3);
-        el.style.zIndex     = Math.round(depth * 10).toString();
-      });
+      // Row accent glow
+      gsap.fromTo(row,
+        { '--faq-glow': '0px' },
+        { '--faq-glow': '1px', duration: 0.4, ease: 'power2.out' }
+      );
+
+      // Typewriter — 4ms/char, fast but visible
+      const text = item.a;
+      let i = 0;
+      typeTimer.current = setInterval(() => {
+        answer.textContent = text.slice(0, i + 1);
+        i++;
+        if (i >= text.length && typeTimer.current) {
+          clearInterval(typeTimer.current);
+          typeTimer.current = null;
+        }
+      }, 0.1);
+
+    } else if (!isOpen && prevOpen.current) {
+      //  CLOSE 
+      if (typeTimer.current) { clearInterval(typeTimer.current); typeTimer.current = null; }
+      gsap.to(body, { height: 0, opacity: 0, duration: 0.28, ease: 'power2.in' });
+      gsap.to(row,  { '--faq-glow': '0px', duration: 0.25 });
+      gsap.set(scan, { opacity: 0, scaleX: 0 });
+    }
+
+    prevOpen.current = isOpen;
+    return () => { if (typeTimer.current) clearInterval(typeTimer.current); };
+  }, [isOpen, item.a]);
+
+  const onKey = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle(); }
+    if (e.key === 'ArrowDown')  { e.preventDefault(); onKeyNav(1);  }
+    if (e.key === 'ArrowUp')    { e.preventDefault(); onKeyNav(-1); }
+    if (e.key === 'Escape' && isOpen) { e.preventDefault(); onToggle(); }
+  };
+
+  return (
+    <div
+      ref={rowRef}
+      className={`faq-row${isOpen ? ' faq-row--open' : ''}`}
+      style={{ '--faq-color': item.color } as React.CSSProperties}
+    >
+      {/* Question button */}
+      <button
+        className="faq-row__q"
+        onClick={onToggle}
+        onKeyDown={onKey}
+        aria-expanded={isOpen}
+        aria-controls={`faq-body-${item.id}`}
+      >
+        <span className="faq-row__cat" style={{ color: item.color }}>
+          // {item.category.toUpperCase()}
+        </span>
+        <span className="faq-row__text">{item.q}</span>
+        <span className="faq-row__chevron" aria-hidden="true">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M2 4L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </span>
+      </button>
+
+      {/* Answer body — GSAP controls height */}
+      <div
+        ref={bodyRef}
+        id={`faq-body-${item.id}`}
+        className="faq-row__body"
+        style={{ height: 0, opacity: 0, overflow: 'hidden' }}
+        aria-hidden={!isOpen}
+      >
+        {/* Scan line */}
+        <div ref={scanRef} className="faq-row__scan" style={{ opacity: 0, transform: 'scaleX(0)' }} />
+
+        <p className="faq-row__answer">
+          <span ref={answerRef} />
+        </p>
+      </div>
+    </div>
+  );
+}
+
+//  Main component 
+export function FAQ() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const canvasRef  = useRef<HTMLCanvasElement>(null);
+  const listRef    = useRef<HTMLDivElement>(null);
+  const rowRefs    = useRef<(HTMLButtonElement | null)[]>([]);
+
+  const [openId,   setOpenId]   = useState<string | null>(null);
+  const [category, setCategory] = useState('All');
+  const [search,   setSearch]   = useState('');
+
+  useFaqCanvas(canvasRef);
+
+  // Filter + search
+  const visible = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return FAQ_DATA.filter(item => {
+      const catMatch = category === 'All' || item.category === category;
+      const searchMatch = !q || item.q.toLowerCase().includes(q) || item.a.toLowerCase().includes(q);
+      return catMatch && searchMatch;
     });
+  }, [category, search]);
 
-    return () => gsap.ticker.remove(ticker);
-  }, [activeId]);
+  // When filter changes, close open item if it's now hidden
+  useEffect(() => {
+    if (openId && !visible.find(i => i.id === openId)) setOpenId(null);
+  }, [visible, openId]);
 
-  /* ── ScrollTrigger entry animation ─────────────────────── */
+  // Animate list items in/out when filter changes
+  useEffect(() => {
+    if (!listRef.current) return;
+    const rows = listRef.current.querySelectorAll<HTMLDivElement>('.faq-row');
+    gsap.fromTo(rows,
+      { opacity: 0, y: 12 },
+      { opacity: 1, y: 0, stagger: 0.04, duration: 0.35, ease: 'power2.out' }
+    );
+  }, [visible.length, category]);
+
+  const toggle = useCallback((id: string) => {
+    setOpenId(prev => {
+      if (prev === id) return null; // close
+      return id; // open new (previous closes via its own useEffect)
+    });
+  }, []);
+
+  // Keyboard navigation between rows
+  const handleKeyNav = useCallback((currentId: string, dir: 1 | -1) => {
+    const idx = visible.findIndex(i => i.id === currentId);
+    const next = visible[idx + dir];
+    if (next) {
+      // Focus the next button
+      const btn = listRef.current?.querySelector<HTMLButtonElement>(`[aria-controls="faq-body-${next.id}"]`);
+      btn?.focus();
+    }
+  }, [visible]);
+
+  // Scroll entrance
   useEffect(() => {
     const ctx = gsap.context(() => {
-      /* Hide all planets initially */
-      gsap.set('.faq-planet', { scale: 0, opacity: 0 });
-
       ScrollTrigger.create({
         trigger: sectionRef.current,
         start: 'top 75%',
-        once: true,
         onEnter() {
-          /* Staggered spiral-in */
-          gsap.to('.faq-planet', {
-            scale: 1, opacity: 1,
-            duration: 0.7,
-            ease: 'back.out(1.8)',
-            stagger: { amount: 0.9, from: 'random' },
-          });
-          /* Star glow pulse */
-          gsap.fromTo('.faq-star-core',
-            { scale: 0.4, opacity: 0 },
-            { scale: 1, opacity: 1, duration: 1.2, ease: 'back.out(2.0)' }
+          gsap.fromTo('.faq-header',
+            { opacity: 0, y: 40 },
+            { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out', stagger: 0.1 }
           );
+          gsap.fromTo('.faq-filters',
+            { opacity: 0, y: 20 },
+            { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out', delay: 0.25 }
+          );
+          gsap.fromTo('.faq-search',
+            { opacity: 0, y: 16 },
+            { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.35 }
+          );
+          const rows = listRef.current?.querySelectorAll('.faq-row');
+          if (rows) {
+            gsap.fromTo(rows,
+              { opacity: 0, y: 20 },
+              { opacity: 1, y: 0, stagger: 0.045, duration: 0.5, ease: 'power2.out', delay: 0.45 }
+            );
+          }
         },
       });
     }, sectionRef);
     return () => ctx.revert();
   }, []);
 
-  /* ── Typewriter effect ──────────────────────────────────── */
-  const typewriterText = useCallback((text: string) => {
-    cancelAnimationFrame(typeRafRef.current);
-    setDisplayedAnswer('');
-    setTypewriterDone(false);
-
-    const chars = text.split('');
-    let i = 0;
-    const SCRAMBLE = '░▒▓█▄▀◆◇✦✧★☆';
-    let scrambleCount = 0;
-
-    const tick = () => {
-      if (i >= chars.length) {
-        setDisplayedAnswer(text);
-        setTypewriterDone(true);
-        return;
-      }
-
-      /* Scramble then reveal */
-      if (scrambleCount < 2) {
-        const sc = SCRAMBLE[Math.floor(Math.random() * SCRAMBLE.length)];
-        setDisplayedAnswer(text.slice(0, i) + sc + '▌');
-        scrambleCount++;
-        typeRafRef.current = requestAnimationFrame(tick);
-      } else {
-        setDisplayedAnswer(text.slice(0, i + 1) + '▌');
-        scrambleCount = 0;
-        i++;
-        /* Variable speed: faster for common chars */
-        const delay = chars[i - 1] === ' ' ? 25 : chars[i - 1] === ',' ? 80 : 32;
-        setTimeout(() => {
-          typeRafRef.current = requestAnimationFrame(tick);
-        }, delay);
-      }
-    };
-
-    setTimeout(() => { typeRafRef.current = requestAnimationFrame(tick); }, 120);
-  }, []);
-
-  /* ── Activate planet ────────────────────────────────────── */
-  const activatePlanet = useCallback((id: number) => {
-    if (activeId === id) return;
-
-    const item = FAQS.find(f => f.id === id)!;
-    setActiveId(id);
-    isDockedRef.current = false; // let ticker slow others but keep active moving briefly
-
-    const el = planetRefs.current[id];
-    if (el) {
-      /* Float the active planet to the panel zone */
-      gsap.to(el, {
-        x: 0, y: 0,
-        duration: 0.55,
-        ease: 'power3.out',
-        onComplete: () => { isDockedRef.current = false; }
-      });
-      gsap.to(el, { opacity: 1, scale: 1.15, duration: 0.4, ease: 'power2.out' });
-    }
-
-    /* Start typewriter */
-    const answerText = typeof item.a === 'string' ? item.a : String(item.a);
-    typewriterText(answerText);
-  }, [activeId, typewriterText]);
-
-  /* ── Deactivate ─────────────────────────────────────────── */
-  const deactivate = useCallback(() => {
-    if (activeId === null) return;
-    cancelAnimationFrame(typeRafRef.current);
-    setActiveId(null);
-    setDisplayedAnswer('');
-    setTypewriterDone(false);
-    isDockedRef.current = false;
-
-    /* Re-enter orbit with a spring */
-    const el = planetRefs.current[activeId!];
-    if (el) {
-      gsap.to(el, { opacity: 0.55, scale: 1, duration: 0.4, ease: 'power2.inOut' });
-    }
-  }, [activeId]);
-
-  /* ── ESC to close ───────────────────────────────────────── */
-  useEffect(() => {
-    const fn = (e: KeyboardEvent) => { if (e.key === 'Escape') deactivate(); };
-    window.addEventListener('keydown', fn);
-    return () => window.removeEventListener('keydown', fn);
-  }, [deactivate]);
-
-  /* ── Render orbit rings (SVG paths) ─────────────────────── */
-  const orbitRings = (Object.entries(ORBIT_RINGS) as [Category, OrbitConfig][]).map(([cat, cfg]) => {
-    const tilt = cfg.tilt;
-    return (
-      <ellipse
-        key={cat}
-        cx="0" cy="0"
-        rx={cfg.radiusX} ry={cfg.radiusY}
-        fill="none"
-        stroke={CAT_COLOUR[cat].ring}
-        strokeWidth="1"
-        strokeDasharray="3 5"
-        transform={`rotate(${tilt})`}
-      />
-    );
-  });
-
-  const activeItem = FAQS.find(f => f.id === activeId) ?? null;
-
   return (
-    <section ref={sectionRef} className="faq-section" id="faq">
-      <canvas ref={canvasRef} className="faq-canvas" aria-hidden="true" />
+    <section ref={sectionRef} id="faq" className="faq">
+      <canvas ref={canvasRef} className="faq__canvas" aria-hidden="true" />
 
-      {/* ── SECTION HEADER ── */}
-      <div className="faq-header">
-        <p className="faq-eyebrow">
-          <span className="faq-eyebrow-line" />
-          Questions &amp; Answers
-          <span className="faq-eyebrow-line" />
-        </p>
-        <h2 className="faq-title">
-          Mission <em>Intel</em>
-        </h2>
-        <p className="faq-subtitle">
-          Click any planet to decode its transmission
-        </p>
-      </div>
+      {/* Background nebula */}
+      <div className="faq__nebula" aria-hidden="true" />
 
-      {/* ── ORBIT ARENA ── */}
-      <div className="faq-arena">
+      {/* Decorative giant question mark */}
+      <div className="faq__deco" aria-hidden="true">?</div>
 
-        {/* Orbit SVG rings */}
-        <div ref={orbitAreaRef} className="faq-orbit-wrap">
-          <svg className="faq-orbit-svg" viewBox="-350 -140 700 280" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-            {orbitRings}
-          </svg>
+      <div className="faq__inner">
 
-          {/* Central star */}
-          <div className="faq-star">
-            <div className="faq-star-core" />
-            <div className="faq-star-pulse" />
-            <div className="faq-star-pulse faq-star-pulse--2" />
-            <span className="faq-star-label">SUMMIT<br/>EXPO</span>
-          </div>
-
-          {/* Planets */}
-          {FAQS.map(item => {
-            const col = CAT_COLOUR[item.category];
-            const isActive = activeId === item.id;
-            const shortQ = item.q.length > 38 ? item.q.slice(0, 36) + '…' : item.q;
-            return (
-              <div
-                key={item.id}
-                className={`faq-planet faq-planet--${item.category}${isActive ? ' faq-planet--active' : ''}`}
-                ref={(el: HTMLDivElement | null) => { planetRefs.current[item.id] = el; }}
-                onClick={() => isActive ? deactivate() : activatePlanet(item.id)}
-                role="button"
-                tabIndex={0}
-                aria-expanded={isActive}
-                aria-label={item.q}
-                onKeyDown={(e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); isActive ? deactivate() : activatePlanet(item.id); } }}
-                style={{ '--planet-core': col.core, '--planet-glow': col.glow } as React.CSSProperties}
-              >
-                <div className="faq-planet-core" />
-                <div className="faq-planet-halo" />
-                <div className="faq-planet-label">{shortQ}</div>
-                {/* Category indicator ring */}
-                <div className="faq-planet-ring" />
-              </div>
-            );
-          })}
+        {/* Header */}
+        <div className="faq-header">
+          <p className="faq-eyebrow">
+            <span className="faq-pip" />
+            INTERCEPTED TRANSMISSIONS
+            <span className="faq-pip" />
+          </p>
+          <h2 className="faq-title">Frequently Asked</h2>
+          <p className="faq-sub">Everything you need to know about Summit EXPO.</p>
         </div>
 
-        {/* ── ANSWER PANEL ── */}
-        <div className={`faq-panel${activeItem ? ' faq-panel--open' : ''}`} aria-live="polite">
-          {activeItem ? (
-            <>
-              {/* Category badge */}
-              <div className={`faq-panel-badge faq-panel-badge--${activeItem.category}`}>
-                {activeItem.category === 'general'   && '◈ General'}
-                {activeItem.category === 'attendee'  && '✦ Attendee'}
-                {activeItem.category === 'exhibitor' && '⬡ Exhibitor'}
-              </div>
+        {/* Filter chips */}
+        <div className="faq-filters" role="group" aria-label="Filter by category">
+          {CATEGORIES.map(cat => (
+            <button
+              key={cat}
+              className={`faq-chip${category === cat ? ' faq-chip--active' : ''}`}
+              style={{ '--chip-color': CAT_COLORS[cat] } as React.CSSProperties}
+              onClick={() => setCategory(cat)}
+              aria-pressed={category === cat}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
 
-              {/* Question */}
-              <p className="faq-panel-q">{activeItem.q}</p>
-
-              {/* Answer — typewriter */}
-              <div className="faq-panel-a-wrap">
-                <span className="faq-panel-prompt">&#62;&#95;</span>
-                <p className="faq-panel-a">
-                  {displayedAnswer}
-                  {!typewriterDone && <span className="faq-cursor" aria-hidden="true">▌</span>}
-                </p>
-              </div>
-
-              {/* Signal bars */}
-              <div className="faq-signal" aria-hidden="true">
-                {[1,2,3,4,5].map(i => (
-                  <div
-                    key={i}
-                    className={`faq-signal-bar${typewriterDone ? ' faq-signal-bar--active' : ''}`}
-                    style={{ animationDelay: `${i * 0.08}s`, height: `${6 + i * 4}px` } as React.CSSProperties}
-                  />
-                ))}
-                <span className="faq-signal-label">{typewriterDone ? 'SIGNAL LOCKED' : 'DECODING...'}</span>
-              </div>
-
-              {/* Close */}
-              <button className="faq-panel-close" onClick={deactivate} aria-label="Close answer">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
-                Release orbit
-              </button>
-            </>
-          ) : (
-            <div className="faq-panel-idle">
-              <div className="faq-idle-icon" aria-hidden="true">
-                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                  <circle cx="14" cy="14" r="5" stroke="currentColor" strokeWidth="1"/>
-                  <ellipse cx="14" cy="14" rx="13" ry="5.5" stroke="currentColor" strokeWidth="0.75" strokeDasharray="3 3"/>
-                  <ellipse cx="14" cy="14" rx="13" ry="5.5" stroke="currentColor" strokeWidth="0.75" strokeDasharray="3 3" transform="rotate(60 14 14)"/>
-                  <ellipse cx="14" cy="14" rx="13" ry="5.5" stroke="currentColor" strokeWidth="0.75" strokeDasharray="3 3" transform="rotate(120 14 14)"/>
-                </svg>
-              </div>
-              <p className="faq-idle-text">Select a planet<br/>to receive its transmission</p>
-              <div className="faq-legend">
-                <div className="faq-legend-item">
-                  <span className="faq-legend-dot faq-legend-dot--general" />General
-                </div>
-                <div className="faq-legend-item">
-                  <span className="faq-legend-dot faq-legend-dot--attendee" />Attendee
-                </div>
-                <div className="faq-legend-item">
-                  <span className="faq-legend-dot faq-legend-dot--exhibitor" />Exhibitor
-                </div>
-              </div>
-            </div>
+        {/* Search */}
+        <div className="faq-search">
+          <i className="fa-solid fa-magnifying-glass faq-search__icon" aria-hidden="true" />
+          <input
+            type="search"
+            className="faq-search__input"
+            placeholder="Search questions…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            aria-label="Search FAQ"
+          />
+          {search && (
+            <button className="faq-search__clear" onClick={() => setSearch('')} aria-label="Clear search">
+              <i className="fa-solid fa-xmark" />
+            </button>
           )}
         </div>
 
-      </div>{/* end arena */}
+        {/* FAQ list */}
+        <div ref={listRef} className="faq-list" role="list">
+          {visible.length === 0 ? (
+            <div className="faq-empty">
+              <span className="faq-empty__icon">✦</span>
+              <p>No transmissions found. Try a different search.</p>
+            </div>
+          ) : (
+            visible.map((item, i) => (
+              <FaqRow
+                key={item.id}
+                item={item}
+                isOpen={openId === item.id}
+                onToggle={() => toggle(item.id)}
+                onKeyNav={(dir) => handleKeyNav(item.id, dir)}
+              />
+            ))
+          )}
+        </div>
 
+        {/* Bottom CTA */}
+        <div className="faq-cta">
+          <p>Still have questions?</p>
+          <a href="mailto:XXXXXX" className="faq-cta__link">
+            <i className="fa-solid fa-paper-plane" />
+            Shoot us an email
+          </a>
+        </div>
+
+      </div>
     </section>
   );
 }
