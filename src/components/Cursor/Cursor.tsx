@@ -83,14 +83,14 @@ export function Cursor() {
     rafRef.current = requestAnimationFrame(animLoop);
 
     return () => {
-  cancelAnimationFrame(rafRef.current);
-  window.removeEventListener("resize", resize);
-  window.removeEventListener("mousemove", onMove);
-  interactiveEls.forEach((el) => {          // ← ADD THIS
-    el.removeEventListener("mouseenter", onEnter);
-    el.removeEventListener("mouseleave", onLeave);
-  });
-};
+      cancelAnimationFrame(rafRef.current);
+      window.removeEventListener("resize", resize);
+      window.removeEventListener("mousemove", onMove);
+      interactiveEls.forEach((el) => {
+        el.removeEventListener("mouseenter", onEnter);
+        el.removeEventListener("mouseleave", onLeave);
+      });
+    };
   }, []);
 
   useVisibleCanvas(

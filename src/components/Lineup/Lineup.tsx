@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
-import {gsap, ScrollTrigger} from "../../utils/gsap";
+import { gsap, ScrollTrigger } from "../../utils/gsap";
 import "./Lineup.css";
 import { useVisibleCanvas } from "../../utils/useVisibleCanvas";
-
-;
 
 export interface ProjectPhoto {
   src: string;
@@ -211,108 +209,186 @@ function buildEdges(pos: StarPos[]): [number, number][] {
 function useSpaceCanvas(ref: React.RefObject<HTMLCanvasElement | null>) {
   const scrollRef = useRef(0);
   useEffect(() => {
-    const fn = () => { scrollRef.current = window.scrollY; };
+    const fn = () => {
+      scrollRef.current = window.scrollY;
+    };
     window.addEventListener("scroll", fn, { passive: true });
     return () => window.removeEventListener("scroll", fn);
   }, []);
- 
-  useVisibleCanvas(ref, (canvas) => {
-    interface Star { x:number; y:number; r:number; vx:number; vy:number; op:number; ph:number; sp:number; layer:number; hue:number; }
-    interface Shooter { x:number; y:number; vx:number; vy:number; life:number; max:number; len:number; }
- 
-    const LAYERS = [
-      { count: 80, speed: 0.007, rMax: 0.55, opMax: 0.4  },
-      { count: 45, speed: 0.02,  rMax: 0.95, opMax: 0.6  },
-      { count: 18, speed: 0.045, rMax: 1.45, opMax: 0.85 },
-    ];
- 
-    let stars: Star[] = [], shooters: Shooter[] = [];
-    let t = 0, lastScrollY = 0, shooterTimer = 0;
-    let SHOOTER_INTERVAL = 200 + Math.random() * 200;
- 
-    const seed = () => {
-      stars = [];
-      const W = canvas.offsetWidth, H = canvas.offsetHeight;
-      LAYERS.forEach((cfg, li) => {
-        for (let i = 0; i < cfg.count; i++) {
-          const angle = Math.random() * Math.PI * 2, speed = cfg.speed * (0.5 + Math.random());
-          stars.push({
-            x: Math.random() * W, y: Math.random() * H,
-            r: Math.random() * cfg.rMax + 0.15,
-            vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
-            op: Math.random() * cfg.opMax + 0.15,
-            ph: Math.random() * Math.PI * 2, sp: Math.random() * 1.1 + 0.25,
-            layer: li, hue: 200 + Math.random() * 80,
-          });
-        }
-      });
-    };
-    seed();
- 
-    const spawnShooter = () => {
-      const W = canvas.offsetWidth, fromRight = Math.random() < 0.5;
-      const angle = (Math.random() * 20 + 10) * (Math.PI / 180) * (fromRight ? 1 : -1) + Math.PI / 2;
-      const speed = 9 + Math.random() * 9;
-      shooters.push({
-        x: fromRight ? W * (0.55 + Math.random() * 0.45) : W * (Math.random() * 0.45),
-        y: -10, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
-        life: 0, max: 40 + Math.random() * 30, len: 55 + Math.random() * 75,
-      });
-    };
- 
-    return (_c: HTMLCanvasElement, ctx: CanvasRenderingContext2D, dt: number) => {
-      t += (dt / 1000) * 60 * 0.011;
-      const sd = (scrollRef.current - lastScrollY) * 0.5;
-      lastScrollY = scrollRef.current;
-      const W = _c.offsetWidth, H = _c.offsetHeight;
-      ctx.clearRect(0, 0, W, H);
- 
-      for (const s of stars) {
-        s.x += s.vx;
-        s.y += s.vy + sd * (s.layer === 0 ? 0.03 : s.layer === 1 ? 0.09 : 0.22);
-        if (s.x < -2) s.x = W + 2; if (s.x > W + 2) s.x = -2;
-        if (s.y < -2) s.y = H + 2; if (s.y > H + 2) s.y = -2;
-        const tw = 0.5 + 0.5 * Math.sin(t * s.sp + s.ph), al = s.op * (0.35 + 0.65 * tw);
-        if (s.layer >= 1) {
-          ctx.beginPath();
-          ctx.arc(s.x, s.y, s.r * (s.layer === 2 ? 5.5 : 3.5), 0, Math.PI * 2);
-          ctx.fillStyle = `hsla(${s.hue},65%,75%,${al * (s.layer === 2 ? 0.11 : 0.05)})`;
-          ctx.fill();
-        }
-        ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = s.layer === 2 ? `hsla(${s.hue},55%,92%,${al})` : `rgba(200,215,255,${al})`;
-        ctx.fill();
-        if (s.layer === 2 && al > 0.5) {
-          const sp = s.r * 7 * al;
-          ctx.strokeStyle = `hsla(${s.hue},55%,85%,${al * 0.45})`; ctx.lineWidth = 0.55;
-          ctx.beginPath(); ctx.moveTo(s.x - sp, s.y); ctx.lineTo(s.x + sp, s.y);
-          ctx.moveTo(s.x, s.y - sp); ctx.lineTo(s.x, s.y + sp); ctx.stroke();
-        }
-      }
- 
-      shooterTimer++;
-      if (shooterTimer > SHOOTER_INTERVAL) {
-        spawnShooter(); shooterTimer = 0; SHOOTER_INTERVAL = 180 + Math.random() * 220;
-      }
-      shooters = shooters.filter((s) => s.life < s.max);
-      for (const s of shooters) {
-        const prog = s.life / s.max, alpha = 0.75 * (1 - prog) * Math.min(1, s.life / 4);
-        const spd = Math.hypot(s.vx, s.vy);
-        const tx = s.x - s.vx * (s.len / spd), ty = s.y - s.vy * (s.len / spd);
-        const grad = ctx.createLinearGradient(tx, ty, s.x, s.y);
-        grad.addColorStop(0, "rgba(180,215,255,0)");
-        grad.addColorStop(0.6, `rgba(180,215,255,${alpha * 0.45})`);
-        grad.addColorStop(1, `rgba(255,255,255,${alpha})`);
-        ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(s.x, s.y);
-        ctx.strokeStyle = grad; ctx.lineWidth = 1.4 * (1 - prog * 0.5); ctx.stroke();
-        ctx.beginPath(); ctx.arc(s.x, s.y, 1.4 * (1 - prog * 0.7), 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255,255,255,${alpha})`; ctx.fill();
-        s.x += s.vx; s.y += s.vy; s.life++;
-      }
-    };
-  }, { fps: 40 });
-}
 
+  useVisibleCanvas(
+    ref,
+    (canvas) => {
+      interface Star {
+        x: number;
+        y: number;
+        r: number;
+        vx: number;
+        vy: number;
+        op: number;
+        ph: number;
+        sp: number;
+        layer: number;
+        hue: number;
+      }
+      interface Shooter {
+        x: number;
+        y: number;
+        vx: number;
+        vy: number;
+        life: number;
+        max: number;
+        len: number;
+      }
+
+      const LAYERS = [
+        { count: 80, speed: 0.007, rMax: 0.55, opMax: 0.4 },
+        { count: 45, speed: 0.02, rMax: 0.95, opMax: 0.6 },
+        { count: 18, speed: 0.045, rMax: 1.45, opMax: 0.85 },
+      ];
+
+      let stars: Star[] = [],
+        shooters: Shooter[] = [];
+      let t = 0,
+        lastScrollY = 0,
+        shooterTimer = 0;
+      let SHOOTER_INTERVAL = 200 + Math.random() * 200;
+
+      const seed = () => {
+        stars = [];
+        const W = canvas.offsetWidth,
+          H = canvas.offsetHeight;
+        LAYERS.forEach((cfg, li) => {
+          for (let i = 0; i < cfg.count; i++) {
+            const angle = Math.random() * Math.PI * 2,
+              speed = cfg.speed * (0.5 + Math.random());
+            stars.push({
+              x: Math.random() * W,
+              y: Math.random() * H,
+              r: Math.random() * cfg.rMax + 0.15,
+              vx: Math.cos(angle) * speed,
+              vy: Math.sin(angle) * speed,
+              op: Math.random() * cfg.opMax + 0.15,
+              ph: Math.random() * Math.PI * 2,
+              sp: Math.random() * 1.1 + 0.25,
+              layer: li,
+              hue: 200 + Math.random() * 80,
+            });
+          }
+        });
+      };
+      seed();
+
+      const spawnShooter = () => {
+        const W = canvas.offsetWidth,
+          fromRight = Math.random() < 0.5;
+        const angle =
+          (Math.random() * 20 + 10) * (Math.PI / 180) * (fromRight ? 1 : -1) +
+          Math.PI / 2;
+        const speed = 9 + Math.random() * 9;
+        shooters.push({
+          x: fromRight
+            ? W * (0.55 + Math.random() * 0.45)
+            : W * (Math.random() * 0.45),
+          y: -10,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: 0,
+          max: 40 + Math.random() * 30,
+          len: 55 + Math.random() * 75,
+        });
+      };
+
+      return (
+        _c: HTMLCanvasElement,
+        ctx: CanvasRenderingContext2D,
+        dt: number,
+      ) => {
+        t += (dt / 1000) * 60 * 0.011;
+        const sd = (scrollRef.current - lastScrollY) * 0.5;
+        lastScrollY = scrollRef.current;
+        const W = _c.offsetWidth,
+          H = _c.offsetHeight;
+        ctx.clearRect(0, 0, W, H);
+
+        for (const s of stars) {
+          s.x += s.vx;
+          s.y +=
+            s.vy + sd * (s.layer === 0 ? 0.03 : s.layer === 1 ? 0.09 : 0.22);
+          if (s.x < -2) s.x = W + 2;
+          if (s.x > W + 2) s.x = -2;
+          if (s.y < -2) s.y = H + 2;
+          if (s.y > H + 2) s.y = -2;
+          const tw = 0.5 + 0.5 * Math.sin(t * s.sp + s.ph),
+            al = s.op * (0.35 + 0.65 * tw);
+          if (s.layer >= 1) {
+            ctx.beginPath();
+            ctx.arc(
+              s.x,
+              s.y,
+              s.r * (s.layer === 2 ? 5.5 : 3.5),
+              0,
+              Math.PI * 2,
+            );
+            ctx.fillStyle = `hsla(${s.hue},65%,75%,${al * (s.layer === 2 ? 0.11 : 0.05)})`;
+            ctx.fill();
+          }
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          ctx.fillStyle =
+            s.layer === 2
+              ? `hsla(${s.hue},55%,92%,${al})`
+              : `rgba(200,215,255,${al})`;
+          ctx.fill();
+          if (s.layer === 2 && al > 0.5) {
+            const sp = s.r * 7 * al;
+            ctx.strokeStyle = `hsla(${s.hue},55%,85%,${al * 0.45})`;
+            ctx.lineWidth = 0.55;
+            ctx.beginPath();
+            ctx.moveTo(s.x - sp, s.y);
+            ctx.lineTo(s.x + sp, s.y);
+            ctx.moveTo(s.x, s.y - sp);
+            ctx.lineTo(s.x, s.y + sp);
+            ctx.stroke();
+          }
+        }
+
+        shooterTimer++;
+        if (shooterTimer > SHOOTER_INTERVAL) {
+          spawnShooter();
+          shooterTimer = 0;
+          SHOOTER_INTERVAL = 180 + Math.random() * 220;
+        }
+        shooters = shooters.filter((s) => s.life < s.max);
+        for (const s of shooters) {
+          const prog = s.life / s.max,
+            alpha = 0.75 * (1 - prog) * Math.min(1, s.life / 4);
+          const spd = Math.hypot(s.vx, s.vy);
+          const tx = s.x - s.vx * (s.len / spd),
+            ty = s.y - s.vy * (s.len / spd);
+          const grad = ctx.createLinearGradient(tx, ty, s.x, s.y);
+          grad.addColorStop(0, "rgba(180,215,255,0)");
+          grad.addColorStop(0.6, `rgba(180,215,255,${alpha * 0.45})`);
+          grad.addColorStop(1, `rgba(255,255,255,${alpha})`);
+          ctx.beginPath();
+          ctx.moveTo(tx, ty);
+          ctx.lineTo(s.x, s.y);
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = 1.4 * (1 - prog * 0.5);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, 1.4 * (1 - prog * 0.7), 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+          ctx.fill();
+          s.x += s.vx;
+          s.y += s.vy;
+          s.life++;
+        }
+      };
+    },
+    { fps: 40 },
+  );
+}
 
 //  Project Photo Carousel
 function ProjectCarousel({
@@ -826,6 +902,14 @@ export function Lineup({
   const openModal = useCallback((idx: number) => {
     setModal(idx);
     document.body.style.overflow = "hidden";
+    const nav = document.querySelector<HTMLElement>(".nav");
+    if (nav)
+      gsap.to(nav, {
+        yPercent: -130,
+        opacity: 0,
+        duration: 0.3,
+        ease: "power2.in",
+      });
     requestAnimationFrame(() =>
       requestAnimationFrame(() => {
         const m = modalRef.current;
@@ -988,6 +1072,14 @@ export function Lineup({
       onComplete: () => {
         setModal(null);
         document.body.style.overflow = "";
+        const nav = document.querySelector<HTMLElement>(".nav");
+        if (nav)
+          gsap.to(nav, {
+            yPercent: 0,
+            opacity: 1,
+            duration: 0.4,
+            ease: "power3.out",
+          });
       },
     });
     tl.to(m, {

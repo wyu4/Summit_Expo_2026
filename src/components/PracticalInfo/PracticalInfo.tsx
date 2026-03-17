@@ -365,7 +365,21 @@ function SponsorshipPDF({
                     aria-label="Close modal"
                   />
                   <span className="spdf-dot spdf-dot--min" title="Minimise" />
-                  <span className="spdf-dot spdf-dot--max" title="Fullscreen" />
+                  <span 
+  className="spdf-dot spdf-dot--max" 
+  title="Fullscreen"
+  onClick={() => {
+    const viewer = vwRef.current;
+    if (!viewer) return;
+    if (!document.fullscreenElement) {
+      viewer.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+  }}
+  role="button"
+  aria-label="Toggle fullscreen"
+/>
                 </div>
                 <span className="spdf-hud__tag">
                   <i className="fa-solid fa-circle spdf-hud__live-dot" />
