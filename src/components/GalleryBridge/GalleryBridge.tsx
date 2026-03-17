@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import {gsap, ScrollTrigger} from "../../utils/gsap";
 import "./GalleryBridge.css";
+import { useVisibleCanvas } from "../../utils/useVisibleCanvas";
 
-gsap.registerPlugin(ScrollTrigger);
+;
 
 const PHOTOS = [
   { src: "/gallery/interlude-2.jpg", caption: "Live pitches, Act I" },
@@ -21,85 +21,70 @@ const LAYOUT = [
   { rot: 3.0, yOff: "-3%" },
 ];
 
+  function useGalleryBridgeCanvas(
+    canvasRef: React.RefObject<HTMLCanvasElement | null>,
+  ) {
+    useVisibleCanvas(
+      canvasRef,
+      (canvas) => {
+        interface S {
+          x: number;
+          y: number;
+          r: number;
+          op: number;
+          ph: number;
+          sp: number;
+          hue: number;
+        }
+        let stars: S[] = [],
+          t = 0;
+
+        const seed = () => {
+          const W = canvas.offsetWidth,
+            H = canvas.offsetHeight;
+          stars = Array.from({ length: 60 }, () => ({
+            x: Math.random() * W,
+            y: Math.random() * H,
+            r: Math.random() * 1.0 + 0.2,
+            op: Math.random() * 0.45 + 0.1,
+            ph: Math.random() * Math.PI * 2,
+            sp: Math.random() * 0.7 + 0.2,
+            hue: 200 + Math.random() * 100,
+          }));
+        };
+        seed();
+
+        return (
+          _c: HTMLCanvasElement,
+          ctx: CanvasRenderingContext2D,
+          dt: number,
+        ) => {
+          t += (dt / 1000) * 60 * 0.009;
+          const W = _c.offsetWidth,
+            H = _c.offsetHeight;
+          ctx.clearRect(0, 0, W, H);
+          for (const s of stars) {
+            const tw = 0.5 + 0.5 * Math.sin(t * s.sp + s.ph),
+              al = s.op * (0.3 + 0.7 * tw);
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.r * 2.5, 0, Math.PI * 2);
+            ctx.fillStyle = `hsla(${s.hue},65%,70%,${al * 0.06})`;
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+            ctx.fillStyle = `hsla(${s.hue},55%,90%,${al})`;
+            ctx.fill();
+          }
+        };
+      },
+      { fps: 40 },
+    );
+  }
+
 export function GalleryBridge() {
   const sectionRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  //  Minimal star canvas so the section matches the site aesthetic
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d")!;
-    interface S {
-      x: number;
-      y: number;
-      r: number;
-      op: number;
-      ph: number;
-      sp: number;
-      hue: number;
-    }
-    let stars: S[] = [],
-      raf = 0,
-      t = 0,
-      running = false;
-
-    const resize = () => {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-      stars = Array.from({ length: 60 }, () => ({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        r: Math.random() * 1.0 + 0.2,
-        op: Math.random() * 0.45 + 0.1,
-        ph: Math.random() * Math.PI * 2,
-        sp: Math.random() * 0.7 + 0.2,
-        hue: 200 + Math.random() * 100,
-      }));
-    };
-    resize();
-    const ro = new ResizeObserver(resize);
-    ro.observe(canvas);
-
-    const loop = () => {
-      t += 0.009;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (const s of stars) {
-        const tw = 0.5 + 0.5 * Math.sin(t * s.sp + s.ph);
-        const al = s.op * (0.3 + 0.7 * tw);
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r * 2.5, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${s.hue},65%,70%,${al * 0.06})`;
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${s.hue},55%,90%,${al})`;
-        ctx.fill();
-      }
-      raf = requestAnimationFrame(loop);
-    };
-
-    const start = () => {
-      if (running) return;
-      running = true;
-      raf = requestAnimationFrame(loop);
-    };
-    const stop = () => {
-      if (!running) return;
-      running = false;
-      cancelAnimationFrame(raf);
-    };
-    const obs = new IntersectionObserver(
-      ([e]) => (e.isIntersecting ? start() : stop()),
-      { rootMargin: "300px 0px 300px 0px", threshold: 0 },
-    );
-    obs.observe(canvas);
-    return () => {
-      stop();
-      obs.disconnect();
-      ro.disconnect();
-    };
-  }, []);
+  useGalleryBridgeCanvas(canvasRef);
 
   //  Scroll-driven entrance
   useEffect(() => {

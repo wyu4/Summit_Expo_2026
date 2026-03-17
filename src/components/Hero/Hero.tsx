@@ -1,9 +1,6 @@
 import { useEffect, useRef, useCallback } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import {gsap, ScrollTrigger} from "../../utils/gsap";
 import "./Hero.css";
-
-gsap.registerPlugin(ScrollTrigger);
 
 const STAR_COUNT = 300;
 const TAU = Math.PI * 2;
@@ -18,11 +15,6 @@ interface Star {
   parallaxFactor: number;
 }
 
-/**
- * Spawn stars ONLY in the peripheral zone — a ring around the edges.
- * Centre of screen stays clear for text readability.
- * "Edge" = the star is NOT inside a 38%w × 50%h box in the centre.
- */
 function makeStar(): Star {
   let x: number, y: number;
   let attempts = 0;
@@ -30,35 +22,29 @@ function makeStar(): Star {
     x = Math.random();
     y = Math.random();
     attempts++;
-    // Ban zone: horizontally 28%–72%, vertically 18%–82%
-    // Stars outside this zone are fine
   } while (attempts < 40 && x > 0.28 && x < 0.72 && y > 0.18 && y < 0.82);
   return {
     x,
     y,
     size: Math.random() * 1.2 + 0.25,
-    opacity: Math.random() * 0.32 + 0.1, // max 0.42
+    opacity: Math.random() * 0.32 + 0.1,
     twinklePhase: Math.random() * TAU,
     twinkleSpeed: Math.random() * 1.2 + 0.4,
     parallaxFactor: Math.random() * 0.5 + 0.05,
   };
 }
 
-/* Constellation nodes — kept in outer zone */
 const C_STARS = [
-  // Top cluster — apex
-  { x: 500, y: 20, r: 7.0 }, // bigger
-  { x: 160, y: 90, r: 5.0 }, // bigger + moved up (was y:90)
-  { x: 840, y: 90, r: 5.0 }, // bigger + moved up (was y:90)
-  // Mid-outer — left and right flanks
-  { x: 80, y: 260, r: 4.2 }, // bigger
-  { x: 920, y: 260, r: 4.2 }, // bigger
-  { x: 140, y: 380, r: 4.0 }, // bigger
-  { x: 860, y: 380, r: 4.0 }, // bigger
-  // Bottom cluster
-  { x: 280, y: 520, r: 4.5 }, // bigger
-  { x: 720, y: 520, r: 4.5 }, // bigger
-  { x: 500, y: 558, r: 5.5 }, // bigger
+  { x: 500, y: 20, r: 7.0 },
+  { x: 160, y: 90, r: 5.0 },
+  { x: 840, y: 90, r: 5.0 },
+  { x: 80, y: 260, r: 4.2 },
+  { x: 920, y: 260, r: 4.2 },
+  { x: 140, y: 380, r: 4.0 },
+  { x: 860, y: 380, r: 4.0 },
+  { x: 280, y: 520, r: 4.5 },
+  { x: 720, y: 520, r: 4.5 },
+  { x: 500, y: 558, r: 5.5 },
 ] as const;
 
 const C_EDGES: readonly [number, number][] = [
@@ -86,24 +72,27 @@ export function Hero() {
   const hintRef = useRef<HTMLDivElement>(null);
   const ctaLinesRef = useRef<HTMLCanvasElement>(null);
   const ctaNodeRefs = useRef<(HTMLAnchorElement | null)[]>([null, null, null]);
+  const ctasRef = useRef<HTMLDivElement>(null);
 
   const starsRef = useRef<Star[]>([]);
-  const ctasRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef(0);
   const clock = useRef(0);
   const sizeRef = useRef({ w: 0, h: 0 });
   const mouseRef = useRef({ x: 0.5, y: 0.5 });
   const mouseTgtRef = useRef({ x: 0.5, y: 0.5 });
   const warpRef = useRef({ v: 1.0 });
+  // ← ADDED: lets render() schedule through the guard
+  const guardedRenderRef = useRef<() => void>(() => {});
 
-  /* Canvas render loop */
+  /* ── Canvas render loop ─────────────────────────────────────────────────── */
   const render = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d")!;
     const { w: W, h: H } = sizeRef.current;
     if (!W) {
-      rafRef.current = requestAnimationFrame(render);
+      // size not ready yet — schedule through guard so pause logic still applies
+      rafRef.current = requestAnimationFrame(() => guardedRenderRef.current());
       return;
     }
 
@@ -111,16 +100,11 @@ export function Hero() {
     const t = clock.current;
     const warp = warpRef.current.v;
 
-    // Smooth mouse lerp
     mouseRef.current.x += (mouseTgtRef.current.x - mouseRef.current.x) * 0.055;
     mouseRef.current.y += (mouseTgtRef.current.y - mouseRef.current.y) * 0.055;
     const mx = mouseRef.current.x;
     const my = mouseRef.current.y;
 
-    /* Clear / trail 
-       Semi-transparent fill = comet trails during warp.
-       Near-transparent fill = clean twinkling when idle.
- */
     ctx.globalAlpha = 1;
     if (warp > 0.06) {
       ctx.fillStyle = `rgba(6,4,15,${Math.min(0.12 + warp * 0.18, 0.42)})`;
@@ -132,7 +116,6 @@ export function Hero() {
     const CX = W * 0.5,
       CY = H * 0.5;
 
-    /* Warp streaks */
     if (warp > 0.06) {
       ctx.lineCap = "round";
       for (const s of starsRef.current) {
@@ -153,31 +136,24 @@ export function Hero() {
       }
     }
 
-    /* Twinkling stars with parallax */
     for (const s of starsRef.current) {
-      const PRANGE = 0.02; // tighter parallax — no wild movement
+      const PRANGE = 0.02;
       const sx = (s.x + (mx - 0.5) * PRANGE * s.parallaxFactor) * W;
       const sy = (s.y + (my - 0.5) * PRANGE * s.parallaxFactor) * H;
-
       const tw = 0.5 + 0.5 * Math.sin(t * s.twinkleSpeed + s.twinklePhase);
-      // Hard cap at 0.42 so no star ever competes with text brightness
       const al = Math.min(s.opacity * tw * (1 - warp * 0.35), 0.42);
       const r = s.size * (1 - warp * 0.2);
 
-      // Soft outer glow — just one layer, low alpha
       ctx.fillStyle = `rgba(255,255,255,${al * 0.06})`;
       ctx.beginPath();
       ctx.arc(sx, sy, r * 3.2, 0, TAU);
       ctx.fill();
-
-      // Core dot
       ctx.fillStyle = `rgba(255,255,255,${al})`;
       ctx.beginPath();
       ctx.arc(sx, sy, r, 0, TAU);
       ctx.fill();
     }
 
-    /* Advance stars during warp */
     if (warp > 0.02) {
       for (const s of starsRef.current) {
         const dx = s.x - 0.5,
@@ -186,13 +162,11 @@ export function Hero() {
         s.x += (dx / d) * 0.0018 * warp * 3;
         s.y += (dy / d) * 0.0018 * warp * 3;
         if (s.x < -0.08 || s.x > 1.08 || s.y < -0.08 || s.y > 1.08) {
-          // Recycle to the peripheral zone
           Object.assign(s, makeStar());
         }
       }
     }
 
-    /* SVG constellation mouse parallax */
     const svg = consvgRef.current;
     if (svg) {
       const shiftX = (mx - 0.5) * -22;
@@ -200,10 +174,11 @@ export function Hero() {
       svg.style.transform = `translate(${shiftX}px, ${shiftY}px)`;
     }
 
-    rafRef.current = requestAnimationFrame(render);
+    // ← Schedule through guard so visibility/intersection pause works every frame
+    rafRef.current = requestAnimationFrame(() => guardedRenderRef.current());
   }, []);
 
-  /* Mount / cleanup */
+  /* ── Mount / cleanup ────────────────────────────────────────────────────── */
   useEffect(() => {
     const canvas = canvasRef.current!;
     const DPR = Math.min(window.devicePixelRatio, 1.5);
@@ -221,7 +196,34 @@ export function Hero() {
     resize();
     window.addEventListener("resize", resize, { passive: true });
     starsRef.current = Array.from({ length: STAR_COUNT }, makeStar);
-    rafRef.current = requestAnimationFrame(render);
+
+    // Pause when tab hidden
+    let isVisible = true;
+    const onVisibility = () => {
+      isVisible = document.visibilityState === "visible";
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+
+    // Pause when hero scrolled fully off screen
+    let heroInView = true;
+    const heroObs = new IntersectionObserver(
+      ([entry]) => {
+        heroInView = entry.isIntersecting;
+      },
+      { rootMargin: "200px" },
+    );
+    heroObs.observe(pinRef.current ?? canvas);
+
+    const guardedRender = () => {
+      if (isVisible && heroInView) {
+        render();
+      } else {
+        rafRef.current = requestAnimationFrame(guardedRender);
+      }
+    };
+    // Wire the ref so render() can schedule back through the guard
+    guardedRenderRef.current = guardedRender;
+    rafRef.current = requestAnimationFrame(guardedRender);
 
     const onMouse = (e: MouseEvent) => {
       mouseTgtRef.current = {
@@ -235,9 +237,12 @@ export function Hero() {
       cancelAnimationFrame(rafRef.current);
       window.removeEventListener("resize", resize);
       window.removeEventListener("mousemove", onMouse);
+      document.removeEventListener("visibilitychange", onVisibility);
+      heroObs.disconnect();
     };
   }, [render]);
 
+  /* ── CTA lines canvas ───────────────────────────────────────────────────── */
   useEffect(() => {
     const canvas = ctaLinesRef.current;
     if (!canvas) return;
@@ -264,7 +269,7 @@ export function Hero() {
       const parent = canvas.parentElement;
       if (!parent) return;
 
-      const DPR = Math.min(window.devicePixelRatio, 2);
+      const DPR = Math.min(window.devicePixelRatio, 1.5); // capped
       const pw = parent.offsetWidth;
       const ph = parent.offsetHeight;
 
@@ -273,8 +278,7 @@ export function Hero() {
         canvas.height = Math.round(ph * DPR);
         canvas.style.width = `${pw}px`;
         canvas.style.height = `${ph}px`;
-        const c2 = canvas.getContext("2d")!;
-        c2.scale(DPR, DPR);
+        canvas.getContext("2d")!.scale(DPR, DPR);
       }
 
       const ctx = canvas.getContext("2d")!;
@@ -284,30 +288,27 @@ export function Hero() {
       if (!centres || centres.some((c) => !c)) return;
       const [A, B, C] = centres as { x: number; y: number }[];
 
-      const NODE_RADIUS = 18; // px — stops the line before it reaches the star centre
+      const NODE_RADIUS = 18;
 
       const drawBase = (
         p1: { x: number; y: number },
         p2: { x: number; y: number },
       ) => {
-        const dx = p2.x - p1.x;
-        const dy = p2.y - p1.y;
+        const dx = p2.x - p1.x,
+          dy = p2.y - p1.y;
         const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-        const ux = dx / dist;
-        const uy = dy / dist;
-
-        // Trim both ends back by NODE_RADIUS
+        const ux = dx / dist,
+          uy = dy / dist;
         const start = {
           x: p1.x + ux * NODE_RADIUS,
           y: p1.y + uy * NODE_RADIUS,
         };
         const end = { x: p2.x - ux * NODE_RADIUS, y: p2.y - uy * NODE_RADIUS };
 
-        // Outer glow
+        // Glow — wide low-alpha line instead of ctx.filter blur (much cheaper)
         ctx.save();
         ctx.strokeStyle = "rgba(103,137,163,0.10)";
         ctx.lineWidth = 6;
-        ctx.filter = "blur(4px)";
         ctx.beginPath();
         ctx.moveTo(start.x, start.y);
         ctx.lineTo(end.x, end.y);
@@ -327,7 +328,7 @@ export function Hero() {
         ctx.stroke();
         ctx.restore();
 
-        // Crisp solid spine
+        // Solid spine
         ctx.save();
         ctx.strokeStyle = "rgba(103,137,163,0.14)";
         ctx.lineWidth = 0.75;
@@ -342,52 +343,21 @@ export function Hero() {
       drawBase(A, B);
       drawBase(B, C);
 
-      // Travelling orb — α→β→γ loop
       travelT = (travelT + 0.0035) % 1;
-
-      // Resolve position: 0–0.5 = A→B, 0.5–1 = B→C
-      const _resolvePos = (t: number) => {
-        const wt = ((t % 1) + 1) % 1;
-        if (wt < 0.5) {
-          const f = wt / 0.5;
-          return { x: A.x + (B.x - A.x) * f, y: A.y + (B.y - A.y) * f };
-        } else {
-          const f = (wt - 0.5) / 0.5;
-          return { x: B.x + (C.x - B.x) * f, y: B.y + (C.y - B.y) * f };
-        }
-      };
-
-      // Trail (particle fade behind the orb)
-      // const TRAIL_LEN = 0.14;
-      // const STEPS = 32;
-      // for (let i = 1; i <= STEPS; i++) {
-      //  const frac = i / STEPS;
-      //  const pastT = travelT - frac * TRAIL_LEN;
-      //  const trailPt = resolvePos(pastT);
-      //  const alpha = (1 - frac) * 0.6;
-      //  const radius = (1 - frac) * 4.0;
-      //  ctx.beginPath();
-      //  ctx.arc(trailPt.x, trailPt.y, Math.max(0.1, radius), 0, Math.PI * 2);
-      //  ctx.fillStyle = `rgba(255,255,255,${alpha})`;
-      //  ctx.fill();
-      // }
     };
 
     raf = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(raf);
   }, []);
 
-  /* Warp intro + idle loop */
+  /* ── Warp intro + idle loop ─────────────────────────────────────────────── */
   useEffect(() => {
     warpRef.current.v = 1.0;
-
     let warpTween: gsap.core.Tween | null = null;
 
     const onScroll = () => {
       const scrollY = window.scrollY;
-
       if (warpTween) warpTween.kill();
-
       if (scrollY <= 0) {
         warpTween = gsap.to(warpRef.current, {
           v: 1.0,
@@ -413,18 +383,13 @@ export function Hero() {
         });
       }
     };
-
     window.addEventListener("scroll", onScroll, { passive: true });
-
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-    };
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  /* Scroll scrub timeline */
+  /* ── Scroll scrub timeline ──────────────────────────────────────────────── */
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Initial hidden states
       gsap.set(".hero-c-edge", {
         strokeDashoffset: (_i: number, el: SVGGeometryElement) =>
           el.getTotalLength?.() ?? 300,
@@ -442,6 +407,7 @@ export function Hero() {
       gsap.set(dissolveRef.current, { opacity: 0 });
       gsap.set(".hero-star-cta", { opacity: 0, y: 18, scale: 0.88 });
       gsap.set(".hcta-line", { scaleX: 0, transformOrigin: "left center" });
+
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: wrapRef.current,
@@ -454,7 +420,6 @@ export function Hero() {
         },
       });
 
-      // Phase 0–1.5: nebula breathes in, horizon draws
       tl.to(
         nebulaRef.current,
         { scale: 1, opacity: 1, duration: 1.3, ease: "power2.out" },
@@ -465,8 +430,6 @@ export function Hero() {
         { scaleX: 1, duration: 1.0, ease: "power3.out" },
         0.6,
       );
-
-      // Phase 1.5–3: constellation assembles from outer nodes inward
       tl.to(
         ".hero-c-star",
         {
@@ -489,7 +452,6 @@ export function Hero() {
         },
         2.0,
       );
-
       tl.to(
         ".hero-star-cta",
         {
@@ -504,30 +466,19 @@ export function Hero() {
       );
       tl.to(
         ".hcta-line",
-        {
-          scaleX: 1,
-          stagger: 0.12,
-          duration: 0.5,
-          ease: "power2.inOut",
-        },
+        { scaleX: 1, stagger: 0.12, duration: 0.5, ease: "power2.inOut" },
         3.35,
       );
-
-      // Phase 3–4.5: content emerges
       tl.to(
         contentRef.current,
         { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" },
         3.0,
       );
-
-      // Phase 5–5.5: constellation dims as text becomes the focus
       tl.to(
         [".hero-c-edge", ".hero-c-star"],
         { opacity: 0.06, duration: 0.7 },
         5.0,
       );
-
-      // Phase 6–7: dissolve to black → seamless handoff to About
       tl.to(
         contentRef.current,
         { opacity: 0, duration: 0.5, ease: "power2.in" },
@@ -544,7 +495,7 @@ export function Hero() {
     return () => ctx.revert();
   }, []);
 
-  /* SVG elements */
+  /* ── SVG elements ───────────────────────────────────────────────────────── */
   const edges = C_EDGES.map(([a, b], i) => {
     const pa = C_STARS[a],
       pb = C_STARS[b];
@@ -575,7 +526,6 @@ export function Hero() {
       <circle cx={s.x} cy={s.y} r={s.r * 4.0} fill="white" opacity={0.04} />
       <circle cx={s.x} cy={s.y} r={s.r * 1.8} fill="white" opacity={0.14} />
       <circle cx={s.x} cy={s.y} r={s.r} fill="white" />
-      {/* Crosshair only on the apex star */}
       {i === 0 && (
         <>
           <line
@@ -604,16 +554,9 @@ export function Hero() {
   return (
     <div ref={wrapRef} className="hero-wrap" id="hero">
       <div ref={pinRef} className="hero-pin">
-        {/* Canvas — peripheral stars only */}
         <canvas ref={canvasRef} className="hero-canvas" aria-hidden="true" />
-
-        {/* Vignette: the key piece — darkens the centre aggressively */}
         <div className="hero-vignette" aria-hidden="true" />
-
-        {/* Nebula wash */}
         <div ref={nebulaRef} className="hero-nebula" aria-hidden="true" />
-
-        {/* Constellation — mouse-parallaxed */}
         <svg
           ref={consvgRef}
           className="hero-svg"
@@ -632,11 +575,7 @@ export function Hero() {
           {edges}
           {starNodes}
         </svg>
-
-        {/* Horizon glow line */}
         <div ref={horizonRef} className="hero-horizon" aria-hidden="true" />
-
-        {/* CONTENT */}
         <div ref={contentRef} className="hero-content">
           <div className="hero-badge">
             <span className="hbadge-pip" aria-hidden="true" />
@@ -645,7 +584,6 @@ export function Hero() {
             </span>
             <span className="hbadge-pip" aria-hidden="true" />
           </div>
-
           <div className="hero-title" aria-label="Summit EXPO 2026">
             <div className="ht-row ht-summit">
               {"SUMMIT".split("").map((c, i) => (
@@ -663,11 +601,9 @@ export function Hero() {
               <span className="ht-year">2026</span>
             </div>
           </div>
-
           <p className="hero-tagline">
             A youth exhibition of <em>All That Can Be</em>
           </p>
-
           <p className="hero-subline">
             <span className="hero-subline-dot" aria-hidden="true">
               ✦
@@ -677,8 +613,6 @@ export function Hero() {
               ✦
             </span>
           </p>
-
-          {/* Star CTAs */}
           <div className="hero-ctas" ref={ctasRef}>
             <div className="hero-star-ctas">
               <canvas
@@ -686,7 +620,6 @@ export function Hero() {
                 className="hero-cta-lines-canvas"
                 aria-hidden="true"
               />
-
               <a
                 href="#trailer"
                 className="hero-star-cta hero-star-cta--trailer"
@@ -708,7 +641,6 @@ export function Hero() {
                 </span>
                 <span className="hscta-play">▶</span>
               </a>
-
               <a
                 href="#register"
                 className="hero-star-cta hero-star-cta--attendee"
@@ -730,7 +662,6 @@ export function Hero() {
                   <span className="hscta-title">Attendee</span>
                 </span>
               </a>
-
               <a
                 href="#register"
                 className="hero-star-cta hero-star-cta--exhibitor"
@@ -754,14 +685,10 @@ export function Hero() {
             </div>
           </div>
         </div>
-
-        {/* Scroll hint */}
         <div ref={hintRef} className="hero-hint" aria-hidden="true">
           <span className="hero-hint-label">scroll to explore</span>
           <i className="fa-solid fa-angles-down hero-hint-icon" />
         </div>
-
-        {/* Dissolve — exact match with About bg colour */}
         <div ref={dissolveRef} className="hero-dissolve" aria-hidden="true" />
       </div>
     </div>

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import "./Cursor.css";
+import { useVisibleCanvas } from "../../utils/useVisibleCanvas";
 
 interface Particle {
   x: number;
@@ -25,10 +26,10 @@ export function Cursor() {
   useEffect(() => {
     const dot = dotRef.current!;
     const ring = ringRef.current!;
-    const canvas = canvasRef.current!;
-    const ctx = canvas.getContext("2d")!;
 
+    // Keep resize for the canvas dimensions (still needed for backdrop coordinate math)
     const resize = () => {
+      const canvas = canvasRef.current!;
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     };
@@ -37,14 +38,11 @@ export function Cursor() {
 
     const onMove = (e: MouseEvent) => {
       tgtRef.current = { x: e.clientX, y: e.clientY };
-
       const dx = e.clientX - lastPos.current.x;
       const dy = e.clientY - lastPos.current.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
       if (dist > 8) {
-        // was 4 — reduces spawns on slow movement
         for (let i = 0; i < 2; i++) {
-          // was 3
           const angle = Math.random() * Math.PI * 2;
           const spd = Math.random() * 1.2 + 0.2;
           particles.current.push({
@@ -64,54 +62,72 @@ export function Cursor() {
 
     const onEnter = () => ring.classList.add("cursor-ring--hover");
     const onLeave = () => ring.classList.remove("cursor-ring--hover");
-    document.querySelectorAll('a, button, [role="button"]').forEach((el) => {
+    const interactiveEls = document.querySelectorAll(
+      'a, button, [role="button"]',
+    );
+    interactiveEls.forEach((el) => {
       el.addEventListener("mouseenter", onEnter);
       el.addEventListener("mouseleave", onLeave);
     });
 
     window.addEventListener("mousemove", onMove, { passive: true });
 
-    const loop = () => {
+    // Dot/ring animation only — NO canvas draw here anymore
+    const animLoop = () => {
       posRef.current.x += (tgtRef.current.x - posRef.current.x) * 0.18;
       posRef.current.y += (tgtRef.current.y - posRef.current.y) * 0.18;
-
       dot.style.transform = `translate(${tgtRef.current.x}px, ${tgtRef.current.y}px)`;
       ring.style.transform = `translate(${posRef.current.x}px, ${posRef.current.y}px)`;
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      particles.current = particles.current.filter((p) => p.life < p.maxLife);
-      // Hard cap — prevents buildup during fast mouse sweeps
-      if (particles.current.length > 80) {
-        particles.current.splice(0, particles.current.length - 80);
-      }
-      for (const p of particles.current) {
-        const t = p.life / p.maxLife;
-        const al = (1 - t) * 0.7;
-        const r = p.r * (1 - t * 0.5);
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, r * 4, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${p.hue},85%,65%,${al * 0.08})`;
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${p.hue},90%,78%,${al})`;
-        ctx.fill();
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy += 0.045;
-        p.life++;
-      }
-
-      rafRef.current = requestAnimationFrame(loop);
+      rafRef.current = requestAnimationFrame(animLoop);
     };
-    rafRef.current = requestAnimationFrame(loop);
+    rafRef.current = requestAnimationFrame(animLoop);
 
     return () => {
-      cancelAnimationFrame(rafRef.current);
-      window.removeEventListener("resize", resize);
-      window.removeEventListener("mousemove", onMove);
-    };
+  cancelAnimationFrame(rafRef.current);
+  window.removeEventListener("resize", resize);
+  window.removeEventListener("mousemove", onMove);
+  interactiveEls.forEach((el) => {          // ← ADD THIS
+    el.removeEventListener("mouseenter", onEnter);
+    el.removeEventListener("mouseleave", onLeave);
+  });
+};
   }, []);
+
+  useVisibleCanvas(
+    canvasRef,
+    () => {
+      return (_canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) => {
+        ctx.clearRect(0, 0, _canvas.offsetWidth, _canvas.offsetHeight);
+
+        particles.current = particles.current.filter((p) => p.life < p.maxLife);
+        if (particles.current.length > 80) {
+          particles.current.splice(0, particles.current.length - 80);
+        }
+
+        for (const p of particles.current) {
+          const t = p.life / p.maxLife;
+          const al = (1 - t) * 0.7;
+          const r = p.r * (1 - t * 0.5);
+
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, r * 4, 0, Math.PI * 2);
+          ctx.fillStyle = `hsla(${p.hue},85%,65%,${al * 0.08})`;
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+          ctx.fillStyle = `hsla(${p.hue},90%,78%,${al})`;
+          ctx.fill();
+
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.045;
+          p.life++;
+        }
+      };
+    },
+    { fps: 60 },
+  );
 
   return (
     <>

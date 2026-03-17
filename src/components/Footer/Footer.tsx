@@ -1,9 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import {gsap, ScrollTrigger} from "../../utils/gsap";
 import "./Footer.css";
-
-gsap.registerPlugin(ScrollTrigger);
 
 const LINKS = [
   { id: "hero", label: "Home", mag: 6.5, greekLetter: "α" },
@@ -247,6 +244,7 @@ export function Footer() {
 
   //  Scroll entrance — draw constellation lines + pop stars
   useEffect(() => {
+    if (!footerRef.current) return;
     const ctx = gsap.context(() => {
       ScrollTrigger.create({
         trigger: footerRef.current,
@@ -298,7 +296,7 @@ export function Footer() {
           );
         },
       });
-    }, footerRef);
+    }, footerRef.current);
     return () => ctx.revert();
   }, []);
 

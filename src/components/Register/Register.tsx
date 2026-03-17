@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import {gsap, ScrollTrigger} from "../../utils/gsap";
 import "./Register.css";
+import { useVisibleCanvas } from "../../utils/useVisibleCanvas";
 
-gsap.registerPlugin(ScrollTrigger);
+;
 
 // TODO: replace with actual form links once they're live. For now these can be placeholders
 const EXHIBITOR_FORM = "https://forms.gle/vx68poaxMEnezRP69";
@@ -41,92 +41,56 @@ const TIMELINE = [
   },
 ];
 
-export function Register() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  // Star canvas — warm orange palette to bridge into the final section
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d")!;
-    interface S {
-      x: number;
-      y: number;
-      r: number;
-      vx: number;
-      vy: number;
-      op: number;
-      ph: number;
-      sp: number;
-      hue: number;
-    }
-    let stars: S[] = [],
-      raf = 0,
-      t = 0;
-    const resize = () => {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
+function useRegisterCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
+  useVisibleCanvas(canvasRef, (canvas) => {
+    interface S { x:number; y:number; r:number; vx:number; vy:number; op:number; ph:number; sp:number; hue:number; }
+    let stars: S[] = [], t = 0;
+ 
+    const seed = () => {
+      const W = canvas.offsetWidth, H = canvas.offsetHeight;
       stars = Array.from({ length: 80 }, () => {
-        const a = Math.random() * Math.PI * 2,
-          s = 0.004 + Math.random() * 0.015;
+        const a = Math.random() * Math.PI * 2, s = 0.004 + Math.random() * 0.015;
         return {
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
+          x: Math.random() * W, y: Math.random() * H,
           r: Math.random() * 1.1 + 0.15,
-          vx: Math.cos(a) * s,
-          vy: Math.sin(a) * s,
+          vx: Math.cos(a) * s, vy: Math.sin(a) * s,
           op: Math.random() * 0.65 + 0.2,
-          ph: Math.random() * Math.PI * 2,
-          sp: Math.random() * 0.8 + 0.2,
-          // Warm purple-to-orange hue range — ties this section to the FAQ amber stars
+          ph: Math.random() * Math.PI * 2, sp: Math.random() * 0.8 + 0.2,
           hue: 270 + Math.random() * 80,
         };
       });
     };
-    resize();
-    const ro = new ResizeObserver(resize);
-    ro.observe(canvas);
-    const loop = () => {
-      t += 0.01;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    seed();
+ 
+    return (_c: HTMLCanvasElement, ctx: CanvasRenderingContext2D, dt: number) => {
+      t += (dt / 1000) * 60 * 0.01;
+      const W = _c.offsetWidth, H = _c.offsetHeight;
+      ctx.clearRect(0, 0, W, H);
       for (const s of stars) {
-        s.x += s.vx;
-        s.y += s.vy;
-        if (s.x < -2) s.x = canvas.width + 2;
-        if (s.x > canvas.width + 2) s.x = -2;
-        if (s.y < -2) s.y = canvas.height + 2;
-        if (s.y > canvas.height + 2) s.y = -2;
-        const tw = 0.5 + 0.5 * Math.sin(t * s.sp + s.ph),
-          al = s.op * (0.3 + 0.7 * tw);
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r * 3.5, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${s.hue},60%,70%,${al * 0.06})`;
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${s.hue},55%,90%,${al})`;
-        ctx.fill();
+        s.x += s.vx; s.y += s.vy;
+        if (s.x < -2) s.x = W + 2; if (s.x > W + 2) s.x = -2;
+        if (s.y < -2) s.y = H + 2; if (s.y > H + 2) s.y = -2;
+        const tw = 0.5 + 0.5 * Math.sin(t * s.sp + s.ph), al = s.op * (0.3 + 0.7 * tw);
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.r * 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${s.hue},60%,70%,${al * 0.06})`; ctx.fill();
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${s.hue},55%,90%,${al})`; ctx.fill();
         if (al > 0.65 && s.r > 0.9) {
           const sp = s.r * 5.5 * al;
-          ctx.strokeStyle = `hsla(${s.hue},55%,82%,${al * 0.32})`;
-          ctx.lineWidth = 0.5;
-          ctx.beginPath();
-          ctx.moveTo(s.x - sp, s.y);
-          ctx.lineTo(s.x + sp, s.y);
-          ctx.moveTo(s.x, s.y - sp);
-          ctx.lineTo(s.x, s.y + sp);
-          ctx.stroke();
+          ctx.strokeStyle = `hsla(${s.hue},55%,82%,${al * 0.32})`; ctx.lineWidth = 0.5;
+          ctx.beginPath(); ctx.moveTo(s.x - sp, s.y); ctx.lineTo(s.x + sp, s.y);
+          ctx.moveTo(s.x, s.y - sp); ctx.lineTo(s.x, s.y + sp); ctx.stroke();
         }
       }
-      raf = requestAnimationFrame(loop);
     };
-    loop();
-    return () => {
-      cancelAnimationFrame(raf);
-      ro.disconnect();
-    };
-  }, []);
+  }, { fps: 40 });
+}
+
+
+export function Register() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  useRegisterCanvas(canvasRef);
 
   // GSAP scroll entrances
   useEffect(() => {

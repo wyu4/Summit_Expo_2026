@@ -1,11 +1,59 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import "./PageLoader.css";
+import { useVisibleCanvas } from "../../utils/useVisibleCanvas";
+
 
 interface Props {
   onComplete?: () => void;
   onDone?: () => void;
 }
+
+function usePageLoaderCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
+  useVisibleCanvas(canvasRef, (canvas) => {
+    interface S { x:number; y:number; r:number; vx:number; vy:number; op:number; ph:number; sp:number; hue:number; }
+    let stars: S[] = [], t = 0;
+ 
+    const seed = () => {
+      const W = canvas.offsetWidth, H = canvas.offsetHeight;
+      stars = Array.from({ length: 200 }, () => {
+        const a = Math.random() * Math.PI * 2, s = 0.004 + Math.random() * 0.014;
+        return {
+          x: Math.random() * W, y: Math.random() * H,
+          r: Math.random() * 1.3 + 0.15,
+          vx: Math.cos(a) * s, vy: Math.sin(a) * s,
+          op: Math.random() * 0.65 + 0.2,
+          ph: Math.random() * Math.PI * 2, sp: Math.random() * 0.8 + 0.3,
+          hue: 200 + Math.random() * 120,
+        };
+      });
+    };
+    seed();
+ 
+    return (_c: HTMLCanvasElement, ctx: CanvasRenderingContext2D, dt: number) => {
+      t += (dt / 1000) * 60 * 0.012;
+      const W = _c.offsetWidth, H = _c.offsetHeight;
+      ctx.clearRect(0, 0, W, H);
+      for (const s of stars) {
+        s.x += s.vx; s.y += s.vy;
+        if (s.x < -2) s.x = W + 2; if (s.x > W + 2) s.x = -2;
+        if (s.y < -2) s.y = H + 2; if (s.y > H + 2) s.y = -2;
+        const tw = 0.5 + 0.5 * Math.sin(t * s.sp + s.ph), al = s.op * (0.3 + 0.7 * tw);
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.r * 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${s.hue},60%,70%,${al * 0.06})`; ctx.fill();
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${s.hue},50%,92%,${al})`; ctx.fill();
+        if (al > 0.7 && s.r > 1.0) {
+          const sp = s.r * 5 * al;
+          ctx.strokeStyle = `hsla(${s.hue},55%,85%,${al * 0.28})`; ctx.lineWidth = 0.5;
+          ctx.beginPath(); ctx.moveTo(s.x - sp, s.y); ctx.lineTo(s.x + sp, s.y);
+          ctx.moveTo(s.x, s.y - sp); ctx.lineTo(s.x, s.y + sp); ctx.stroke();
+        }
+      }
+    };
+  }, { fps: 60 });
+}
+
 
 export function PageLoader({ onComplete, onDone }: Props) {
   const done = onComplete ?? onDone ?? (() => {});
@@ -14,89 +62,9 @@ export function PageLoader({ onComplete, onDone }: Props) {
   const [pct, setPct] = useState(0);
   const dismissed = useRef(false);
 
-  // Star canvas
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d")!;
-    let raf = 0,
-      t = 0;
+  usePageLoaderCanvas(canvasRef);
 
-    interface S {
-      x: number;
-      y: number;
-      r: number;
-      vx: number;
-      vy: number;
-      op: number;
-      ph: number;
-      sp: number;
-      hue: number;
-    }
-    let stars: S[] = [];
 
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      stars = Array.from({ length: 200 }, () => {
-        const a = Math.random() * Math.PI * 2,
-          s = 0.004 + Math.random() * 0.014;
-        return {
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          r: Math.random() * 1.3 + 0.15,
-          vx: Math.cos(a) * s,
-          vy: Math.sin(a) * s,
-          op: Math.random() * 0.65 + 0.2,
-          ph: Math.random() * Math.PI * 2,
-          sp: Math.random() * 0.8 + 0.3,
-          hue: 200 + Math.random() * 120,
-        };
-      });
-    };
-    resize();
-    window.addEventListener("resize", resize);
-
-    const loop = () => {
-      t += 0.012;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (const s of stars) {
-        s.x += s.vx;
-        s.y += s.vy;
-        if (s.x < -2) s.x = canvas.width + 2;
-        if (s.x > canvas.width + 2) s.x = -2;
-        if (s.y < -2) s.y = canvas.height + 2;
-        if (s.y > canvas.height + 2) s.y = -2;
-        const tw = 0.5 + 0.5 * Math.sin(t * s.sp + s.ph);
-        const al = s.op * (0.3 + 0.7 * tw);
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r * 3.5, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${s.hue},60%,70%,${al * 0.06})`;
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${s.hue},50%,92%,${al})`;
-        ctx.fill();
-        if (al > 0.7 && s.r > 1.0) {
-          const sp = s.r * 5 * al;
-          ctx.strokeStyle = `hsla(${s.hue},55%,85%,${al * 0.28})`;
-          ctx.lineWidth = 0.5;
-          ctx.beginPath();
-          ctx.moveTo(s.x - sp, s.y);
-          ctx.lineTo(s.x + sp, s.y);
-          ctx.moveTo(s.x, s.y - sp);
-          ctx.lineTo(s.x, s.y + sp);
-          ctx.stroke();
-        }
-      }
-      raf = requestAnimationFrame(loop);
-    };
-    loop();
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("resize", resize);
-    };
-  }, []);
 
   // Progress + auto-dismiss
   useEffect(() => {

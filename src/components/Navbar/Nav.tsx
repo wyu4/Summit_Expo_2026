@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import {gsap, ScrollTrigger} from "../../utils/gsap";
 import "./Nav.css";
 
-gsap.registerPlugin(ScrollTrigger);
+;
 
 //  Config
 
@@ -262,6 +261,8 @@ export function Nav() {
 
     let cachedCentres: { x: number; y: number }[] = [];
     let centresDirty = true;
+    let lastInvalidate = 0;
+    let isVisible = true;
 
     const getCentres = () => {
       const navRect = nav.getBoundingClientRect();
@@ -277,7 +278,7 @@ export function Nav() {
     };
 
     const resize = () => {
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5); // cap DPR
       const w = nav.offsetWidth,
         h = nav.offsetHeight;
       canvas.width = w * dpr;
@@ -289,23 +290,34 @@ export function Nav() {
     };
     resize();
     window.addEventListener("resize", resize, { passive: true });
-    // Invalidate cache on scroll since nav position can shift
-    window.addEventListener(
-      "scroll",
-      () => {
+
+    // Throttled scroll invalidation — only re-measure every 100ms
+    const onScroll = () => {
+      const now = performance.now();
+      if (now - lastInvalidate > 100) {
         centresDirty = true;
-      },
-      { passive: true },
-    );
+        lastInvalidate = now;
+      }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    // Pause drawing when tab is hidden
+    const onVisibility = () => {
+      isVisible = document.visibilityState === "visible";
+    };
+    document.addEventListener("visibilitychange", onVisibility);
 
     const draw = () => {
       rafRef.current = requestAnimationFrame(draw);
+
+      // Skip entirely when tab is hidden
+      if (!isVisible) return;
+
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
       const { width: W, height: H } = canvas.getBoundingClientRect();
       ctx.clearRect(0, 0, W, H);
 
-      // Only re-read DOM when something actually changed
       if (centresDirty) {
         cachedCentres = getCentres();
         centresDirty = false;
@@ -322,23 +334,24 @@ export function Nav() {
         const ex = a.x + (b.x - a.x) * sp,
           ey = a.y + (b.y - a.y) * sp;
 
+        // Glow layer — skip ctx.filter (expensive), use a semi-transparent wider line instead
         ctx.save();
-        ctx.globalAlpha = 0.2;
+        ctx.globalAlpha = 0.12;
         ctx.strokeStyle = "#6789A3";
-        ctx.lineWidth = 3;
-        ctx.filter = "blur(3px)";
+        ctx.lineWidth = 6;
         ctx.beginPath();
         ctx.moveTo(a.x, a.y);
         ctx.lineTo(ex, ey);
         ctx.stroke();
         ctx.restore();
 
+        // Dashed animated march
         ctx.save();
         ctx.globalAlpha = 0.55;
         ctx.strokeStyle = "#8ab4d4";
         ctx.lineWidth = 1;
         ctx.setLineDash([4, 6]);
-        ctx.lineDashOffset = -Date.now() * 0.012;
+        ctx.lineDashOffset = -(Date.now() * 0.012) % 28;
         ctx.lineCap = "round";
         ctx.beginPath();
         ctx.moveTo(a.x, a.y);
@@ -346,6 +359,7 @@ export function Nav() {
         ctx.stroke();
         ctx.restore();
 
+        // Solid spine
         ctx.save();
         ctx.globalAlpha = 0.8;
         ctx.strokeStyle = "rgba(180,220,255,0.75)";
@@ -359,9 +373,12 @@ export function Nav() {
       }
     };
     rafRef.current = requestAnimationFrame(draw);
+
     return () => {
       cancelAnimationFrame(rafRef.current);
       window.removeEventListener("resize", resize);
+      window.removeEventListener("scroll", onScroll);
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, []);
 
