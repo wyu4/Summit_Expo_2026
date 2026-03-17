@@ -1323,6 +1323,9 @@ export function About() {
   const statsRef = useRef<HTMLDivElement>(null);
   const closingRef = useRef<HTMLDivElement>(null);
 
+  const portalEntryRef = useRef<HTMLDivElement>(null);
+  const portalExitRef = useRef<HTMLDivElement>(null);
+
   useSpaceCanvas(spaceRef);
   useConstellations(constRef);
   useMouseTrail(trailRef);
@@ -1454,6 +1457,74 @@ export function About() {
           yoyo: true,
           delay: i * 0.3,
         });
+
+        gsap.fromTo(
+          portalEntryRef.current,
+          { opacity: 0, scale: 0.3, rotate: -15 },
+          {
+            opacity: 1,
+            scale: 1,
+            rotate: 0,
+            duration: 1.2,
+            ease: "back.out(1.6)",
+            scrollTrigger: {
+              trigger: portalEntryRef.current,
+              start: "top 90%",
+            },
+          },
+        );
+
+        gsap.fromTo(
+          portalExitRef.current,
+          { opacity: 0, scale: 0.3, rotate: 15 },
+          {
+            opacity: 1,
+            scale: 1,
+            rotate: 0,
+            duration: 1.2,
+            ease: "back.out(1.6)",
+            scrollTrigger: {
+              trigger: portalExitRef.current,
+              start: "top 90%",
+            },
+          },
+        );
+
+        gsap.to(".about-portal__glow--blue", {
+          opacity: 0.5,
+          scale: 1.6,
+          duration: 2,
+          ease: "sine.inOut",
+          repeat: -1,
+          yoyo: true,
+        });
+
+        gsap.to(".about-portal__glow--pink", {
+          opacity: 0.6,
+          scale: 1.4,
+          duration: 1.6,
+          ease: "sine.inOut",
+          repeat: -1,
+          yoyo: true,
+          delay: 0.4,
+        });
+
+        gsap.to(portalEntryRef.current, {
+          y: -12,
+          duration: 3.5,
+          ease: "sine.inOut",
+          repeat: -1,
+          yoyo: true,
+        });
+
+        gsap.to(portalExitRef.current, {
+          y: 12,
+          duration: 4.2,
+          ease: "sine.inOut",
+          repeat: -1,
+          yoyo: true,
+          delay: 1,
+        });
       });
     }, sectionRef);
     return () => ctx.revert();
@@ -1461,6 +1532,18 @@ export function About() {
 
   return (
     <section ref={sectionRef} className="about" id="about">
+      {/* Entry portal*/}
+      <div className="about-portal about-portal--entry" ref={portalEntryRef}>
+        <div className="about-portal__glow about-portal__glow--blue" />
+        <img src="/portals/enter.PNG" alt="" draggable={false} />
+      </div>
+
+      {/* Exit portal*/}
+      <div className="about-portal about-portal--exit" ref={portalExitRef}>
+        <div className="about-portal__glow about-portal__glow--pink" />
+        <img src="/portals/exit.PNG" alt="" draggable={false} />
+      </div>
+
       {/* Background layers */}
       <canvas
         ref={spaceRef}

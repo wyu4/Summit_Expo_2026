@@ -554,10 +554,10 @@
     padding: 2rem 1.5rem;
   }
 }
-/* ══════════════════════════════════════════════════════════════════
+/* 
    ABOUT → LINEUP TRANSITION
    Sits at the bottom of the About section, overlaps into Lineup
-   ══════════════════════════════════════════════════════════════════ */
+    */
 
 .about-transition {
   position: relative;
@@ -749,9 +749,59 @@
   }
 }
 
-/* ══════════════════════════════════════════════════════════════════
+/* 
    ABOUT — Embedded Trailer (Hologram Transmission Frame)
-   ══════════════════════════════════════════════════════════════════ */
+    */
+
+.about-portal {
+  position: absolute;
+  pointer-events: none;
+  z-index: 4;
+  opacity: 0;
+}
+
+.about-portal img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.about-portal--entry {
+  width: 250px;
+  top: 2%;
+  right: -4%;
+}
+
+.about-portal--exit {
+  width: 250px;
+  top: 58%;
+  left: -2%;
+}
+
+.about-portal__glow {
+  position: absolute;
+  top: 18%;
+  left: 22%;
+  width: 50%;
+  height: 62%;
+  border-radius: 50%;
+  filter: blur(18px);
+  z-index: -1;
+  opacity: 0.7;
+}
+
+.about-portal__glow--blue {
+  background: radial-gradient(ellipse, rgba(0, 230, 255, 0.9) 0%, rgba(0, 180, 255, 0.5) 50%, transparent 80%);
+}
+
+.about-portal__glow--pink {
+  background: radial-gradient(ellipse, rgba(255, 80, 160, 0.95) 0%, rgba(255, 40, 101, 0.772) 50%, transparent 80%);
+}
+
+@media (max-width: 900px) {
+  .about-portal { display: none; }
+}
 
 .about-trailer {
   margin-top: 5rem;
@@ -1343,7 +1393,7 @@
   align-items: center;
   gap: 0.55rem;
   font-family: var(--font-ui, "Chakra Petch", monospace);
-  font-size: 0.60rem;
+  font-size: 0.6rem;
   letter-spacing: 0.32em;
   text-transform: uppercase;
   color: rgb(151, 120, 200);

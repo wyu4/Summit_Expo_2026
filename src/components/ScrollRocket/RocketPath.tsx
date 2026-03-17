@@ -13,9 +13,8 @@ interface ResolvedPt {
 }
 
 const PATH: AnchoredWaypoint[] = [
-  { selector: "#about", xPct: 0.6515, yPct: 0.0716 },
-  { selector: "#about", xPct: 0.8879, yPct: 0.0803 },
-  { selector: "#about", xPct: 0.8793, yPct: 0.1415 },
+  { selector: "#about", xPct: 0.9423, yPct: 0.0796 },
+  { selector: "#about", xPct: 0.7121, yPct: 0.0801 },
   { selector: "#about", xPct: 0.5329, yPct: 0.1378 },
   { selector: "#about", xPct: 0.5340, yPct: 0.2414 },
   { selector: "#about", xPct: 0.9347, yPct: 0.2365 },
