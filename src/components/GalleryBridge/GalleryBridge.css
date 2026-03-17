@@ -91,7 +91,7 @@
   align-items: center;
   gap: 0.65rem;
   font-family: var(--font-ui, "Chakra Petch", monospace);
-  font-size: 0.56rem;
+  font-size: 0.65rem;
   letter-spacing: 0.3em;
   text-transform: uppercase;
   color: rgba(100, 160, 220, 0.6);
@@ -283,10 +283,10 @@
   background: rgba(2, 0, 14, 0.85);
   border-top: 1px solid rgba(80, 130, 200, 0.2);
   font-family: var(--font-ui, "Chakra Petch", monospace);
-  font-size: 0.48rem;
+  font-size: var(--sp-2);
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(160, 200, 240, 0.65);
+  color: rgb(160, 200, 240);
 }
 .gb-caption-dot {
   display: inline-block;

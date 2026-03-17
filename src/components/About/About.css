@@ -782,10 +782,10 @@
 }
 .about-trailer__label {
   font-family: var(--font-ui, "Chakra Petch", monospace);
-  font-size: 0.48rem;
+  font-size: var(--sp-2);
   letter-spacing: 0.38em;
   text-transform: uppercase;
-  color: rgba(150, 130, 195, 0.4);
+  color: rgb(150, 130, 195);
   white-space: nowrap;
 }
 
@@ -928,9 +928,9 @@
 /* REC indicator */
 .at-hud__rec {
   font-family: var(--font-ui, "Chakra Petch", monospace);
-  font-size: 0.38rem;
+  font-size: 0.65rem;
   letter-spacing: 0.14em;
-  color: rgba(200, 60, 60, 0.65);
+  color: rgba(252, 11, 11, 0.9);
   display: flex;
   align-items: center;
   gap: 0.3em;
@@ -1343,10 +1343,10 @@
   align-items: center;
   gap: 0.55rem;
   font-family: var(--font-ui, "Chakra Petch", monospace);
-  font-size: 0.54rem;
+  font-size: 0.60rem;
   letter-spacing: 0.32em;
   text-transform: uppercase;
-  color: rgba(150, 120, 200, 0.5);
+  color: rgb(151, 120, 200);
   margin-bottom: 0.8rem;
 }
 .about-trailer__intro-title {
