@@ -8,14 +8,17 @@ export interface AnchoredWaypoint {
   yPct: number;
 }
 
-interface ResolvedPt { x: number; y: number; }
+interface ResolvedPt {
+  x: number;
+  y: number;
+}
 
 const PATH: AnchoredWaypoint[] = [
   { selector: "#about", xPct: 0.9694, yPct: 0.0188 },
   { selector: "#about", xPct: 0.6732, yPct: 0.0271 },
-  { selector: "#about", xPct: 0.9530, yPct: 0.1275 },
-  { selector: "#about", xPct: 0.5000, yPct: 0.1264 },
-  { selector: "#about", xPct: 0.4992, yPct: 0.2520 },
+  { selector: "#about", xPct: 0.953, yPct: 0.1275 },
+  { selector: "#about", xPct: 0.5, yPct: 0.1264 },
+  { selector: "#about", xPct: 0.4992, yPct: 0.252 },
   { selector: "#about", xPct: 0.9404, yPct: 0.2455 },
   { selector: "#about", xPct: 0.8976, yPct: 0.3732 },
   { selector: "#about", xPct: 0.2712, yPct: 0.3581 },
@@ -26,7 +29,7 @@ const PATH: AnchoredWaypoint[] = [
   { selector: "#about", xPct: 0.8615, yPct: 0.5545 },
   { selector: "#about", xPct: 0.8762, yPct: 0.6062 },
   { selector: "#about", xPct: 0.2743, yPct: 0.6024 },
-  { selector: "#about", xPct: 0.0110, yPct: 0.6340 },
+  { selector: "#about", xPct: 0.011, yPct: 0.634 },
 ];
 
 function resolve(path: AnchoredWaypoint[]): ResolvedPt[] {
@@ -34,17 +37,20 @@ function resolve(path: AnchoredWaypoint[]): ResolvedPt[] {
     const el = document.querySelector<HTMLElement>(a.selector);
     if (!el) return [];
     const r = el.getBoundingClientRect();
-    return [{
-      x: r.left + window.scrollX + r.width  * a.xPct,
-      y: r.top  + window.scrollY + r.height * a.yPct,
-    }];
+    return [
+      {
+        x: r.left + window.scrollX + r.width * a.xPct,
+        y: r.top + window.scrollY + r.height * a.yPct,
+      },
+    ];
   });
 }
 
 function buildSVGPath(pts: ResolvedPt[]) {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("aria-hidden", "true");
-  svg.style.cssText = "position:fixed;width:0;height:0;overflow:hidden;pointer-events:none;";
+  svg.style.cssText =
+    "position:fixed;width:0;height:0;overflow:hidden;pointer-events:none;";
   const el = document.createElementNS("http://www.w3.org/2000/svg", "path");
   if (pts.length >= 2) {
     let d = `M ${pts[0].x} ${pts[0].y}`;
@@ -66,7 +72,10 @@ function buildSVGPath(pts: ResolvedPt[]) {
   return { el, len: el.getTotalLength(), remove: () => svg.remove() };
 }
 
-interface LutEntry { scrollY: number; progress: number; }
+interface LutEntry {
+  scrollY: number;
+  progress: number;
+}
 
 function buildLUT(el: SVGPathElement, len: number, vh: number): LutEntry[] {
   const N = 1200;
@@ -77,63 +86,80 @@ function buildLUT(el: SVGPathElement, len: number, vh: number): LutEntry[] {
     raw.push({ scrollY: pt.y - vh / 2, rawP: t });
   }
   const total = raw[raw.length - 1].scrollY - raw[0].scrollY;
-  if (total <= 0) return raw.map(r => ({ scrollY: r.scrollY, progress: r.rawP }));
+  if (total <= 0)
+    return raw.map((r) => ({ scrollY: r.scrollY, progress: r.rawP }));
   const avgRate = 1 / total;
   const MAX = avgRate * 3.5;
   const out: LutEntry[] = [{ scrollY: raw[0].scrollY, progress: 0 }];
   let p = 0;
   for (let i = 1; i < raw.length; i++) {
     const ds = raw[i].scrollY - raw[i - 1].scrollY;
-    const dp = raw[i].rawP   - raw[i - 1].rawP;
+    const dp = raw[i].rawP - raw[i - 1].rawP;
     if (ds <= 0) continue;
     p += Math.min(dp / ds, MAX) * ds;
     out.push({ scrollY: raw[i].scrollY, progress: p });
   }
   const mx = out[out.length - 1].progress || 1;
-  return out.map(e => ({ scrollY: e.scrollY, progress: e.progress / mx }));
+  return out.map((e) => ({ scrollY: e.scrollY, progress: e.progress / mx }));
 }
 
 function lutLookup(lut: LutEntry[], sy: number): number {
   if (!lut.length) return 0;
   if (sy <= lut[0].scrollY) return 0;
   if (sy >= lut[lut.length - 1].scrollY) return 1;
-  let lo = 0, hi = lut.length - 1;
+  let lo = 0,
+    hi = lut.length - 1;
   while (lo < hi - 1) {
     const mid = (lo + hi) >> 1;
-    if (lut[mid].scrollY <= sy) lo = mid; else hi = mid;
+    if (lut[mid].scrollY <= sy) lo = mid;
+    else hi = mid;
   }
-  const a = lut[lo], b = lut[hi];
-  return a.progress + (sy - a.scrollY) / (b.scrollY - a.scrollY || 1) * (b.progress - a.progress);
+  const a = lut[lo],
+    b = lut[hi];
+  return (
+    a.progress +
+    ((sy - a.scrollY) / (b.scrollY - a.scrollY || 1)) *
+      (b.progress - a.progress)
+  );
 }
 
 // Pre-bake position + angle table — zero SVG calls in the render loop
-interface BakedPt { x: number; y: number; angle: number; }
+interface BakedPt {
+  x: number;
+  y: number;
+  angle: number;
+}
 
 function bakePath(el: SVGPathElement, len: number, n = 2000): BakedPt[] {
   const baked: BakedPt[] = new Array(n + 1);
   for (let i = 0; i <= n; i++) {
-    const t  = i / n;
+    const t = i / n;
     const pt = el.getPointAtLength(t * len);
     const t2 = Math.min(1, t + 0.003);
     const pb = el.getPointAtLength(t2 * len);
     const ta = el.getPointAtLength(Math.max(0, t - 0.003) * len);
-    const dx = t2 < 1 ? (pb.x - pt.x) : (pt.x - ta.x);
-    const dy = t2 < 1 ? (pb.y - pt.y) : (pt.y - ta.y);
-    baked[i] = { x: pt.x, y: pt.y, angle: Math.atan2(dy, dx) * (180 / Math.PI) };
+    const dx = t2 < 1 ? pb.x - pt.x : pt.x - ta.x;
+    const dy = t2 < 1 ? pb.y - pt.y : pt.y - ta.y;
+    baked[i] = {
+      x: pt.x,
+      y: pt.y,
+      angle: Math.atan2(dy, dx) * (180 / Math.PI),
+    };
   }
   return baked;
 }
 
 function bakedLookup(baked: BakedPt[], progress: number): BakedPt {
-  const n   = baked.length - 1;
+  const n = baked.length - 1;
   const raw = progress * n;
-  const lo  = Math.floor(raw);
-  const hi  = Math.min(lo + 1, n);
-  const f   = raw - lo;
-  const a   = baked[lo], b = baked[hi];
+  const lo = Math.floor(raw);
+  const hi = Math.min(lo + 1, n);
+  const f = raw - lo;
+  const a = baked[lo],
+    b = baked[hi];
   return {
-    x:     a.x     + (b.x     - a.x)     * f,
-    y:     a.y     + (b.y     - a.y)     * f,
+    x: a.x + (b.x - a.x) * f,
+    y: a.y + (b.y - a.y) * f,
     angle: a.angle + (b.angle - a.angle) * f,
   };
 }
@@ -146,16 +172,24 @@ function useVisibleFire(
 ) {
   useEffect(() => {
     const canvas = fireRef.current;
-    const wrap   = wrapRef.current;
+    const wrap = wrapRef.current;
     if (!canvas || !wrap) return;
 
     const ctx = canvas.getContext("2d")!;
-    canvas.width = 80; canvas.height = 120;
-    const CX = 40, NOZZLE_Y = 56;
+    canvas.width = 80;
+    canvas.height = 120;
+    const CX = 40,
+      NOZZLE_Y = 56;
 
     interface Flame {
-      x: number; y: number; vx: number; vy: number;
-      life: number; max: number; r: number; tier: number;
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      life: number;
+      max: number;
+      r: number;
+      tier: number;
     }
     let flames: Flame[] = [];
     let raf = 0;
@@ -170,14 +204,41 @@ function useVisibleFire(
     ];
 
     const spawnPuff = (big: boolean) => {
-      const ox  = CX + (Math.random() - 0.5) * (big ? 10 : 5);
-      const oy  = NOZZLE_Y + Math.random() * 3;
-      const vy  = (big ? 2.8 : 1.8) + Math.random() * 1.5;
-      const vx  = (Math.random() - 0.5) * (big ? 1.8 : 0.8);
+      const ox = CX + (Math.random() - 0.5) * (big ? 10 : 5);
+      const oy = NOZZLE_Y + Math.random() * 3;
+      const vy = (big ? 2.8 : 1.8) + Math.random() * 1.5;
+      const vx = (Math.random() - 0.5) * (big ? 1.8 : 0.8);
       const max = (big ? 16 : 10) + Math.random() * 6;
-      flames.push({ x: ox, y: oy, vx,           vy,           life: 0, max,           r: big ? 11 : 7,   tier: 0 });
-      flames.push({ x: ox, y: oy, vx: vx * 0.8, vy: vy * 1.05, life: 0, max: max * 0.8, r: big ? 7  : 4.5, tier: 1 });
-      flames.push({ x: ox, y: oy, vx: vx * 0.5, vy: vy * 1.1,  life: 0, max: max * 0.6, r: big ? 4  : 2.5, tier: 2 });
+      flames.push({
+        x: ox,
+        y: oy,
+        vx,
+        vy,
+        life: 0,
+        max,
+        r: big ? 11 : 7,
+        tier: 0,
+      });
+      flames.push({
+        x: ox,
+        y: oy,
+        vx: vx * 0.8,
+        vy: vy * 1.05,
+        life: 0,
+        max: max * 0.8,
+        r: big ? 7 : 4.5,
+        tier: 1,
+      });
+      flames.push({
+        x: ox,
+        y: oy,
+        vx: vx * 0.5,
+        vy: vy * 1.1,
+        life: 0,
+        max: max * 0.6,
+        r: big ? 4 : 2.5,
+        tier: 2,
+      });
     };
 
     const loop = (now: number) => {
@@ -189,26 +250,37 @@ function useVisibleFire(
       const scrolling = isScrollingRef.current;
       if (scrolling) {
         if (Math.random() < 0.85) spawnPuff(true);
-        if (Math.random() < 0.5)  spawnPuff(false);
+        if (Math.random() < 0.5) spawnPuff(false);
       } else {
         if (Math.random() < 0.3) spawnPuff(false);
       }
       flames.sort((a, b) => a.tier - b.tier);
-      flames = flames.filter(f => f.life < f.max);
+      flames = flames.filter((f) => f.life < f.max);
       for (const f of flames) {
-        const p    = f.life / f.max;
+        const p = f.life / f.max;
         const fade = scrolling ? 1 - p * 0.85 : (1 - p * 0.9) * 0.55;
-        const r    = f.r * (1 - p * 0.45);
-        const col  = TIER_COLORS[f.tier];
+        const r = f.r * (1 - p * 0.45);
+        const col = TIER_COLORS[f.tier];
         ctx.globalAlpha = fade;
-        ctx.beginPath(); ctx.arc(f.x, f.y, r, 0, Math.PI * 2);
-        ctx.fillStyle = col.fill; ctx.fill();
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = col.fill;
+        ctx.fill();
         ctx.lineWidth = f.tier === 0 ? 1.8 : 1.2;
-        ctx.strokeStyle = col.stroke; ctx.stroke();
+        ctx.strokeStyle = col.stroke;
+        ctx.stroke();
         ctx.globalAlpha = 1;
-        f.x += f.vx; f.y += f.vy * (1 + p * 0.5); f.vx *= 0.96; f.life++;
+        f.x += f.vx;
+        f.y += f.vy * (1 + p * 0.5);
+        f.vx *= 0.96;
+        f.life++;
       }
-      const topFade = ctx.createLinearGradient(0, NOZZLE_Y + canvas.height * 0.35, 0, canvas.height);
+      const topFade = ctx.createLinearGradient(
+        0,
+        NOZZLE_Y + canvas.height * 0.35,
+        0,
+        canvas.height,
+      );
       topFade.addColorStop(0, "rgba(0,0,0,0)");
       topFade.addColorStop(1, "rgba(0,0,0,1)");
       ctx.globalCompositeOperation = "destination-out";
@@ -217,26 +289,39 @@ function useVisibleFire(
       ctx.globalCompositeOperation = "source-over";
     };
 
-    const start = () => { if (running) return; running = true; raf = requestAnimationFrame(loop); };
-    const stop  = () => { if (!running) return; running = false; cancelAnimationFrame(raf); };
+    const start = () => {
+      if (running) return;
+      running = true;
+      raf = requestAnimationFrame(loop);
+    };
+    const stop = () => {
+      if (!running) return;
+      running = false;
+      cancelAnimationFrame(raf);
+    };
 
     const observer = new IntersectionObserver(
-      ([entry]) => entry.isIntersecting ? start() : stop(),
+      ([entry]) => (entry.isIntersecting ? start() : stop()),
       { rootMargin: "300px 0px 300px 0px", threshold: 0 },
     );
     observer.observe(wrap);
-    return () => { stop(); observer.disconnect(); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      stop();
+      observer.disconnect();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 }
 
 // Main component
-interface Props { rocketSrc?: string; }
+interface Props {
+  rocketSrc?: string;
+}
 
 export function RocketPath({ rocketSrc = "/rocket.png" }: Props) {
-  const wrapRef        = useRef<HTMLDivElement>(null);
-  const rocketRef      = useRef<HTMLImageElement>(null);
-  const fireRef        = useRef<HTMLCanvasElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const rocketRef = useRef<HTMLImageElement>(null);
+  const fireRef = useRef<HTMLCanvasElement>(null);
   const isScrollingRef = useRef(false);
   const [show, setShow] = useState(true);
 
@@ -253,10 +338,10 @@ export function RocketPath({ rocketSrc = "/rocket.png" }: Props) {
     const wrap = wrapRef.current;
     if (!wrap) return;
 
-    let vh    = window.innerHeight;
-    let pts   = resolve(PATH);
+    let vh = window.innerHeight;
+    let pts = resolve(PATH);
     let built = buildSVGPath(pts);
-    let lut   = buildLUT(built.el, built.len, vh);
+    let lut = buildLUT(built.el, built.len, vh);
     let baked = bakePath(built.el, built.len);
 
     let rebuildTimer: ReturnType<typeof setTimeout>;
@@ -264,10 +349,10 @@ export function RocketPath({ rocketSrc = "/rocket.png" }: Props) {
       clearTimeout(rebuildTimer);
       rebuildTimer = setTimeout(() => {
         built.remove();
-        vh    = window.innerHeight;
-        pts   = resolve(PATH);
+        vh = window.innerHeight;
+        pts = resolve(PATH);
         built = buildSVGPath(pts);
-        lut   = buildLUT(built.el, built.len, vh);
+        lut = buildLUT(built.el, built.len, vh);
         baked = bakePath(built.el, built.len);
       }, 300);
     };
@@ -275,58 +360,63 @@ export function RocketPath({ rocketSrc = "/rocket.png" }: Props) {
 
     // Progress thresholds — portal fade zones (progress 0..1)
     const ENTRY_THRESHOLD = 0.04;
-    const EXIT_THRESHOLD  = 0.96;
+    const EXIT_THRESHOLD = 0.96;
 
     let targetP = 0;
     let smoothP = 0;
-    const LERP  = 0.14;
-    let posRaf  = 0;
+    const LERP = 0.14;
+    let posRaf = 0;
     let visible = false;
 
     const renderLoop = () => {
-      if (visible) {
-        smoothP += (targetP - smoothP) * LERP;
+  if (visible) {
+    // Snap when close enough to prevent asymptotic creep
+    if (Math.abs(targetP - smoothP) < 0.001) {
+      smoothP = targetP;
+    } else {
+      smoothP += (targetP - smoothP) * LERP;
+    }
 
-        const pt    = bakedLookup(baked, smoothP);
-        const angle = pt.angle;
+    const pt = bakedLookup(baked, smoothP);
+    const angle = pt.angle;
 
-        wrap.style.left = `${pt.x}px`;
-        wrap.style.top  = `${pt.y - window.scrollY}px`;
+    wrap.style.left = `${pt.x}px`;
+    wrap.style.top = `${pt.y - window.scrollY}px`;
 
-        // Portal fade via progress — guaranteed to reach 0
-        if (smoothP >= EXIT_THRESHOLD) {
-          const p     = (smoothP - EXIT_THRESHOLD) / (1 - EXIT_THRESHOLD);
-          const scale = Math.max(0.02, 1 - p * 0.98);
-          const alpha = Math.max(0,    1 - p * p);
-          wrap.style.transform = `translate(-50%,-50%) rotate(${angle + 90}deg) scale(${scale})`;
-          wrap.style.opacity   = alpha <= 0.015 ? "0" : String(alpha);
-        } else if (smoothP <= ENTRY_THRESHOLD) {
-          const p     = 1 - smoothP / ENTRY_THRESHOLD;
-          const scale = Math.max(0.02, 1 - p * 0.98);
-          const alpha = Math.max(0,    1 - p * p);
-          wrap.style.transform = `translate(-50%,-50%) rotate(${angle + 90}deg) scale(${scale})`;
-          wrap.style.opacity   = String(alpha);
-        } else {
-          wrap.style.transform = `translate(-50%,-50%) rotate(${angle + 90}deg)`;
-          wrap.style.opacity   = "1";
-        }
-      }
-      posRaf = requestAnimationFrame(renderLoop);
-    };
+    if (smoothP >= EXIT_THRESHOLD) {
+      const p = (smoothP - EXIT_THRESHOLD) / (1 - EXIT_THRESHOLD);
+      const scale = Math.max(0, 1 - p);
+      const alpha = Math.max(0, 1 - p * p);
+      wrap.style.transform = `translate(-50%,-50%) rotate(${angle + 90}deg) scale(${scale})`;
+      wrap.style.opacity = scale <= 0 ? "0" : String(alpha);
+      if (scale <= 0) visible = false; // stop rendering once gone
+    } else if (smoothP <= ENTRY_THRESHOLD) {
+      const p = 1 - smoothP / ENTRY_THRESHOLD;
+      const scale = Math.max(0, 1 - p);
+      const alpha = Math.max(0, 1 - p * p);
+      wrap.style.transform = `translate(-50%,-50%) rotate(${angle + 90}deg) scale(${scale})`;
+      wrap.style.opacity = String(alpha);
+    } else {
+      wrap.style.transform = `translate(-50%,-50%) rotate(${angle + 90}deg)`;
+      wrap.style.opacity = "1";
+    }
+  }
+  posRaf = requestAnimationFrame(renderLoop);
+};
     renderLoop();
 
     let stopTimer: ReturnType<typeof setTimeout>;
 
     const onScroll = () => {
       if (!built.len || !lut.length) return;
-      const sy       = window.scrollY;
+      const sy = window.scrollY;
       const firstDoc = lut[0].scrollY;
-      const lastDoc  = lut[lut.length - 1].scrollY;
+      const lastDoc = lut[lut.length - 1].scrollY;
 
       if (sy < firstDoc - 50 || sy > lastDoc + 50) {
         if (visible) {
           wrap.style.transition = "opacity 0.4s ease";
-          wrap.style.opacity    = "0";
+          wrap.style.opacity = "0";
           setTimeout(() => {
             visible = false;
             wrap.style.transition = "";
@@ -345,7 +435,9 @@ export function RocketPath({ rocketSrc = "/rocket.png" }: Props) {
       targetP = lutLookup(lut, sy);
 
       clearTimeout(stopTimer);
-      stopTimer = setTimeout(() => { isScrollingRef.current = false; }, 150);
+      stopTimer = setTimeout(() => {
+        isScrollingRef.current = false;
+      }, 150);
     };
 
     wrap.style.opacity = "0";
@@ -366,9 +458,14 @@ export function RocketPath({ rocketSrc = "/rocket.png" }: Props) {
 
   return (
     <div ref={wrapRef} className="rocket-wrap" aria-hidden="true">
-      <canvas ref={fireRef}   className="rocket-fire" />
-      <img    ref={rocketRef} src={rocketSrc} alt=""
-        className="rocket-img" draggable={false} />
+      <canvas ref={fireRef} className="rocket-fire" />
+      <img
+        ref={rocketRef}
+        src={rocketSrc}
+        alt=""
+        className="rocket-img"
+        draggable={false}
+      />
     </div>
   );
 }
