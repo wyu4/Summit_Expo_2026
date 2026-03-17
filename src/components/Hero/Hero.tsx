@@ -710,7 +710,7 @@ export function Hero() {
               </a>
 
               <a
-                href="#register-attendee"
+                href="#register"
                 className="hero-star-cta hero-star-cta--attendee"
                 ref={(el: HTMLAnchorElement | null) => {
                   ctaNodeRefs.current[1] = el;
@@ -732,7 +732,7 @@ export function Hero() {
               </a>
 
               <a
-                href="#register-exhibitor"
+                href="#register"
                 className="hero-star-cta hero-star-cta--exhibitor"
                 ref={(el: HTMLAnchorElement | null) => {
                   ctaNodeRefs.current[2] = el;

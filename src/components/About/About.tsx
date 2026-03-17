@@ -865,7 +865,7 @@ function AboutTrailer({ youtubeId = "dQw4w9WgXcQ" }: { youtubeId?: string }) {
   const SIG_BARS = 8;
 
   return (
-    <div ref={wrapRef} className="about-trailer">
+    <div ref={wrapRef} className="about-trailer" id="trailer">
       {/* Sway-in headline above the frame */}
       <div className="about-trailer__intro" style={{ opacity: 0 }}>
         <p className="about-trailer__intro-eyebrow">
