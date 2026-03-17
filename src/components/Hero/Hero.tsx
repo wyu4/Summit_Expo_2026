@@ -346,7 +346,7 @@ export function Hero() {
       travelT = (travelT + 0.0035) % 1;
 
       // Resolve position: 0–0.5 = A→B, 0.5–1 = B→C
-      const resolvePos = (t: number) => {
+      const _resolvePos = (t: number) => {
         const wt = ((t % 1) + 1) % 1;
         if (wt < 0.5) {
           const f = wt / 0.5;

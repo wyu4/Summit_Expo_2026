@@ -1,35 +1,44 @@
+/**
+ * RocketGate — portal placed at an AnchoredWaypoint.
+ *
+ * Coordinate system matches RocketPath:
+ *   waypoint.selector = CSS selector for the anchor element
+ *   waypoint.xPct     = fraction of that element's width
+ *   waypoint.yPct     = fraction of that element's height
+ *
+ * To get document coords:
+ *   rect = el.getBoundingClientRect()
+ *   docX = rect.left + scrollX + rect.width  * xPct
+ *   docY = rect.top  + scrollY + rect.height * yPct
+ *
+ * Fixed position:
+ *   left = docX          (same as rocket: pt.x)
+ *   top  = docY - scrollY  (same as rocket: pt.y - window.scrollY)
+ */
+
 import { useEffect, useRef } from "react";
 import "./RocketGate.css";
 
-export interface Waypoint {
-  x: number;
-  y: number;
-}
-export interface SavedPath {
-  refW: number;
-  refH: number;
-  points: Waypoint[];
+export interface AnchoredWaypoint {
+  selector: string;
+  xPct: number;
+  yPct: number;
 }
 
 interface Props {
-  path: SavedPath;
-  gateSrc?: string; // image in /public, default /gate.png
-  size?: number; // width in px, default 120
-  offsetX?: number; // px nudge from the waypoint (- = left, + = right)
-  offsetY?: number; // px nudge from the waypoint (- = up,   + = down)
-  /**
-   * Which waypoint to anchor to.
-   * 0          = first point (entry portal — rocket flies OUT of here)
-   * -1 or omit = last point  (exit portal  — rocket flies INTO here)
-   * Any other number = that index
- */
+  path: AnchoredWaypoint[];
+  gateSrc?: string;
+  size?: number;
+  offsetX?: number;
+  offsetY?: number;
+  /** 0 = entry (first point), -1 = exit (last point, default) */
   pointIndex?: number;
 }
 
 export function RocketGate({
   path,
   gateSrc = "/gate.png",
-  size = 120,
+  size = 130,
   offsetX = 0,
   offsetY = 0,
   pointIndex = -1,
@@ -38,20 +47,25 @@ export function RocketGate({
 
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
+    if (!el || !path.length) return;
+
+    const idx =
+      pointIndex < 0
+        ? path.length - 1
+        : Math.min(pointIndex, path.length - 1);
+
+    const wp = path[idx];
 
     const place = () => {
-      const idx =
-        pointIndex < 0
-          ? path.points.length - 1 // last point
-          : Math.min(pointIndex, path.points.length - 1);
-
-      const pt = path.points[idx];
-      const sx = window.innerWidth / path.refW;
-      const sy = document.documentElement.scrollHeight / path.refH;
-
-      el.style.left = `${pt.x * sx + offsetX}px`;
-      el.style.top = `${pt.y * sy - window.scrollY + offsetY}px`;
+      const anchor = document.querySelector<HTMLElement>(wp.selector);
+      if (!anchor) return;
+      const r = anchor.getBoundingClientRect();
+      // Document coordinates (same as resolve() in RocketPath)
+      const docX = r.left + window.scrollX + r.width  * wp.xPct;
+      const docY = r.top  + window.scrollY + r.height * wp.yPct;
+      // Convert to fixed viewport coords
+      el.style.left = `${docX + offsetX}px`;
+      el.style.top  = `${docY - window.scrollY + offsetY}px`;
     };
 
     place();

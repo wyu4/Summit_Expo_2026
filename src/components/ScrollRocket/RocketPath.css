@@ -6,8 +6,7 @@
   height: 0;
   pointer-events: none;
   z-index: 901;
-  transition: opacity 0.35s ease;
-  will-change: left, top, transform;
+  will-change: transform, opacity;
 }
 
 .rocket-img {
@@ -16,9 +15,8 @@
   height: auto;
   translate: -50% -50%;
   transform-origin: center center;
-  filter:
-    drop-shadow(0 0 5px rgba(206,140,255,0.45))
-    drop-shadow(0 0 14px rgba(160,80,206,0.22));
+  filter: drop-shadow(0 0 5px rgba(206, 140, 255, 0.45))
+    drop-shadow(0 0 14px rgba(160, 80, 206, 0.22));
   pointer-events: none;
   user-select: none;
   z-index: 2;
@@ -26,13 +24,8 @@
 
 .rocket-fire {
   position: absolute;
-  /* Match the canvas pixel size so no browser scaling distortion */
   width: 80px;
   height: 120px;
-  /* Center horizontally, shift up so NOZZLE_Y (58px into canvas) sits
-     at the rocket exhaust (~45px below the rocket center).
-     offset = -(45 + 58) relative to the wrap anchor = -103px, but
-     we want flames to go downward (away from nose), so top = 45 - 58 = -13px */
   left: -40px;
   top: -13px;
   pointer-events: none;
@@ -40,5 +33,7 @@
 }
 
 @media (max-width: 500px) {
-  .rocket-wrap { display: none; }
+  .rocket-wrap {
+    display: none;
+  }
 }

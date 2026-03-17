@@ -11,4 +11,27 @@ export default defineConfig({
       'gsap/MotionPathPlugin',
     ],
   },
+  build: {
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
+            return 'react';
+          }
+          if (id.includes('node_modules/gsap')) {
+            return 'gsap';
+          }
+          if (id.includes('@fortawesome/fontawesome-free')) {
+            return 'fa';
+          }
+          if (id.includes('@fortawesome/react-fontawesome') || 
+              id.includes('@fortawesome/free-solid-svg-icons') ||
+              id.includes('@fortawesome/free-brands-svg-icons')) {
+            return 'fa_svg';
+          }
+        },
+      },
+    },
+  },
 })
