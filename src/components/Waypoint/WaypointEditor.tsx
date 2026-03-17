@@ -598,7 +598,7 @@ export function WaypointEditor() {
       >
         {/* Header */}
         <div className="wpe-panel-head" onPointerDown={onPanelHeaderDown}>
-          <span className="wpe-title">🚀 Rocket Path</span>
+          <span className="wpe-title">67 Rocket Path</span>
           <div className="wpe-head-btns">
             <button className="wpe-close" onClick={() => setOpen(false)}>
               ✕

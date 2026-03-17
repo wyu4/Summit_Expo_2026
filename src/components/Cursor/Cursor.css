@@ -1,5 +1,5 @@
 /* Hide default cursor site-wide */
-*, *::before, *::after { cursor: none !important; }
+/* *, *::before, *::after { cursor: none !important; } */
 
 /* Full-viewport particle canvas */
 .cursor-canvas {
