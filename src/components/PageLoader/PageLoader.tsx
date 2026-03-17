@@ -3,57 +3,99 @@ import gsap from "gsap";
 import "./PageLoader.css";
 import { useVisibleCanvas } from "../../utils/useVisibleCanvas";
 
-
 interface Props {
   onComplete?: () => void;
   onDone?: () => void;
 }
 
-function usePageLoaderCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
-  useVisibleCanvas(canvasRef, (canvas) => {
-    interface S { x:number; y:number; r:number; vx:number; vy:number; op:number; ph:number; sp:number; hue:number; }
-    let stars: S[] = [], t = 0;
- 
-    const seed = () => {
-      const W = canvas.offsetWidth, H = canvas.offsetHeight;
-      stars = Array.from({ length: 200 }, () => {
-        const a = Math.random() * Math.PI * 2, s = 0.004 + Math.random() * 0.014;
-        return {
-          x: Math.random() * W, y: Math.random() * H,
-          r: Math.random() * 1.3 + 0.15,
-          vx: Math.cos(a) * s, vy: Math.sin(a) * s,
-          op: Math.random() * 0.65 + 0.2,
-          ph: Math.random() * Math.PI * 2, sp: Math.random() * 0.8 + 0.3,
-          hue: 200 + Math.random() * 120,
-        };
-      });
-    };
-    seed();
- 
-    return (_c: HTMLCanvasElement, ctx: CanvasRenderingContext2D, dt: number) => {
-      t += (dt / 1000) * 60 * 0.012;
-      const W = _c.offsetWidth, H = _c.offsetHeight;
-      ctx.clearRect(0, 0, W, H);
-      for (const s of stars) {
-        s.x += s.vx; s.y += s.vy;
-        if (s.x < -2) s.x = W + 2; if (s.x > W + 2) s.x = -2;
-        if (s.y < -2) s.y = H + 2; if (s.y > H + 2) s.y = -2;
-        const tw = 0.5 + 0.5 * Math.sin(t * s.sp + s.ph), al = s.op * (0.3 + 0.7 * tw);
-        ctx.beginPath(); ctx.arc(s.x, s.y, s.r * 3.5, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${s.hue},60%,70%,${al * 0.06})`; ctx.fill();
-        ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${s.hue},50%,92%,${al})`; ctx.fill();
-        if (al > 0.7 && s.r > 1.0) {
-          const sp = s.r * 5 * al;
-          ctx.strokeStyle = `hsla(${s.hue},55%,85%,${al * 0.28})`; ctx.lineWidth = 0.5;
-          ctx.beginPath(); ctx.moveTo(s.x - sp, s.y); ctx.lineTo(s.x + sp, s.y);
-          ctx.moveTo(s.x, s.y - sp); ctx.lineTo(s.x, s.y + sp); ctx.stroke();
-        }
+function usePageLoaderCanvas(
+  canvasRef: React.RefObject<HTMLCanvasElement | null>,
+) {
+  // 30fps is plenty for a loader — was 60fps, halves main thread time
+  useVisibleCanvas(
+    canvasRef,
+    (canvas) => {
+      interface S {
+        x: number;
+        y: number;
+        r: number;
+        vx: number;
+        vy: number;
+        op: number;
+        ph: number;
+        sp: number;
+        hue: number;
       }
-    };
-  }, { fps: 60 });
-}
+      let stars: S[] = [],
+        t = 0;
 
+      const seed = () => {
+        const W = canvas.offsetWidth,
+          H = canvas.offsetHeight;
+        stars = Array.from({ length: 120 }, () => {
+          const a = Math.random() * Math.PI * 2,
+            s = 0.004 + Math.random() * 0.014;
+          return {
+            x: Math.random() * W,
+            y: Math.random() * H,
+            r: Math.random() * 1.3 + 0.15,
+            vx: Math.cos(a) * s,
+            vy: Math.sin(a) * s,
+            op: Math.random() * 0.65 + 0.2,
+            ph: Math.random() * Math.PI * 2,
+            sp: Math.random() * 0.8 + 0.3,
+            hue: 200 + Math.random() * 120,
+          };
+        });
+      };
+      seed();
+
+      return (
+        _c: HTMLCanvasElement,
+        ctx: CanvasRenderingContext2D,
+        dt: number,
+      ) => {
+        t += (dt / 1000) * 60 * 0.012;
+        const W = _c.offsetWidth,
+          H = _c.offsetHeight;
+        ctx.clearRect(0, 0, W, H);
+        for (const s of stars) {
+          s.x += s.vx;
+          s.y += s.vy;
+          if (s.x < -2) s.x = W + 2;
+          if (s.x > W + 2) s.x = -2;
+          if (s.y < -2) s.y = H + 2;
+          if (s.y > H + 2) s.y = -2;
+          const tw = 0.5 + 0.5 * Math.sin(t * s.sp + s.ph),
+            al = s.op * (0.3 + 0.7 * tw);
+          // Skip halo on small stars to reduce draw calls
+          if (s.r > 0.8 && al > 0.5) {
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.r * 3.5, 0, Math.PI * 2);
+            ctx.fillStyle = `hsla(${s.hue},60%,70%,${al * 0.06})`;
+            ctx.fill();
+          }
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          ctx.fillStyle = `hsla(${s.hue},50%,92%,${al})`;
+          ctx.fill();
+          if (al > 0.7 && s.r > 1.0) {
+            const sp = s.r * 5 * al;
+            ctx.strokeStyle = `hsla(${s.hue},55%,85%,${al * 0.28})`;
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(s.x - sp, s.y);
+            ctx.lineTo(s.x + sp, s.y);
+            ctx.moveTo(s.x, s.y - sp);
+            ctx.lineTo(s.x, s.y + sp);
+            ctx.stroke();
+          }
+        }
+      };
+    },
+    { fps: 30 },
+  ); // was 60
+}
 
 export function PageLoader({ onComplete, onDone }: Props) {
   const done = onComplete ?? onDone ?? (() => {});
@@ -64,31 +106,27 @@ export function PageLoader({ onComplete, onDone }: Props) {
 
   usePageLoaderCanvas(canvasRef);
 
-
-
-  // Progress + auto-dismiss
   useEffect(() => {
-    // Fill progress over ~3.2 seconds with a natural ease
     const obj = { v: 0 };
+    // Faster progress: 2.2s instead of 3.2s — users don't want to wait
     const tween = gsap.to(obj, {
       v: 100,
-      duration: 3.2,
-      ease: "power1.inOut",
+      duration: 2.2,
+      ease: "power2.inOut",
       onUpdate() {
         setPct(Math.round(obj.v));
       },
       onComplete() {
-        // Small pause at 100% then wipe up
         setTimeout(() => {
           if (dismissed.current) return;
           dismissed.current = true;
           gsap.to(loaderRef.current, {
             yPercent: -100,
-            duration: 0.85,
+            duration: 0.7, // was 0.85
             ease: "power4.inOut",
-            done,
+            onComplete: done,
           });
-        }, 380);
+        }, 200); // was 380ms
       },
     });
     return () => {
@@ -98,56 +136,41 @@ export function PageLoader({ onComplete, onDone }: Props) {
 
   return (
     <div ref={loaderRef} className="pl">
-      {/* Star canvas */}
       <canvas ref={canvasRef} className="pl__canvas" aria-hidden="true" />
 
-      {/* Nebula glows */}
       <div className="pl__glow pl__glow--a" aria-hidden="true" />
       <div className="pl__glow pl__glow--b" aria-hidden="true" />
       <div className="pl__glow pl__glow--c" aria-hidden="true" />
 
-      {/* Centre content */}
       <div className="pl__content">
-        {/* Solar system orrery */}
         <div className="pl__orrery" aria-hidden="true">
-          {/* Sun */}
           <div className="pl__sun">
             <div className="pl__sun-core" />
             <div className="pl__sun-corona" />
           </div>
-
-          {/* Orbit 1 — small fast planet */}
           <div className="pl__orbit pl__orbit--1">
             <div className="pl__planet pl__planet--1" />
           </div>
-
-          {/* Orbit 2 — medium planet with ring */}
           <div className="pl__orbit pl__orbit--2">
             <div className="pl__planet pl__planet--2">
               <div className="pl__ring" />
             </div>
           </div>
-
-          {/* Orbit 3 — large slow planet */}
           <div className="pl__orbit pl__orbit--3">
             <div className="pl__planet pl__planet--3" />
           </div>
         </div>
 
-        {/* Text */}
         <p className="pl__loading-label">Website is Loading</p>
 
-        {/* Progress bar */}
         <div className="pl__bar-wrap" aria-label={`Loading ${pct}%`}>
           <div className="pl__bar-track">
             <div className="pl__bar-fill" style={{ width: `${pct}%` }} />
-            {/* Moving glint on fill */}
             <div className="pl__bar-glint" style={{ left: `${pct}%` }} />
           </div>
           <span className="pl__bar-pct">{String(pct).padStart(3, "0")}%</span>
         </div>
 
-        {/* Status line */}
         <p className="pl__status">
           {pct < 30
             ? "INITIALISING SYSTEMS…"

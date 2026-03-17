@@ -2,7 +2,7 @@
   position: fixed;
   top: 1.1rem;
   left: 50%;
-  z-index: 600;
+  z-index: 1000;
   display: flex;
   align-items: center;
   gap: 0;
@@ -73,6 +73,7 @@
   overflow: visible;
   animation: logoSpin 16s linear infinite;
   filter: drop-shadow(0 0 6px rgba(206, 48, 114, 0.9));
+  will-change: transform;
 }
 .nav__logo:hover .nav__logo-svg {
   animation-duration: 2.8s;
@@ -342,6 +343,7 @@
   );
   transform: translateX(-100%);
   transition: transform 0.55s ease;
+  will-change: transform;
 }
 .nav__cta:hover::before {
   transform: translateX(100%);

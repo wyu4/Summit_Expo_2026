@@ -33,6 +33,7 @@
   border-radius: 50%;
   pointer-events: none;
   filter: blur(90px);
+  will-change: transform;
 }
 .about-glow--r {
   top: 5%;
@@ -110,6 +111,7 @@
   position: absolute;
   pointer-events: none;
   z-index: 1;
+  will-change: transform, opacity;
   /* float animation added by GSAP */
 }
 .about-glyph svg {
@@ -281,17 +283,39 @@
 .cta-shimmer {
   position: absolute;
   inset: 0;
+  /* background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(200, 160, 255, 0.1) 50%,
+    transparent 70%
+  ); */
+  background-size: 220% 100%;
+  background-position: 200% 0;
+  pointer-events: none;
+
+  background: none !important;
+  transition: none !important;
+  /* transition: background-position 0s; */
+}
+
+.about-cta-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
   background: linear-gradient(
     105deg,
     transparent 30%,
     rgba(200, 160, 255, 0.1) 50%,
     transparent 70%
   );
-  background-size: 220% 100%;
-  background-position: 200% 0;
+  transform: translateX(-110%);
+  transition: transform 0.5s ease;
   pointer-events: none;
-  transition: background-position 0s;
 }
+.about-cta-btn:hover::after {
+  transform: translateX(110%);
+}
+
 .about-cta-btn:hover .cta-shimmer {
   background-position: -40% 0;
   transition: background-position 0.5s ease;
@@ -593,6 +617,7 @@
   right: 0;
   height: 1px;
   z-index: 2;
+  will-change: transform, opacity;
 }
 .about-transition__line--1 {
   top: 30%;
@@ -651,6 +676,7 @@
   position: absolute;
   z-index: 3;
   border-radius: 50%;
+  will-change: transform, opacity;
   animation: trans-node-pulse ease-in-out infinite alternate;
 }
 @keyframes trans-node-pulse {
@@ -709,6 +735,8 @@
 .about-transition__edge {
   fill: none;
   stroke-linecap: round;
+  will-change: stroke-dashoffset, opacity;
+
   animation: trans-edge-fade 4s ease-in-out infinite alternate;
 }
 @keyframes trans-edge-fade {
@@ -758,6 +786,7 @@
   pointer-events: none;
   z-index: 4;
   opacity: 0;
+  will-change: transform, opacity;
 }
 
 .about-portal img {
@@ -789,18 +818,31 @@
   filter: blur(18px);
   z-index: -1;
   opacity: 0.7;
+  will-change: transform, opacity;
 }
 
 .about-portal__glow--blue {
-  background: radial-gradient(ellipse, rgba(0, 230, 255, 0.9) 0%, rgba(0, 180, 255, 0.5) 50%, transparent 80%);
+  background: radial-gradient(
+    ellipse,
+    rgba(0, 230, 255, 0.9) 0%,
+    rgba(0, 180, 255, 0.5) 50%,
+    transparent 80%
+  );
 }
 
 .about-portal__glow--pink {
-  background: radial-gradient(ellipse, rgba(255, 80, 160, 0.95) 0%, rgba(255, 40, 101, 0.772) 50%, transparent 80%);
+  background: radial-gradient(
+    ellipse,
+    rgba(255, 80, 160, 0.95) 0%,
+    rgba(255, 40, 101, 0.772) 50%,
+    transparent 80%
+  );
 }
 
 @media (max-width: 900px) {
-  .about-portal { display: none; }
+  .about-portal {
+    display: none;
+  }
 }
 
 .about-trailer {

@@ -167,6 +167,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  will-change: transform;
 }
 .pl__orbit--1 {
   width: 100px;
@@ -202,6 +203,17 @@
   /* Counter-spin so the planet doesn't rotate with the orbit arm */
   animation: plCounterSpin linear infinite;
   position: relative;
+  will-change: transform;
+}
+
+.pl__sun-core,
+.pl__sun-corona {
+  will-change: transform, opacity;
+}
+
+.pl__bar-fill,
+.pl__bar-glint {
+  will-change: width, left;
 }
 .pl__orbit--1 .pl__planet {
   animation-duration: 3.2s;

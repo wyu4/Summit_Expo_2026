@@ -132,12 +132,11 @@ export function GalleryBridge() {
         onEnter() {
           gsap.fromTo(
             ".gb-photo-wrap",
-            { opacity: 0, y: 50, scale: 0.92, filter: "blur(8px)" },
+            { opacity: 0, y: 50, scale: 0.92},
             {
               opacity: 1,
               y: 0,
               scale: 1,
-              filter: "blur(0px)",
               stagger: 0.12,
               duration: 0.75,
               ease: "power3.out",

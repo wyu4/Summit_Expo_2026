@@ -168,6 +168,7 @@
   height: 4px;
   border-radius: 50%;
   background: var(--c-bright-magenta);
+  will-change: opacity;
   box-shadow: 0 0 6px rgba(206, 48, 114, 0.8);
   animation: pipBlink 2.8s ease-in-out infinite;
 }
@@ -396,6 +397,7 @@
   color: rgba(206, 48, 114, 0.7);
   animation: hintBounce 1.6s ease-in-out infinite;
   filter: drop-shadow(0 0 6px rgba(206, 48, 114, 0.5));
+  will-change: transform, opacity;
 }
 @keyframes hintBounce {
   0%,

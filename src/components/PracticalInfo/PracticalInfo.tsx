@@ -6,8 +6,9 @@ import { useVisibleCanvas } from "../../utils/useVisibleCanvas";
 
 ;
 
-const VENUE_LAT = 45.3521;
-const VENUE_LNG = -75.9042;
+const VENUE_LAT = 45.3232;
+const VENUE_LNG = -75.8947;
+
 
 //  Leaflet Map
 

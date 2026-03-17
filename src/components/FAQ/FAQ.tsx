@@ -508,6 +508,12 @@ export function FAQ() {
   // Scroll entrance
   useEffect(() => {
     const ctx = gsap.context(() => {
+
+      gsap.set(".faq-header", { opacity: 0, y: 40 });
+    gsap.set(".faq-filters", { opacity: 0, y: 20 });
+    gsap.set(".faq-search", { opacity: 0, y: 16 });
+    if (listRef.current) gsap.set(listRef.current.querySelectorAll(".faq-row"), { opacity: 0, y: 20 });
+
       ScrollTrigger.create({
         trigger: sectionRef.current,
         start: "top 75%",
