@@ -65,53 +65,73 @@ function useSpaceCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d')!;
- 
+    const ctx = canvas.getContext("2d")!;
+
     interface Star {
-      x: number; y: number; r: number;
-      vx: number; vy: number;
-      op: number; ph: number; sp: number;
-      layer: number; hue: number;
+      x: number;
+      y: number;
+      r: number;
+      vx: number;
+      vy: number;
+      op: number;
+      ph: number;
+      sp: number;
+      layer: number;
+      hue: number;
     }
     interface Shooter {
-      x: number; y: number;
-      vx: number; vy: number;
-      life: number; max: number;
-      len: number; op: number;
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      life: number;
+      max: number;
+      len: number;
+      op: number;
     }
     interface NebulaPatch {
-      x: number; y: number;
-      rx: number; ry: number;
-      hue: number; op: number;
-      dop: number; drift: number; angle: number;
+      x: number;
+      y: number;
+      rx: number;
+      ry: number;
+      hue: number;
+      op: number;
+      dop: number;
+      drift: number;
+      angle: number;
     }
- 
+
     // REDUCED counts from 160/90/40 → 90/50/20
     const LAYERS = [
-      { count: 90,  speedMult: 0.008, rMax: 0.6,  opMax: 0.45 },
-      { count: 50,  speedMult: 0.022, rMax: 1.0,  opMax: 0.65 },
-      { count: 20,  speedMult: 0.050, rMax: 1.5,  opMax: 0.90 },
+      { count: 90, speedMult: 0.008, rMax: 0.6, opMax: 0.45 },
+      { count: 50, speedMult: 0.022, rMax: 1.0, opMax: 0.65 },
+      { count: 20, speedMult: 0.05, rMax: 1.5, opMax: 0.9 },
     ];
-    const PARALLAX = [0.03, 0.10, 0.24];
- 
-    let stars:    Star[]        = [];
-    let shooters: Shooter[]     = [];
-    let nebulae:  NebulaPatch[] = [];
-    let raf = 0, t = 0, nebulaFrame = 0;
-    let scrollY = 0, lastScrollY = 0;
- 
+    const PARALLAX = [0.03, 0.1, 0.24];
+
+    let stars: Star[] = [];
+    let shooters: Shooter[] = [];
+    let nebulae: NebulaPatch[] = [];
+    let raf = 0,
+      t = 0,
+      nebulaFrame = 0;
+    let scrollY = 0,
+      lastScrollY = 0;
+
     const resize = () => {
-      canvas.width  = canvas.offsetWidth;
+      canvas.width = canvas.offsetWidth;
       canvas.height = canvas.offsetHeight;
-      const W = canvas.width, H = canvas.height;
- 
+      const W = canvas.width,
+        H = canvas.height;
+
       stars = [];
       LAYERS.forEach((cfg, li) => {
         for (let i = 0; i < cfg.count; i++) {
           const angle = Math.random() * Math.PI * 2;
           const speed = cfg.speedMult * (0.5 + Math.random());
           stars.push({
-            x: Math.random() * W, y: Math.random() * H,
+            x: Math.random() * W,
+            y: Math.random() * H,
             r: Math.random() * cfg.rMax + 0.15,
             vx: Math.cos(angle) * speed,
             vy: Math.sin(angle) * speed,
@@ -123,22 +143,25 @@ function useSpaceCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
           });
         }
       });
- 
+
       // REDUCED from 7 patches → 4
       nebulae = [];
       const patches = [
         { x: 0.12, y: 0.15, hue: 320 },
         { x: 0.88, y: 0.08, hue: 270 },
-        { x: 0.05, y: 0.50, hue: 210 },
-        { x: 0.50, y: 0.35, hue: 300 },
+        { x: 0.05, y: 0.5, hue: 210 },
+        { x: 0.5, y: 0.35, hue: 300 },
       ];
       for (const p of patches) {
         nebulae.push({
-          x: p.x * W, y: p.y * H,
+          x: p.x * W,
+          y: p.y * H,
           rx: W * (0.15 + Math.random() * 0.12),
           ry: H * (0.08 + Math.random() * 0.06),
-          hue: p.hue, op: Math.random() * 0.04 + 0.01,
-          dop: (Math.random() * 0.0008 + 0.0002) * (Math.random() < 0.5 ? 1 : -1),
+          hue: p.hue,
+          op: Math.random() * 0.04 + 0.01,
+          dop:
+            (Math.random() * 0.0008 + 0.0002) * (Math.random() < 0.5 ? 1 : -1),
           drift: Math.random() * 0.12 + 0.04,
           angle: Math.random() * Math.PI * 2,
         });
@@ -147,17 +170,23 @@ function useSpaceCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
     resize();
     const ro = new ResizeObserver(resize);
     ro.observe(canvas);
- 
-    const onScroll = () => { scrollY = window.scrollY; };
-    window.addEventListener('scroll', onScroll, { passive: true });
- 
+
+    const onScroll = () => {
+      scrollY = window.scrollY;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+
     const spawnShooter = () => {
-      const W = canvas.width
+      const W = canvas.width;
       const fromRight = Math.random() < 0.5;
-      const angle = (Math.random() * 20 + 10) * (Math.PI / 180) * (fromRight ? 1 : -1) + Math.PI / 2;
+      const angle =
+        (Math.random() * 20 + 10) * (Math.PI / 180) * (fromRight ? 1 : -1) +
+        Math.PI / 2;
       const speed = 8 + Math.random() * 10;
       shooters.push({
-        x: fromRight ? W * (0.6 + Math.random() * 0.4) : W * (Math.random() * 0.4),
+        x: fromRight
+          ? W * (0.6 + Math.random() * 0.4)
+          : W * (Math.random() * 0.4),
         y: -10,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
@@ -167,33 +196,40 @@ function useSpaceCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
         op: 0.7 + Math.random() * 0.3,
       });
     };
- 
+
     let shooterTimer = 0;
     const SHOOTER_INTERVAL = 180 + Math.random() * 240;
- 
+
     const loop = () => {
       t += 0.012;
       nebulaFrame++;
       const scrollDelta = (scrollY - lastScrollY) * 0.6;
       lastScrollY = scrollY;
-      const W = canvas.width, H = canvas.height;
- 
+      const W = canvas.width,
+        H = canvas.height;
+
       ctx.clearRect(0, 0, W, H);
- 
+
       // Nebula only every 3rd frame — moves so slowly nobody notices
       if (nebulaFrame % 3 === 0) {
         for (const n of nebulae) {
           n.angle += n.drift * 0.002;
-          n.op    += n.dop;
-          if (n.op > 0.055) { n.op = 0.055; n.dop = -Math.abs(n.dop); }
-          if (n.op < 0.008) { n.op = 0.008; n.dop =  Math.abs(n.dop); }
+          n.op += n.dop;
+          if (n.op > 0.055) {
+            n.op = 0.055;
+            n.dop = -Math.abs(n.dop);
+          }
+          if (n.op < 0.008) {
+            n.op = 0.008;
+            n.dop = Math.abs(n.dop);
+          }
           ctx.save();
           ctx.translate(n.x, n.y);
           ctx.rotate(n.angle);
           const g = ctx.createRadialGradient(0, 0, 0, 0, 0, n.rx);
-          g.addColorStop(0,   `hsla(${n.hue}, 70%, 55%, ${n.op})`);
+          g.addColorStop(0, `hsla(${n.hue}, 70%, 55%, ${n.op})`);
           g.addColorStop(0.5, `hsla(${n.hue}, 60%, 45%, ${n.op * 0.5})`);
-          g.addColorStop(1,   'rgba(0,0,0,0)');
+          g.addColorStop(1, "rgba(0,0,0,0)");
           ctx.scale(1, n.ry / n.rx);
           ctx.beginPath();
           ctx.arc(0, 0, n.rx, 0, Math.PI * 2);
@@ -202,16 +238,18 @@ function useSpaceCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
           ctx.restore();
         }
       }
- 
+
       for (const s of stars) {
         s.x += s.vx;
         s.y += s.vy + scrollDelta * PARALLAX[s.layer];
-        if (s.x < -2) s.x = W + 2; if (s.x > W + 2) s.x = -2;
-        if (s.y < -2) s.y = H + 2; if (s.y > H + 2) s.y = -2;
- 
+        if (s.x < -2) s.x = W + 2;
+        if (s.x > W + 2) s.x = -2;
+        if (s.y < -2) s.y = H + 2;
+        if (s.y > H + 2) s.y = -2;
+
         const tw = 0.5 + 0.5 * Math.sin(t * s.sp + s.ph);
         const al = s.op * (0.35 + 0.65 * tw);
- 
+
         if (s.layer >= 1) {
           const haloSize = s.r * (s.layer === 2 ? 5.5 : 3.5);
           ctx.beginPath();
@@ -219,113 +257,136 @@ function useSpaceCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
           ctx.fillStyle = `hsla(${s.hue},70%,80%,${al * (s.layer === 2 ? 0.12 : 0.06)})`;
           ctx.fill();
         }
- 
+
         ctx.beginPath();
         ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = s.layer === 2
-          ? `hsla(${s.hue},60%,95%,${al})`
-          : `rgba(220,220,255,${al})`;
+        ctx.fillStyle =
+          s.layer === 2
+            ? `hsla(${s.hue},60%,95%,${al})`
+            : `rgba(220,220,255,${al})`;
         ctx.fill();
- 
+
         if (s.layer === 2 && al > 0.55) {
           const spike = s.r * 7 * al;
           ctx.strokeStyle = `hsla(${s.hue},60%,90%,${al * 0.45})`;
           ctx.lineWidth = 0.6;
           ctx.beginPath();
-          ctx.moveTo(s.x - spike, s.y); ctx.lineTo(s.x + spike, s.y);
-          ctx.moveTo(s.x, s.y - spike); ctx.lineTo(s.x, s.y + spike);
+          ctx.moveTo(s.x - spike, s.y);
+          ctx.lineTo(s.x + spike, s.y);
+          ctx.moveTo(s.x, s.y - spike);
+          ctx.lineTo(s.x, s.y + spike);
           ctx.stroke();
           const d = spike * 0.45;
-          ctx.strokeStyle = `hsla(${s.hue},60%,90%,${al * 0.20})`;
+          ctx.strokeStyle = `hsla(${s.hue},60%,90%,${al * 0.2})`;
           ctx.beginPath();
-          ctx.moveTo(s.x - d, s.y - d); ctx.lineTo(s.x + d, s.y + d);
-          ctx.moveTo(s.x + d, s.y - d); ctx.lineTo(s.x - d, s.y + d);
+          ctx.moveTo(s.x - d, s.y - d);
+          ctx.lineTo(s.x + d, s.y + d);
+          ctx.moveTo(s.x + d, s.y - d);
+          ctx.lineTo(s.x - d, s.y + d);
           ctx.stroke();
         }
       }
- 
+
       shooterTimer++;
-      if (shooterTimer > SHOOTER_INTERVAL) { spawnShooter(); shooterTimer = 0; }
- 
-      shooters = shooters.filter(s => s.life < s.max);
+      if (shooterTimer > SHOOTER_INTERVAL) {
+        spawnShooter();
+        shooterTimer = 0;
+      }
+
+      shooters = shooters.filter((s) => s.life < s.max);
       for (const s of shooters) {
-        const prog  = s.life / s.max;
+        const prog = s.life / s.max;
         const alpha = s.op * (1 - prog) * Math.min(1, s.life / 5);
-        const tx    = s.x - s.vx * (s.len / Math.hypot(s.vx, s.vy));
-        const ty    = s.y - s.vy * (s.len / Math.hypot(s.vx, s.vy));
- 
+        const tx = s.x - s.vx * (s.len / Math.hypot(s.vx, s.vy));
+        const ty = s.y - s.vy * (s.len / Math.hypot(s.vx, s.vy));
+
         const grad = ctx.createLinearGradient(tx, ty, s.x, s.y);
         grad.addColorStop(0, `rgba(255,255,255,0)`);
         grad.addColorStop(0.6, `rgba(200,210,255,${alpha * 0.5})`);
         grad.addColorStop(1, `rgba(255,255,255,${alpha})`);
- 
+
         ctx.beginPath();
         ctx.moveTo(tx, ty);
         ctx.lineTo(s.x, s.y);
         ctx.strokeStyle = grad;
         ctx.lineWidth = 1.5 * (1 - prog * 0.5);
         ctx.stroke();
- 
+
         ctx.beginPath();
         ctx.arc(s.x, s.y, 1.5 * (1 - prog * 0.7), 0, Math.PI * 2);
         ctx.fillStyle = `rgba(255,255,255,${alpha})`;
         ctx.fill();
- 
-        s.x += s.vx; s.y += s.vy; s.life++;
+
+        s.x += s.vx;
+        s.y += s.vy;
+        s.life++;
       }
- 
+
       raf = requestAnimationFrame(loop);
     };
     loop();
- 
+
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
-      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener("scroll", onScroll);
     };
   }, [canvasRef]);
 }
 
-
 /* Constellation canvas with pulsing lines */
-function useConstellations(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
+function useConstellations(
+  canvasRef: React.RefObject<HTMLCanvasElement | null>,
+) {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d')!;
- 
+    const ctx = canvas.getContext("2d")!;
+
     interface CStar {
-      x: number; y: number; vx: number; vy: number;
-      ph: number; sp: number; r: number; brightness: number;
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      ph: number;
+      sp: number;
+      r: number;
+      brightness: number;
     }
     let stars: CStar[] = [];
-    let raf = 0, t = 0;
+    let raf = 0,
+      t = 0;
     const MAX_DIST = 110;
     const MAX_DIST_SQ = MAX_DIST * MAX_DIST;
     const CELL = 115;
- 
+
     const resize = () => {
-      canvas.width  = canvas.offsetWidth;
+      canvas.width = canvas.offsetWidth;
       canvas.height = canvas.offsetHeight;
       stars = [];
-      const W = canvas.width, H = canvas.height;
+      const W = canvas.width,
+        H = canvas.height;
       const marginW = Math.max(60, (W - 1280) / 2);
-      const total   = Math.floor((W * H) / 20000) + 16;
+      const total = Math.floor((W * H) / 20000) + 16;
       for (let i = 0; i < total; i++) {
         let x: number;
         const inMargin = Math.random() < 0.65 && marginW > 40;
         if (inMargin) {
-          x = Math.random() < 0.5 ? Math.random() * marginW : W - Math.random() * marginW;
+          x =
+            Math.random() < 0.5
+              ? Math.random() * marginW
+              : W - Math.random() * marginW;
         } else {
           x = Math.random() * W;
         }
         stars.push({
-          x, y: Math.random() * H,
+          x,
+          y: Math.random() * H,
           vx: (Math.random() - 0.5) * 0.13,
           vy: (Math.random() - 0.5) * 0.13,
           ph: Math.random() * Math.PI * 2,
           sp: Math.random() * 0.6 + 0.2,
-          r:  Math.random() * 1.2 + 0.3,
+          r: Math.random() * 1.2 + 0.3,
           brightness: Math.random(),
         });
       }
@@ -333,18 +394,22 @@ function useConstellations(canvasRef: React.RefObject<HTMLCanvasElement | null>)
     resize();
     const ro = new ResizeObserver(resize);
     ro.observe(canvas);
- 
+
     const loop = () => {
       t += 0.009;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const W = canvas.width, H = canvas.height;
- 
+      const W = canvas.width,
+        H = canvas.height;
+
       for (const s of stars) {
-        s.x += s.vx; s.y += s.vy;
-        if (s.x < 0) s.x = W; if (s.x > W) s.x = 0;
-        if (s.y < 0) s.y = H; if (s.y > H) s.y = 0;
+        s.x += s.vx;
+        s.y += s.vy;
+        if (s.x < 0) s.x = W;
+        if (s.x > W) s.x = 0;
+        if (s.y < 0) s.y = H;
+        if (s.y > H) s.y = 0;
       }
- 
+
       // Build spatial grid — O(n) bucket fill
       const cols = Math.ceil(W / CELL) + 1;
       const rows = Math.ceil(H / CELL) + 1;
@@ -355,10 +420,10 @@ function useConstellations(canvasRef: React.RefObject<HTMLCanvasElement | null>)
         const idx = cy * cols + cx;
         if (grid[idx]) grid[idx].push(i);
       }
- 
+
       // Check only neighbouring cells — instead of all pairs
       for (let i = 0; i < stars.length; i++) {
-        const a  = stars[i];
+        const a = stars[i];
         const cx = Math.floor(a.x / CELL);
         const cy = Math.floor(a.y / CELL);
         for (let ny = cy - 1; ny <= cy + 1; ny++) {
@@ -367,17 +432,20 @@ function useConstellations(canvasRef: React.RefObject<HTMLCanvasElement | null>)
             const cell = grid[ny * cols + nx];
             for (const j of cell) {
               if (j <= i) continue;
-              const b  = stars[j];
-              const dx = a.x - b.x, dy = a.y - b.y;
+              const b = stars[j];
+              const dx = a.x - b.x,
+                dy = a.y - b.y;
               const dSq = dx * dx + dy * dy;
               if (dSq < MAX_DIST_SQ) {
-                const d         = Math.sqrt(dSq);
+                const d = Math.sqrt(dSq);
                 const proximity = 1 - d / MAX_DIST;
-                const pulse     = 0.5 + 0.5 * Math.sin(t * 0.8 + (a.ph + b.ph) * 0.5);
-                const alpha     = proximity * 0.18 * pulse;
-                const hue       = 240 + Math.sin(t * 0.3 + i * 0.1) * 40;
+                const pulse =
+                  0.5 + 0.5 * Math.sin(t * 0.8 + (a.ph + b.ph) * 0.5);
+                const alpha = proximity * 0.18 * pulse;
+                const hue = 240 + Math.sin(t * 0.3 + i * 0.1) * 40;
                 ctx.beginPath();
-                ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+                ctx.moveTo(a.x, a.y);
+                ctx.lineTo(b.x, b.y);
                 ctx.strokeStyle = `hsla(${hue},60%,75%,${alpha})`;
                 ctx.lineWidth = 0.7;
                 ctx.stroke();
@@ -386,44 +454,60 @@ function useConstellations(canvasRef: React.RefObject<HTMLCanvasElement | null>)
           }
         }
       }
- 
+
       // Draw star dots
       for (const s of stars) {
         const tw = 0.5 + 0.5 * Math.sin(t * s.sp + s.ph);
         const al = (0.25 + 0.55 * tw) * (0.4 + s.brightness * 0.6);
         ctx.beginPath();
         ctx.arc(s.x, s.y, s.r * 3.5, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(180,145,255,${al * 0.07})`; ctx.fill();
+        ctx.fillStyle = `rgba(180,145,255,${al * 0.07})`;
+        ctx.fill();
         ctx.beginPath();
         ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(220,195,255,${al})`; ctx.fill();
+        ctx.fillStyle = `rgba(220,195,255,${al})`;
+        ctx.fill();
       }
- 
+
       raf = requestAnimationFrame(loop);
     };
     loop();
- 
-    return () => { cancelAnimationFrame(raf); ro.disconnect(); };
+
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+    };
   }, [canvasRef]);
 }
-
 
 /* Mouse trail */
 function useMouseTrail(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d')!;
-    interface P { x:number; y:number; vx:number; vy:number; life:number; max:number; r:number; h:number; }
+    const ctx = canvas.getContext("2d")!;
+    interface P {
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      life: number;
+      max: number;
+      r: number;
+      h: number;
+    }
     let particles: P[] = [];
     let raf = 0;
     let lastTrailTime = 0;
- 
-    const resize = () => { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; };
+
+    const resize = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
     resize();
     const ro = new ResizeObserver(resize);
     ro.observe(canvas);
- 
+
     const onMove = (e: MouseEvent) => {
       const now = performance.now();
       if (now - lastTrailTime < 16) return; // throttle to ~60fps
@@ -433,44 +517,54 @@ function useMouseTrail(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
         const angle = Math.random() * Math.PI * 2;
         const speed = Math.random() * 1.6 + 0.4;
         particles.push({
-          x: e.clientX - rect.left, y: e.clientY - rect.top,
-          vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - 0.6,
-          life: 0, max: Math.random() * 50 + 25, r: Math.random() * 2.8 + 0.5,
-          h: Math.random() < 0.5 ? 330 : (Math.random() < 0.5 ? 275 : 210),
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 0.6,
+          life: 0,
+          max: Math.random() * 50 + 25,
+          r: Math.random() * 2.8 + 0.5,
+          h: Math.random() < 0.5 ? 330 : Math.random() < 0.5 ? 275 : 210,
         });
       }
     };
- 
+
     const section = canvas.parentElement;
-    section?.addEventListener('mousemove', onMove, { passive: true });
- 
+    section?.addEventListener("mousemove", onMove, { passive: true });
+
     const loop = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      particles = particles.filter(p => p.life < p.max);
+      particles = particles.filter((p) => p.life < p.max);
       // Cap total particles
       if (particles.length > 80) particles.splice(0, particles.length - 80);
       for (const p of particles) {
-        const prog = p.life / p.max, al = (1 - prog) * 0.85, r = p.r * (1 - prog * 0.4);
-        ctx.beginPath(); ctx.arc(p.x, p.y, r * 4, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${p.h},80%,65%,${al * 0.12})`; ctx.fill();
-        ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${p.h},90%,82%,${al})`; ctx.fill();
-        p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.life++;
+        const prog = p.life / p.max,
+          al = (1 - prog) * 0.85,
+          r = p.r * (1 - prog * 0.4);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, r * 4, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${p.h},80%,65%,${al * 0.12})`;
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${p.h},90%,82%,${al})`;
+        ctx.fill();
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.05;
+        p.life++;
       }
       raf = requestAnimationFrame(loop);
     };
     loop();
- 
+
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
-      section?.removeEventListener('mousemove', onMove);
+      section?.removeEventListener("mousemove", onMove);
     };
   }, [canvasRef]);
 }
- 
- 
-
 
 /* Component */
 

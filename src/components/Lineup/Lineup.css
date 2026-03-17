@@ -5,7 +5,7 @@
   flex-direction: column;
   align-items: center;
   padding: 0 0 6rem;
-  padding-bottom:0;
+  padding-bottom: 0;
   overflow: hidden;
   /* min-height: 100vh; */
 }
@@ -13,15 +13,15 @@
 .lu__constellation-bridge {
   position: relative;
   width: 100%;
-  height: 260px;          /* tall enough for the full path + target label */
+  height: 260px; /* tall enough for the full path + target label */
   flex-shrink: 0;
   /* overflow: visible so the SVG lines can bleed past the bottom edge
      and visually enter PracticalInfo — the SVG uses overflow:visible too */
   overflow: visible;
-  z-index: 4;             /* above the lu__space-canvas (z-index: 0) */
+  z-index: 4; /* above the lu__space-canvas (z-index: 0) */
   pointer-events: none;
 }
- 
+
 /* Gradient wipe — Lineup blue (#020010) fades down to PI teal (#03010c).
    Two separate divs so each can be position:absolute without fighting. */
 .lu__cb-fade {
@@ -30,16 +30,16 @@
   pointer-events: none;
   background: linear-gradient(
     180deg,
-    #020010        0%,
-    rgba(2,0,16,0.88)  18%,
-    rgba(2,0,14,0.55)  45%,
-    rgba(3,1,12,0.55)  55%,
-    rgba(3,1,12,0.88)  82%,
-    #03010c        100%
+    #020010 0%,
+    rgba(2, 0, 16, 0.88) 18%,
+    rgba(2, 0, 14, 0.55) 45%,
+    rgba(3, 1, 12, 0.55) 55%,
+    rgba(3, 1, 12, 0.88) 82%,
+    #03010c 100%
   );
   z-index: 1;
 }
- 
+
 /* The SVG — fills the bridge strip, overflow:visible lets lines escape */
 .lu__cb-svg {
   position: absolute;
@@ -49,7 +49,6 @@
   z-index: 2;
   /* overflow set inline on the element as well */
 }
- 
 
 /* Canvas layers */
 .lu__space-canvas {
@@ -460,7 +459,7 @@
 /* Name tag */
 .lu-node__tag {
   position: absolute;
-  top: calc(100% + 18px - 30px); 
+  top: calc(100% + 18px - 30px);
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -1070,18 +1069,18 @@
   margin-bottom: 0.7rem;
 }
 .lu-carousel__label {
-  font-family: var(--font-ui, 'Chakra Petch', monospace);
+  font-family: var(--font-ui, "Chakra Petch", monospace);
   font-size: var(--sp-2);
   letter-spacing: 0.26em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--cc, #5080ff) 80%, rgba(180,210,255,0.6));
+  color: color-mix(in srgb, var(--cc, #5080ff) 80%, rgba(180, 210, 255, 0.6));
   opacity: 0.85;
 }
 .lu-carousel__counter {
-  font-family: var(--font-ui, 'Chakra Petch', monospace);
+  font-family: var(--font-ui, "Chakra Petch", monospace);
   font-size: 0.48rem;
   letter-spacing: 0.18em;
-  color: rgba(120,170,220,0.40);
+  color: rgba(120, 170, 220, 0.4);
 }
 
 /* Track — clips the slides */
@@ -1091,12 +1090,13 @@
   aspect-ratio: 16 / 9;
   border-radius: 10px;
   overflow: hidden;
-  background: rgba(4, 2, 18, 0.70);
-  border: 1px solid color-mix(in srgb, var(--cc, #5080ff) 25%, rgba(60,90,160,0.18));
+  background: rgba(4, 2, 18, 0.7);
+  border: 1px solid
+    color-mix(in srgb, var(--cc, #5080ff) 25%, rgba(60, 90, 160, 0.18));
   box-shadow:
-    0 0 0 1px rgba(255,255,255,0.03),
-    0 8px 32px rgba(0,0,0,0.55),
-    inset 0 0 40px rgba(0,0,0,0.4);
+    0 0 0 1px rgba(255, 255, 255, 0.03),
+    0 8px 32px rgba(0, 0, 0, 0.55),
+    inset 0 0 40px rgba(0, 0, 0, 0.4);
 }
 
 /* Individual slide */
@@ -1124,21 +1124,23 @@
   align-items: center;
   justify-content: center;
   gap: 0.6rem;
-  background: linear-gradient(135deg,
-    color-mix(in srgb, var(--cc, #5080ff) 8%, rgba(4,2,18,0.9)) 0%,
-    rgba(4,2,18,0.95) 100%);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--cc, #5080ff) 8%, rgba(4, 2, 18, 0.9)) 0%,
+    rgba(4, 2, 18, 0.95) 100%
+  );
 }
 .lu-carousel__placeholder i {
   font-size: 1.8rem;
-  color: color-mix(in srgb, var(--cc, #5080ff) 50%, rgba(120,160,200,0.4));
+  color: color-mix(in srgb, var(--cc, #5080ff) 50%, rgba(120, 160, 200, 0.4));
   opacity: 0.6;
 }
 .lu-carousel__placeholder span {
-  font-family: var(--font-ui, 'Chakra Petch', monospace);
+  font-family: var(--font-ui, "Chakra Petch", monospace);
   font-size: 0.55rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgba(120,170,220,0.45);
+  color: rgba(120, 170, 220, 0.45);
 }
 
 /* Corner accents on track */
@@ -1149,18 +1151,46 @@
   pointer-events: none;
   z-index: 2;
 }
-.lu-carousel__corner--tl { top: -1px;    left: -1px;  border-top:    1.5px solid color-mix(in srgb, var(--cc, #5080ff) 60%, transparent); border-left:  1.5px solid color-mix(in srgb, var(--cc, #5080ff) 60%, transparent); }
-.lu-carousel__corner--tr { top: -1px;    right: -1px; border-top:    1.5px solid color-mix(in srgb, var(--cc, #5080ff) 60%, transparent); border-right: 1.5px solid color-mix(in srgb, var(--cc, #5080ff) 60%, transparent); }
-.lu-carousel__corner--bl { bottom: -1px; left: -1px;  border-bottom: 1.5px solid color-mix(in srgb, var(--cc, #5080ff) 60%, transparent); border-left:  1.5px solid color-mix(in srgb, var(--cc, #5080ff) 60%, transparent); }
-.lu-carousel__corner--br { bottom: -1px; right: -1px; border-bottom: 1.5px solid color-mix(in srgb, var(--cc, #5080ff) 60%, transparent); border-right: 1.5px solid color-mix(in srgb, var(--cc, #5080ff) 60%, transparent); }
+.lu-carousel__corner--tl {
+  top: -1px;
+  left: -1px;
+  border-top: 1.5px solid
+    color-mix(in srgb, var(--cc, #5080ff) 60%, transparent);
+  border-left: 1.5px solid
+    color-mix(in srgb, var(--cc, #5080ff) 60%, transparent);
+}
+.lu-carousel__corner--tr {
+  top: -1px;
+  right: -1px;
+  border-top: 1.5px solid
+    color-mix(in srgb, var(--cc, #5080ff) 60%, transparent);
+  border-right: 1.5px solid
+    color-mix(in srgb, var(--cc, #5080ff) 60%, transparent);
+}
+.lu-carousel__corner--bl {
+  bottom: -1px;
+  left: -1px;
+  border-bottom: 1.5px solid
+    color-mix(in srgb, var(--cc, #5080ff) 60%, transparent);
+  border-left: 1.5px solid
+    color-mix(in srgb, var(--cc, #5080ff) 60%, transparent);
+}
+.lu-carousel__corner--br {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 1.5px solid
+    color-mix(in srgb, var(--cc, #5080ff) 60%, transparent);
+  border-right: 1.5px solid
+    color-mix(in srgb, var(--cc, #5080ff) 60%, transparent);
+}
 
 /* Caption */
 .lu-carousel__caption {
-  font-family: var(--font-tagline, 'Cormorant Garamond', Georgia, serif);
+  font-family: var(--font-tagline, "Cormorant Garamond", Georgia, serif);
   font-size: 0.78rem;
   font-style: italic;
   font-weight: 300;
-  color: rgba(160,200,240,0.65);
+  color: rgba(160, 200, 240, 0.65);
   text-align: center;
   margin: 0.55rem 0 0;
   letter-spacing: 0.04em;
@@ -1181,24 +1211,31 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--cc, #5080ff) 35%, rgba(80,120,180,0.20));
-  background: color-mix(in srgb, var(--cc, #5080ff) 8%, rgba(4,2,18,0.7));
-  color: color-mix(in srgb, var(--cc, #5080ff) 70%, rgba(160,200,255,0.6));
+  border: 1px solid
+    color-mix(in srgb, var(--cc, #5080ff) 35%, rgba(80, 120, 180, 0.2));
+  background: color-mix(in srgb, var(--cc, #5080ff) 8%, rgba(4, 2, 18, 0.7));
+  color: color-mix(in srgb, var(--cc, #5080ff) 70%, rgba(160, 200, 255, 0.6));
   font-size: 0.55rem;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.18s, border-color 0.18s, color 0.18s, transform 0.15s;
+  transition:
+    background 0.18s,
+    border-color 0.18s,
+    color 0.18s,
+    transform 0.15s;
   flex-shrink: 0;
 }
 .lu-carousel__btn:hover {
-  background: color-mix(in srgb, var(--cc, #5080ff) 20%, rgba(4,2,18,0.9));
+  background: color-mix(in srgb, var(--cc, #5080ff) 20%, rgba(4, 2, 18, 0.9));
   border-color: color-mix(in srgb, var(--cc, #5080ff) 65%, transparent);
   color: #fff;
   transform: scale(1.12);
 }
-.lu-carousel__btn:active { transform: scale(0.94); }
+.lu-carousel__btn:active {
+  transform: scale(0.94);
+}
 
 /* Dot indicators */
 .lu-carousel__dots {
@@ -1210,10 +1247,13 @@
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: rgba(100,150,200,0.28);
-  border: 1px solid rgba(100,150,200,0.20);
+  background: rgba(100, 150, 200, 0.28);
+  border: 1px solid rgba(100, 150, 200, 0.2);
   cursor: pointer;
-  transition: background 0.2s, transform 0.2s, border-color 0.2s;
+  transition:
+    background 0.2s,
+    transform 0.2s,
+    border-color 0.2s;
   transform-origin: center;
 }
 .lu-carousel__dot:hover {

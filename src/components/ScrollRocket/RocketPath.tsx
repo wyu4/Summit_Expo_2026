@@ -369,40 +369,40 @@ export function RocketPath({ rocketSrc = "/rocket.png" }: Props) {
     let visible = false;
 
     const renderLoop = () => {
-  if (visible) {
-    // Snap when close enough to prevent asymptotic creep
-    if (Math.abs(targetP - smoothP) < 0.001) {
-      smoothP = targetP;
-    } else {
-      smoothP += (targetP - smoothP) * LERP;
-    }
+      if (visible) {
+        // Snap when close enough to prevent asymptotic creep
+        if (Math.abs(targetP - smoothP) < 0.001) {
+          smoothP = targetP;
+        } else {
+          smoothP += (targetP - smoothP) * LERP;
+        }
 
-    const pt = bakedLookup(baked, smoothP);
-    const angle = pt.angle;
+        const pt = bakedLookup(baked, smoothP);
+        const angle = pt.angle;
 
-    wrap.style.left = `${pt.x}px`;
-    wrap.style.top = `${pt.y - window.scrollY}px`;
+        wrap.style.left = `${pt.x}px`;
+        wrap.style.top = `${pt.y - window.scrollY}px`;
 
-    if (smoothP >= EXIT_THRESHOLD) {
-      const p = (smoothP - EXIT_THRESHOLD) / (1 - EXIT_THRESHOLD);
-      const scale = Math.max(0, 1 - p);
-      const alpha = Math.max(0, 1 - p * p);
-      wrap.style.transform = `translate(-50%,-50%) rotate(${angle + 90}deg) scale(${scale})`;
-      wrap.style.opacity = scale <= 0 ? "0" : String(alpha);
-      if (scale <= 0) visible = false; // stop rendering once gone
-    } else if (smoothP <= ENTRY_THRESHOLD) {
-      const p = 1 - smoothP / ENTRY_THRESHOLD;
-      const scale = Math.max(0, 1 - p);
-      const alpha = Math.max(0, 1 - p * p);
-      wrap.style.transform = `translate(-50%,-50%) rotate(${angle + 90}deg) scale(${scale})`;
-      wrap.style.opacity = String(alpha);
-    } else {
-      wrap.style.transform = `translate(-50%,-50%) rotate(${angle + 90}deg)`;
-      wrap.style.opacity = "1";
-    }
-  }
-  posRaf = requestAnimationFrame(renderLoop);
-};
+        if (smoothP >= EXIT_THRESHOLD) {
+          const p = (smoothP - EXIT_THRESHOLD) / (1 - EXIT_THRESHOLD);
+          const scale = Math.max(0, 1 - p);
+          const alpha = Math.max(0, 1 - p * p);
+          wrap.style.transform = `translate(-50%,-50%) rotate(${angle + 90}deg) scale(${scale})`;
+          wrap.style.opacity = scale <= 0 ? "0" : String(alpha);
+          if (scale <= 0) visible = false; // stop rendering once gone
+        } else if (smoothP <= ENTRY_THRESHOLD) {
+          const p = 1 - smoothP / ENTRY_THRESHOLD;
+          const scale = Math.max(0, 1 - p);
+          const alpha = Math.max(0, 1 - p * p);
+          wrap.style.transform = `translate(-50%,-50%) rotate(${angle + 90}deg) scale(${scale})`;
+          wrap.style.opacity = String(alpha);
+        } else {
+          wrap.style.transform = `translate(-50%,-50%) rotate(${angle + 90}deg)`;
+          wrap.style.opacity = "1";
+        }
+      }
+      posRaf = requestAnimationFrame(renderLoop);
+    };
     renderLoop();
 
     let stopTimer: ReturnType<typeof setTimeout>;

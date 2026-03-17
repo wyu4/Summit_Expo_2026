@@ -1,21 +1,3 @@
-/**
- * RocketGate — portal placed at an AnchoredWaypoint.
- *
- * Coordinate system matches RocketPath:
- *   waypoint.selector = CSS selector for the anchor element
- *   waypoint.xPct     = fraction of that element's width
- *   waypoint.yPct     = fraction of that element's height
- *
- * To get document coords:
- *   rect = el.getBoundingClientRect()
- *   docX = rect.left + scrollX + rect.width  * xPct
- *   docY = rect.top  + scrollY + rect.height * yPct
- *
- * Fixed position:
- *   left = docX          (same as rocket: pt.x)
- *   top  = docY - scrollY  (same as rocket: pt.y - window.scrollY)
- */
-
 import { useEffect, useRef } from "react";
 import "./RocketGate.css";
 
@@ -50,9 +32,7 @@ export function RocketGate({
     if (!el || !path.length) return;
 
     const idx =
-      pointIndex < 0
-        ? path.length - 1
-        : Math.min(pointIndex, path.length - 1);
+      pointIndex < 0 ? path.length - 1 : Math.min(pointIndex, path.length - 1);
 
     const wp = path[idx];
 
@@ -61,11 +41,11 @@ export function RocketGate({
       if (!anchor) return;
       const r = anchor.getBoundingClientRect();
       // Document coordinates (same as resolve() in RocketPath)
-      const docX = r.left + window.scrollX + r.width  * wp.xPct;
-      const docY = r.top  + window.scrollY + r.height * wp.yPct;
+      const docX = r.left + window.scrollX + r.width * wp.xPct;
+      const docY = r.top + window.scrollY + r.height * wp.yPct;
       // Convert to fixed viewport coords
       el.style.left = `${docX + offsetX}px`;
-      el.style.top  = `${docY - window.scrollY + offsetY}px`;
+      el.style.top = `${docY - window.scrollY + offsetY}px`;
     };
 
     place();

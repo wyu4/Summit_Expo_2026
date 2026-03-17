@@ -1,5 +1,5 @@
 /* Hide default cursor site-wide */
-/* *, *::before, *::after { cursor: none !important; } */
+*, *::before, *::after { cursor: none !important; }
 
 /* Full-viewport particle canvas */
 .cursor-canvas {
@@ -14,7 +14,8 @@
 /* Inner star dot — centred on cursor */
 .cursor-dot {
   position: fixed;
-  top: 0; left: 0;
+  top: 0;
+  left: 0;
   z-index: 9999;
   pointer-events: none;
   /* offset so the star tip is at the true cursor point */
@@ -26,7 +27,8 @@
 /* Outer ring — follows with lag */
 .cursor-ring {
   position: fixed;
-  top: 0; left: 0;
+  top: 0;
+  left: 0;
   z-index: 9997;
   pointer-events: none;
   width: 28px;
@@ -36,10 +38,10 @@
   border: 1px solid rgba(248, 136, 183, 0.907);
   will-change: transform;
   transition:
-    width  0.20s var(--ease-out-expo),
-    height 0.20s var(--ease-out-expo),
-    margin 0.20s var(--ease-out-expo),
-    border-color 0.20s ease;
+    width 0.2s var(--ease-out-expo),
+    height 0.2s var(--ease-out-expo),
+    margin 0.2s var(--ease-out-expo),
+    border-color 0.2s ease;
 }
 
 /* Expand ring on hover over interactive elements */
@@ -55,6 +57,12 @@
 @media (hover: none) {
   .cursor-canvas,
   .cursor-dot,
-  .cursor-ring { display: none; }
-  *, *::before, *::after { cursor: auto !important; }
+  .cursor-ring {
+    display: none;
+  }
+  *,
+  *::before,
+  *::after {
+    cursor: auto !important;
+  }
 }

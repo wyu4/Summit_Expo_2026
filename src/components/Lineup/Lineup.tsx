@@ -137,12 +137,9 @@ export const DEMO_EXHIBITORS: Exhibitor[] = [
       { src: "/projects/jordan-3.png", caption: "River sampling" },
     ],
   },
-
-  
 ];
 
-
-//  Layout engine 
+//  Layout engine
 interface StarPos {
   x: number;
   y: number;
@@ -210,105 +207,183 @@ function buildEdges(pos: StarPos[]): [number, number][] {
   return edges;
 }
 
-//  Space canvas 
+//  Space canvas
 function useSpaceCanvas(ref: React.RefObject<HTMLCanvasElement | null>) {
   useEffect(() => {
     const canvas = ref.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d')!;
+    const ctx = canvas.getContext("2d")!;
     interface Star {
-      x: number; y: number; r: number; vx: number; vy: number;
-      op: number; ph: number; sp: number; layer: number; hue: number;
+      x: number;
+      y: number;
+      r: number;
+      vx: number;
+      vy: number;
+      op: number;
+      ph: number;
+      sp: number;
+      layer: number;
+      hue: number;
     }
     interface Shooter {
-      x: number; y: number; vx: number; vy: number;
-      life: number; max: number; len: number;
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      life: number;
+      max: number;
+      len: number;
     }
     // REDUCED counts
     const LAYERS = [
       { count: 80, speed: 0.007, rMax: 0.55, opMax: 0.4 },
-      { count: 45, speed: 0.02,  rMax: 0.95, opMax: 0.6 },
+      { count: 45, speed: 0.02, rMax: 0.95, opMax: 0.6 },
       { count: 18, speed: 0.045, rMax: 1.45, opMax: 0.85 },
     ];
-    let stars: Star[] = [], shooters: Shooter[] = [];
-    let raf = 0, t = 0, scrollY = 0, lastScrollY = 0;
- 
+    let stars: Star[] = [],
+      shooters: Shooter[] = [];
+    let raf = 0,
+      t = 0,
+      scrollY = 0,
+      lastScrollY = 0;
+
     const resize = () => {
-      canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
       stars = [];
       LAYERS.forEach((cfg, li) => {
         for (let i = 0; i < cfg.count; i++) {
-          const angle = Math.random() * Math.PI * 2, speed = cfg.speed * (0.5 + Math.random());
+          const angle = Math.random() * Math.PI * 2,
+            speed = cfg.speed * (0.5 + Math.random());
           stars.push({
-            x: Math.random() * canvas.width, y: Math.random() * canvas.height,
-            r: Math.random() * cfg.rMax + 0.15, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
-            op: Math.random() * cfg.opMax + 0.15, ph: Math.random() * Math.PI * 2,
-            sp: Math.random() * 1.1 + 0.25, layer: li, hue: 200 + Math.random() * 80,
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            r: Math.random() * cfg.rMax + 0.15,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            op: Math.random() * cfg.opMax + 0.15,
+            ph: Math.random() * Math.PI * 2,
+            sp: Math.random() * 1.1 + 0.25,
+            layer: li,
+            hue: 200 + Math.random() * 80,
           });
         }
       });
     };
     resize();
-    const ro = new ResizeObserver(resize); ro.observe(canvas);
-    const onScroll = () => { scrollY = window.scrollY; };
-    window.addEventListener('scroll', onScroll, { passive: true });
- 
+    const ro = new ResizeObserver(resize);
+    ro.observe(canvas);
+    const onScroll = () => {
+      scrollY = window.scrollY;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+
     const spawnShooter = () => {
-      const W = canvas.width, fromRight = Math.random() < 0.5;
-      const angle = (Math.random() * 20 + 10) * (Math.PI / 180) * (fromRight ? 1 : -1) + Math.PI / 2;
+      const W = canvas.width,
+        fromRight = Math.random() < 0.5;
+      const angle =
+        (Math.random() * 20 + 10) * (Math.PI / 180) * (fromRight ? 1 : -1) +
+        Math.PI / 2;
       const speed = 9 + Math.random() * 9;
       shooters.push({
-        x: fromRight ? W * (0.55 + Math.random() * 0.45) : W * (Math.random() * 0.45),
-        y: -10, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
-        life: 0, max: 40 + Math.random() * 30, len: 55 + Math.random() * 75,
+        x: fromRight
+          ? W * (0.55 + Math.random() * 0.45)
+          : W * (Math.random() * 0.45),
+        y: -10,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 0,
+        max: 40 + Math.random() * 30,
+        len: 55 + Math.random() * 75,
       });
     };
-    let shooterTimer = 0, SHOOTER_INTERVAL = 200 + Math.random() * 200;
- 
+    let shooterTimer = 0,
+      SHOOTER_INTERVAL = 200 + Math.random() * 200;
+
     const loop = () => {
       t += 0.011;
-      const sd = (scrollY - lastScrollY) * 0.5; lastScrollY = scrollY;
-      const W = canvas.width, H = canvas.height;
+      const sd = (scrollY - lastScrollY) * 0.5;
+      lastScrollY = scrollY;
+      const W = canvas.width,
+        H = canvas.height;
       ctx.clearRect(0, 0, W, H);
       for (const s of stars) {
-        s.x += s.vx; s.y += s.vy + sd * (s.layer === 0 ? 0.03 : s.layer === 1 ? 0.09 : 0.22);
-        if (s.x < -2) s.x = W + 2; if (s.x > W + 2) s.x = -2;
-        if (s.y < -2) s.y = H + 2; if (s.y > H + 2) s.y = -2;
-        const tw = 0.5 + 0.5 * Math.sin(t * s.sp + s.ph), al = s.op * (0.35 + 0.65 * tw);
+        s.x += s.vx;
+        s.y += s.vy + sd * (s.layer === 0 ? 0.03 : s.layer === 1 ? 0.09 : 0.22);
+        if (s.x < -2) s.x = W + 2;
+        if (s.x > W + 2) s.x = -2;
+        if (s.y < -2) s.y = H + 2;
+        if (s.y > H + 2) s.y = -2;
+        const tw = 0.5 + 0.5 * Math.sin(t * s.sp + s.ph),
+          al = s.op * (0.35 + 0.65 * tw);
         if (s.layer >= 1) {
-          ctx.beginPath(); ctx.arc(s.x, s.y, s.r * (s.layer === 2 ? 5.5 : 3.5), 0, Math.PI * 2);
-          ctx.fillStyle = `hsla(${s.hue},65%,75%,${al * (s.layer === 2 ? 0.11 : 0.05)})`; ctx.fill();
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r * (s.layer === 2 ? 5.5 : 3.5), 0, Math.PI * 2);
+          ctx.fillStyle = `hsla(${s.hue},65%,75%,${al * (s.layer === 2 ? 0.11 : 0.05)})`;
+          ctx.fill();
         }
-        ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = s.layer === 2 ? `hsla(${s.hue},55%,92%,${al})` : `rgba(200,215,255,${al})`; ctx.fill();
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle =
+          s.layer === 2
+            ? `hsla(${s.hue},55%,92%,${al})`
+            : `rgba(200,215,255,${al})`;
+        ctx.fill();
         if (s.layer === 2 && al > 0.5) {
           const sp = s.r * 7 * al;
-          ctx.strokeStyle = `hsla(${s.hue},55%,85%,${al * 0.45})`; ctx.lineWidth = 0.55;
-          ctx.beginPath(); ctx.moveTo(s.x - sp, s.y); ctx.lineTo(s.x + sp, s.y);
-          ctx.moveTo(s.x, s.y - sp); ctx.lineTo(s.x, s.y + sp); ctx.stroke();
+          ctx.strokeStyle = `hsla(${s.hue},55%,85%,${al * 0.45})`;
+          ctx.lineWidth = 0.55;
+          ctx.beginPath();
+          ctx.moveTo(s.x - sp, s.y);
+          ctx.lineTo(s.x + sp, s.y);
+          ctx.moveTo(s.x, s.y - sp);
+          ctx.lineTo(s.x, s.y + sp);
+          ctx.stroke();
         }
       }
       shooterTimer++;
-      if (shooterTimer > SHOOTER_INTERVAL) { spawnShooter(); shooterTimer = 0; SHOOTER_INTERVAL = 180 + Math.random() * 220; }
-      shooters = shooters.filter(s => s.life < s.max);
+      if (shooterTimer > SHOOTER_INTERVAL) {
+        spawnShooter();
+        shooterTimer = 0;
+        SHOOTER_INTERVAL = 180 + Math.random() * 220;
+      }
+      shooters = shooters.filter((s) => s.life < s.max);
       for (const s of shooters) {
-        const prog = s.life / s.max, alpha = 0.75 * (1 - prog) * Math.min(1, s.life / 4), spd = Math.hypot(s.vx, s.vy);
-        const tx = s.x - s.vx * (s.len / spd), ty = s.y - s.vy * (s.len / spd);
+        const prog = s.life / s.max,
+          alpha = 0.75 * (1 - prog) * Math.min(1, s.life / 4),
+          spd = Math.hypot(s.vx, s.vy);
+        const tx = s.x - s.vx * (s.len / spd),
+          ty = s.y - s.vy * (s.len / spd);
         const grad = ctx.createLinearGradient(tx, ty, s.x, s.y);
-        grad.addColorStop(0, 'rgba(180,215,255,0)'); grad.addColorStop(0.6, `rgba(180,215,255,${alpha * 0.45})`); grad.addColorStop(1, `rgba(255,255,255,${alpha})`);
-        ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(s.x, s.y); ctx.strokeStyle = grad; ctx.lineWidth = 1.4 * (1 - prog * 0.5); ctx.stroke();
-        ctx.beginPath(); ctx.arc(s.x, s.y, 1.4 * (1 - prog * 0.7), 0, Math.PI * 2); ctx.fillStyle = `rgba(255,255,255,${alpha})`; ctx.fill();
-        s.x += s.vx; s.y += s.vy; s.life++;
+        grad.addColorStop(0, "rgba(180,215,255,0)");
+        grad.addColorStop(0.6, `rgba(180,215,255,${alpha * 0.45})`);
+        grad.addColorStop(1, `rgba(255,255,255,${alpha})`);
+        ctx.beginPath();
+        ctx.moveTo(tx, ty);
+        ctx.lineTo(s.x, s.y);
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 1.4 * (1 - prog * 0.5);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, 1.4 * (1 - prog * 0.7), 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+        ctx.fill();
+        s.x += s.vx;
+        s.y += s.vy;
+        s.life++;
       }
       raf = requestAnimationFrame(loop);
     };
     loop();
-    return () => { cancelAnimationFrame(raf); ro.disconnect(); window.removeEventListener('scroll', onScroll); };
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+      window.removeEventListener("scroll", onScroll);
+    };
   }, [ref]);
 }
 
-
-//  Project Photo Carousel 
+//  Project Photo Carousel
 function ProjectCarousel({
   photos,
   color,
@@ -599,7 +674,7 @@ function ProjectCarousel({
   );
 }
 
-//  Main component 
+//  Main component
 export function Lineup({
   exhibitors = DEMO_EXHIBITORS,
 }: {
@@ -618,7 +693,7 @@ export function Lineup({
   const [modal, setModal] = useState<number | null>(null);
   const [hovered, setHovered] = useState<number | null>(null);
   const [imgFailed, setImgFailed] = useState<Set<string>>(new Set());
-  const [drawn, setDrawn] = useState(false);
+  const [_, setDrawn] = useState(false);
 
   const positions = useMemo(
     () => buildLayout(exhibitors.length),
@@ -629,7 +704,7 @@ export function Lineup({
 
   useSpaceCanvas(canvasRef);
 
-  //  Entrance animations 
+  //  Entrance animations
   useEffect(() => {
     const ctx = gsap.context(() => {
       ScrollTrigger.create({
@@ -750,7 +825,7 @@ export function Lineup({
             onComplete() {
               lines.forEach((l, ei) => {
                 if (!l) return;
-                const len = parseFloat(l.style.strokeDasharray) || 200;
+                const _len = parseFloat(l.style.strokeDasharray) || 200;
                 gsap.to(l, {
                   strokeDashoffset: 0,
                   duration: 0.7,
@@ -1022,7 +1097,6 @@ export function Lineup({
     <section ref={sectionRef} id="lineup" className="lu">
       <canvas ref={canvasRef} className="lu__space-canvas" aria-hidden="true" />
 
-
       <div className="lu__nebula" aria-hidden="true" />
 
       <header ref={headerRef} className="lu__header">
@@ -1189,8 +1263,6 @@ export function Lineup({
           )}
         </div>
       </div>
-
-    
 
       {modal !== null && modalEx && (
         <div className="lu-modal-backdrop" onClick={closeModal}>

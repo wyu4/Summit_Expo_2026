@@ -161,77 +161,178 @@ function useFaqCanvas(ref: React.RefObject<HTMLCanvasElement | null>) {
   useEffect(() => {
     const canvas = ref.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d')!;
-    interface Star { x:number; y:number; r:number; vx:number; vy:number; op:number; ph:number; sp:number; layer:number; hue:number; }
-    interface Shooter { x:number; y:number; vx:number; vy:number; life:number; max:number; len:number; }
- 
+    const ctx = canvas.getContext("2d")!;
+    interface Star {
+      x: number;
+      y: number;
+      r: number;
+      vx: number;
+      vy: number;
+      op: number;
+      ph: number;
+      sp: number;
+      layer: number;
+      hue: number;
+    }
+    interface Shooter {
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      life: number;
+      max: number;
+      len: number;
+    }
+
     // REDUCED counts
     const LAYERS = [
-      { count: 60, speed: 0.006, rMax: 0.5,  opMax: 0.38 },
-      { count: 35, speed: 0.018, rMax: 0.9,  opMax: 0.58 },
-      { count: 14, speed: 0.042, rMax: 1.4,  opMax: 0.82 },
+      { count: 60, speed: 0.006, rMax: 0.5, opMax: 0.38 },
+      { count: 35, speed: 0.018, rMax: 0.9, opMax: 0.58 },
+      { count: 14, speed: 0.042, rMax: 1.4, opMax: 0.82 },
     ];
- 
-    let stars: Star[] = [], shooters: Shooter[] = [];
-    let raf = 0, t = 0, scrollY = 0, lastScrollY = 0;
- 
+
+    let stars: Star[] = [],
+      shooters: Shooter[] = [];
+    let raf = 0,
+      t = 0,
+      scrollY = 0,
+      lastScrollY = 0;
+
     const resize = () => {
-      canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
       stars = [];
       LAYERS.forEach((cfg, li) => {
         for (let i = 0; i < cfg.count; i++) {
-          const angle = Math.random() * Math.PI * 2, speed = cfg.speed * (0.5 + Math.random());
+          const angle = Math.random() * Math.PI * 2,
+            speed = cfg.speed * (0.5 + Math.random());
           stars.push({
-            x: Math.random() * canvas.width, y: Math.random() * canvas.height,
-            r: Math.random() * cfg.rMax + 0.15, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
-            op: Math.random() * cfg.opMax + 0.15, ph: Math.random() * Math.PI * 2,
-            sp: Math.random() * 1.0 + 0.25, layer: li,
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            r: Math.random() * cfg.rMax + 0.15,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            op: Math.random() * cfg.opMax + 0.15,
+            ph: Math.random() * Math.PI * 2,
+            sp: Math.random() * 1.0 + 0.25,
+            layer: li,
             hue: li === 2 ? 30 + Math.random() * 50 : 200 + Math.random() * 60,
           });
         }
       });
     };
     resize();
-    const ro = new ResizeObserver(resize); ro.observe(canvas);
-    window.addEventListener('scroll', () => { scrollY = window.scrollY; }, { passive: true });
- 
+    const ro = new ResizeObserver(resize);
+    ro.observe(canvas);
+    window.addEventListener(
+      "scroll",
+      () => {
+        scrollY = window.scrollY;
+      },
+      { passive: true },
+    );
+
     const spawnShooter = () => {
-      const W = canvas.width, fromRight = Math.random() < 0.5;
-      const angle = (Math.random() * 20 + 10) * (Math.PI / 180) * (fromRight ? 1 : -1) + Math.PI / 2;
+      const W = canvas.width,
+        fromRight = Math.random() < 0.5;
+      const angle =
+        (Math.random() * 20 + 10) * (Math.PI / 180) * (fromRight ? 1 : -1) +
+        Math.PI / 2;
       const speed = 8 + Math.random() * 8;
-      shooters.push({ x: fromRight ? W * (0.5 + Math.random() * 0.5) : W * Math.random() * 0.5, y: -10, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, life: 0, max: 38 + Math.random() * 28, len: 50 + Math.random() * 70 });
+      shooters.push({
+        x: fromRight
+          ? W * (0.5 + Math.random() * 0.5)
+          : W * Math.random() * 0.5,
+        y: -10,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 0,
+        max: 38 + Math.random() * 28,
+        len: 50 + Math.random() * 70,
+      });
     };
-    let shooterTimer = 0, SHOOTER_INTERVAL = 220 + Math.random() * 200;
- 
+    let shooterTimer = 0,
+      SHOOTER_INTERVAL = 220 + Math.random() * 200;
+
     const loop = () => {
-      t += 0.010;
-      const sd = (scrollY - lastScrollY) * 0.45; lastScrollY = scrollY;
-      const W = canvas.width, H = canvas.height;
+      t += 0.01;
+      const sd = (scrollY - lastScrollY) * 0.45;
+      lastScrollY = scrollY;
+      const W = canvas.width,
+        H = canvas.height;
       ctx.clearRect(0, 0, W, H);
       for (const s of stars) {
-        s.x += s.vx; s.y += s.vy + sd * (s.layer === 0 ? 0.02 : s.layer === 1 ? 0.08 : 0.20);
-        if (s.x < -2) s.x = W + 2; if (s.x > W + 2) s.x = -2; if (s.y < -2) s.y = H + 2; if (s.y > H + 2) s.y = -2;
-        const tw = 0.5 + 0.5 * Math.sin(t * s.sp + s.ph), al = s.op * (0.35 + 0.65 * tw);
-        if (s.layer >= 1) { ctx.beginPath(); ctx.arc(s.x, s.y, s.r * (s.layer === 2 ? 5 : 3.2), 0, Math.PI * 2); ctx.fillStyle = `hsla(${s.hue},70%,72%,${al * (s.layer === 2 ? 0.10 : 0.04)})`; ctx.fill(); }
-        ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fillStyle = s.layer === 2 ? `hsla(${s.hue},65%,92%,${al})` : `rgba(210,220,255,${al})`; ctx.fill();
-        if (s.layer === 2 && al > 0.55) { const sp = s.r * 7 * al; ctx.strokeStyle = `hsla(${s.hue},65%,85%,${al * 0.40})`; ctx.lineWidth = 0.55; ctx.beginPath(); ctx.moveTo(s.x - sp, s.y); ctx.lineTo(s.x + sp, s.y); ctx.moveTo(s.x, s.y - sp); ctx.lineTo(s.x, s.y + sp); ctx.stroke(); }
+        s.x += s.vx;
+        s.y += s.vy + sd * (s.layer === 0 ? 0.02 : s.layer === 1 ? 0.08 : 0.2);
+        if (s.x < -2) s.x = W + 2;
+        if (s.x > W + 2) s.x = -2;
+        if (s.y < -2) s.y = H + 2;
+        if (s.y > H + 2) s.y = -2;
+        const tw = 0.5 + 0.5 * Math.sin(t * s.sp + s.ph),
+          al = s.op * (0.35 + 0.65 * tw);
+        if (s.layer >= 1) {
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r * (s.layer === 2 ? 5 : 3.2), 0, Math.PI * 2);
+          ctx.fillStyle = `hsla(${s.hue},70%,72%,${al * (s.layer === 2 ? 0.1 : 0.04)})`;
+          ctx.fill();
+        }
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle =
+          s.layer === 2
+            ? `hsla(${s.hue},65%,92%,${al})`
+            : `rgba(210,220,255,${al})`;
+        ctx.fill();
+        if (s.layer === 2 && al > 0.55) {
+          const sp = s.r * 7 * al;
+          ctx.strokeStyle = `hsla(${s.hue},65%,85%,${al * 0.4})`;
+          ctx.lineWidth = 0.55;
+          ctx.beginPath();
+          ctx.moveTo(s.x - sp, s.y);
+          ctx.lineTo(s.x + sp, s.y);
+          ctx.moveTo(s.x, s.y - sp);
+          ctx.lineTo(s.x, s.y + sp);
+          ctx.stroke();
+        }
       }
       shooterTimer++;
-      if (shooterTimer > SHOOTER_INTERVAL) { spawnShooter(); shooterTimer = 0; SHOOTER_INTERVAL = 180 + Math.random() * 240; }
-      shooters = shooters.filter(s => s.life < s.max);
+      if (shooterTimer > SHOOTER_INTERVAL) {
+        spawnShooter();
+        shooterTimer = 0;
+        SHOOTER_INTERVAL = 180 + Math.random() * 240;
+      }
+      shooters = shooters.filter((s) => s.life < s.max);
       for (const s of shooters) {
-        const prog = s.life / s.max, alpha = 0.7 * (1 - prog) * Math.min(1, s.life / 4), spd = Math.hypot(s.vx, s.vy);
-        const tx = s.x - s.vx * (s.len / spd), ty = s.y - s.vy * (s.len / spd);
+        const prog = s.life / s.max,
+          alpha = 0.7 * (1 - prog) * Math.min(1, s.life / 4),
+          spd = Math.hypot(s.vx, s.vy);
+        const tx = s.x - s.vx * (s.len / spd),
+          ty = s.y - s.vy * (s.len / spd);
         const grad = ctx.createLinearGradient(tx, ty, s.x, s.y);
-        grad.addColorStop(0, 'rgba(255,220,150,0)'); grad.addColorStop(0.6, `rgba(255,220,150,${alpha * 0.4})`); grad.addColorStop(1, `rgba(255,255,255,${alpha})`);
-        ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(s.x, s.y); ctx.strokeStyle = grad; ctx.lineWidth = 1.3 * (1 - prog * 0.5); ctx.stroke();
-        ctx.beginPath(); ctx.arc(s.x, s.y, 1.3, 0, Math.PI * 2); ctx.fillStyle = `rgba(255,255,255,${alpha})`; ctx.fill();
-        s.x += s.vx; s.y += s.vy; s.life++;
+        grad.addColorStop(0, "rgba(255,220,150,0)");
+        grad.addColorStop(0.6, `rgba(255,220,150,${alpha * 0.4})`);
+        grad.addColorStop(1, `rgba(255,255,255,${alpha})`);
+        ctx.beginPath();
+        ctx.moveTo(tx, ty);
+        ctx.lineTo(s.x, s.y);
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 1.3 * (1 - prog * 0.5);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, 1.3, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+        ctx.fill();
+        s.x += s.vx;
+        s.y += s.vy;
+        s.life++;
       }
       raf = requestAnimationFrame(loop);
     };
     loop();
-    return () => { cancelAnimationFrame(raf); ro.disconnect(); };
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+    };
   }, [ref]);
 }
 

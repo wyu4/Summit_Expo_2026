@@ -1,21 +1,3 @@
-/**
- * useSmoothScroll — lightweight GSAP-powered smooth scroll.
- *
- * Wraps the page in a fixed viewport + scrollable proxy.
- * On each rAF frame it lerps the rendered Y toward the real scrollY.
- *
- * Usage:
- *   1. Wrap your <main> (or the whole page body content) in:
- *        <div id="smooth-wrapper"><div id="smooth-content">…</div></div>
- *   2. Call useSmoothScroll() in App.tsx (or a top-level component).
- *   3. That's it — all existing scroll listeners (RocketPath, ScrollTrigger)
- *      continue to work because window.scrollY is updated normally.
- *
- * To navigate smoothly to an anchor:
- *   import { smoothScrollTo } from './useSmoothScroll';
- *   smoothScrollTo('#about');
- */
-
 import { useEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
