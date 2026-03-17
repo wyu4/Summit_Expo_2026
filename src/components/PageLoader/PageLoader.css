@@ -348,10 +348,10 @@
 /* Status text */
 .pl__status {
   font-family: var(--font-ui, "Chakra Petch", monospace);
-  font-size: 0.46rem;
+  font-size: var(--sp-3);
   letter-spacing: 0.32em;
   text-transform: uppercase;
-  color: rgba(140, 120, 190, 0.5);
+  color: rgb(165, 228, 255);
   margin: -0.8rem 0 0;
   animation: plStatusBlink 1.8s ease-in-out infinite;
 }
