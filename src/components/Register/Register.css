@@ -347,7 +347,7 @@
 /* Note below button */
 .reg-card__note {
   font-family: var(--font-ui, "Chakra Petch", monospace);
-  font-size: 0.46rem;
+  font-size: 0.55rem;
   letter-spacing: 0.12em;
   display: flex;
   align-items: flex-start;

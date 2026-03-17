@@ -1197,7 +1197,7 @@
 }
 .about-trailer__play-label {
   font-family: var(--font-display, "Orbitron", sans-serif);
-  font-size: 0.7rem;
+  font-size: var(--sp-3);
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -1206,10 +1206,10 @@
 }
 .about-trailer__play-sub {
   font-family: var(--font-ui, "Chakra Petch", monospace);
-  font-size: 0.44rem;
+  font-size: var(--sp-2);
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: rgba(140, 110, 195, 0.52);
+  color: rgb(110, 126, 195);
   margin: 0;
   animation: atSubBlink 2.5s ease-in-out infinite;
 }

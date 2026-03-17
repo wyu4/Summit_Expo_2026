@@ -157,9 +157,9 @@
   top: 4px;
   left: 6px;
   font-family: "Georgia", serif;
-  font-size: 0.5rem;
+  font-size: 0.45rem;
   font-style: italic;
-  color: rgba(103, 137, 163, 0.45);
+  color: rgba(255, 255, 255, 0.309);
   line-height: 1;
   pointer-events: none;
   transition: color 0.2s ease;
