@@ -16,7 +16,7 @@ const PATH: AnchoredWaypoint[] = [
   { selector: "#about", xPct: 0.9423, yPct: 0.0796 },
   { selector: "#about", xPct: 0.7121, yPct: 0.0801 },
   { selector: "#about", xPct: 0.5329, yPct: 0.1378 },
-  { selector: "#about", xPct: 0.534, yPct: 0.2414 },
+  { selector: "#about", xPct: 0.5340, yPct: 0.2414 },
   { selector: "#about", xPct: 0.9347, yPct: 0.2365 },
   { selector: "#about", xPct: 0.8662, yPct: 0.3531 },
   { selector: "#about", xPct: 0.3582, yPct: 0.3655 },
@@ -24,10 +24,10 @@ const PATH: AnchoredWaypoint[] = [
   { selector: "#about", xPct: 0.2299, yPct: 0.4524 },
   { selector: "#about", xPct: 0.6421, yPct: 0.4669 },
   { selector: "#about", xPct: 0.7194, yPct: 0.5268 },
-  { selector: "#about", xPct: 0.9188, yPct: 0.534 },
+  { selector: "#about", xPct: 0.9188, yPct: 0.5340 },
   { selector: "#about", xPct: 0.9255, yPct: 0.6282 },
   { selector: "#about", xPct: 0.5248, yPct: 0.5931 },
-  { selector: "#about", xPct: 0.0021, yPct: 0.6465 },
+  { selector: "#about", xPct: 0.0606, yPct: 0.6402 },
 ];
 
 function resolve(path: AnchoredWaypoint[]): ResolvedPt[] {
@@ -357,7 +357,7 @@ export function RocketPath({ rocketSrc = "/rocket.png" }: Props) {
 
     // Exit begins at this progress value and completes at 1.0
     const ENTRY_THRESHOLD = 0.04;
-    const EXIT_START = 0.92;
+    const EXIT_START = 0.975;
 
     let targetP = 0;
     let smoothP = 0;
@@ -421,8 +421,7 @@ export function RocketPath({ rocketSrc = "/rocket.png" }: Props) {
     let stopTimer: ReturnType<typeof setTimeout>;
 
     const onScroll = () => {
-        if (!ready || !built.len || !lut.length) return;
-
+      if (!ready || !built.len || !lut.length) return;
       const sy = window.scrollY;
       const firstDoc = lut[0].scrollY;
 

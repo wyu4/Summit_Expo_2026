@@ -5,6 +5,7 @@ import { Cursor } from "./components/Cursor/Cursor";
 import { PageLoader } from "./components/PageLoader/PageLoader";
 
 import { About } from "./components/About/About";
+import { WaypointEditor } from './components/Waypoint/WaypointEditor';
 
 // Lazy load everything below the fold
 // These components' JS won't parse until they're needed
@@ -48,6 +49,7 @@ export default function App() {
       <div style={{ opacity: loaded ? 1 : 0, transition: 'opacity 0.4s ease' }}>
         <Cursor />
         <Nav />
+        {/* <WaypointEditor /> */}
         <main>
           {/* Above-fold: eager */}
           <Hero />

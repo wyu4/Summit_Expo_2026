@@ -1342,6 +1342,7 @@ export function About() {
             scrollTrigger: {
               trigger: portalEntryRef.current,
               start: "top 90%",
+              toggleActions: "play none none reverse",
             },
           },
         );
@@ -1358,6 +1359,7 @@ export function About() {
             scrollTrigger: {
               trigger: portalExitRef.current,
               start: "top 90%",
+              toggleActions: "play none none reverse",
             },
           },
         );
