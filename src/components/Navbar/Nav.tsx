@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import {gsap, ScrollTrigger} from "../../utils/gsap";
+import { gsap, ScrollTrigger } from "../../utils/gsap";
 import "./Nav.css";
-
-;
 
 // Config
 
@@ -23,7 +21,7 @@ const LINKS = [
 // Each zone is [leftMin%, leftMax%, topMin%, topMax%]
 // We intentionally stagger left/right so the constellation has zigzag depth.
 const SITE_ZONES: [number, number, number, number][] = [
-  [42, 58, 6, 14], // 0 Home     — top centre
+  [42, 58, 10, 16], // 0 Home     — top centre
   [14, 30, 20, 30], // 1 About    — upper left
   [68, 82, 28, 38], // 2 Lineup   — upper right
   [18, 32, 45, 54], // 3 Info     — mid left
@@ -494,6 +492,8 @@ export function Nav() {
   const openMenu = useCallback(() => {
     const overlay = overlayRef.current;
     if (!overlay) return;
+    const rocketWrap = document.querySelector<HTMLElement>(".rocket-wrap");
+    if (rocketWrap) rocketWrap.style.visibility = "hidden";
     menuOpenRef.current = true;
     setMenuOpen(true);
 
@@ -553,6 +553,8 @@ export function Nav() {
   const closeMenu = useCallback(() => {
     const overlay = overlayRef.current;
     if (!overlay) return;
+    const rocketWrap = document.querySelector<HTMLElement>(".rocket-wrap");
+    if (rocketWrap) rocketWrap.style.visibility = "visible";
 
     mobileStarRefs.current.forEach((el, i) => {
       if (!el) return;
@@ -777,7 +779,10 @@ export function Nav() {
                 mobileStarRefs.current[i] = el;
               }}
               className={`nav__overlay-star ${isActive ? "nav__overlay-star--active" : ""}`}
-              style={{ left: `${lp}%`, top: `${tp}%` }}
+              style={{
+                left: `${lp}%`,
+                top: i === 0 ? "80px" : `${tp}%`,
+              }}
               onClick={() => handleClick(id)}
             >
               <span className="overlay-star__greek">{greekLetter}</span>

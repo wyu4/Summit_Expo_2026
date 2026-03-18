@@ -49,7 +49,7 @@ export default function App() {
       <div style={{ opacity: loaded ? 1 : 0, transition: 'opacity 0.4s ease' }}>
         <Cursor />
         <Nav />
-        <WaypointEditor />
+        {/* <WaypointEditor /> */}
         <main>
           {/* Above-fold: eager */}
           <Hero />
