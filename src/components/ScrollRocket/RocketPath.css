@@ -9,6 +9,10 @@
   will-change: transform, opacity;
 }
 
+.rocket-wrap--hidden {
+  visibility: hidden !important;
+}
+
 .rocket-img {
   position: absolute;
   width: 90px;

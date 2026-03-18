@@ -493,7 +493,8 @@ export function Nav() {
     const overlay = overlayRef.current;
     if (!overlay) return;
     const rocketWrap = document.querySelector<HTMLElement>(".rocket-wrap");
-    if (rocketWrap) rocketWrap.style.visibility = "hidden";
+    if (rocketWrap) rocketWrap.classList.add("rocket-wrap--hidden");
+
     menuOpenRef.current = true;
     setMenuOpen(true);
 
@@ -553,8 +554,6 @@ export function Nav() {
   const closeMenu = useCallback(() => {
     const overlay = overlayRef.current;
     if (!overlay) return;
-    const rocketWrap = document.querySelector<HTMLElement>(".rocket-wrap");
-    if (rocketWrap) rocketWrap.style.visibility = "visible";
 
     mobileStarRefs.current.forEach((el, i) => {
       if (!el) return;
@@ -581,6 +580,8 @@ export function Nav() {
       onComplete: () => {
         menuOpenRef.current = false;
         setMenuOpen(false);
+        const rocketWrap = document.querySelector<HTMLElement>(".rocket-wrap");
+        if (rocketWrap) rocketWrap.classList.remove("rocket-wrap--hidden");
       },
     });
 
