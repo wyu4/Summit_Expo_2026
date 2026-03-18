@@ -137,7 +137,7 @@ export const DEMO_EXHIBITORS: Exhibitor[] = [
   },
 ];
 
-//  Layout engine
+// Layout engine
 interface StarPos {
   x: number;
   y: number;
@@ -205,7 +205,7 @@ function buildEdges(pos: StarPos[]): [number, number][] {
   return edges;
 }
 
-//  Space canvas
+// Space canvas
 function useSpaceCanvas(ref: React.RefObject<HTMLCanvasElement | null>) {
   const scrollRef = useRef(0);
   useEffect(() => {
@@ -390,7 +390,7 @@ function useSpaceCanvas(ref: React.RefObject<HTMLCanvasElement | null>) {
   );
 }
 
-//  Project Photo Carousel
+// Project Photo Carousel
 function ProjectCarousel({
   photos,
   color,
@@ -421,10 +421,10 @@ function ProjectCarousel({
         dotsRef.current?.querySelectorAll<HTMLSpanElement>(".lu-carousel__dot");
 
       // const tl = gsap.timeline({
-      //   onComplete: () => {
-      //     setCurrent(next);
-      //     isAnimating.current = false;
-      //   },
+      //  onComplete: () => {
+      //    setCurrent(next);
+      //    isAnimating.current = false;
+      //  },
       // });
 
       const tl = gsap.timeline({
@@ -435,12 +435,12 @@ function ProjectCarousel({
 
       // Outgoing slide
       // tl.to(slides[current], {
-      //   x: dir * -60,
-      //   opacity: 0,
-      //   scale: 0.92,
-      //   filter: "blur(4px)",
-      //   duration: 0.32,
-      //   ease: "power2.in",
+      //  x: dir * -60,
+      //  opacity: 0,
+      //  scale: 0.92,
+      //  filter: "blur(4px)",
+      //  duration: 0.32,
+      //  ease: "power2.in",
       // });
 
       // Caption fades out
@@ -681,7 +681,7 @@ function ProjectCarousel({
   );
 }
 
-//  Main component
+// Main component
 export function Lineup({
   exhibitors = DEMO_EXHIBITORS,
 }: {
@@ -711,7 +711,7 @@ export function Lineup({
 
   useSpaceCanvas(canvasRef);
 
-  //  Entrance animations
+  // Entrance animations
   useEffect(() => {
     const ctx = gsap.context(() => {
       ScrollTrigger.create({

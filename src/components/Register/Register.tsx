@@ -9,7 +9,7 @@ import { useVisibleCanvas } from "../../utils/useVisibleCanvas";
 const EXHIBITOR_FORM = "https://forms.gle/vx68poaxMEnezRP69";
 const ATTENDEE_FORM = "https://forms.google.com/...";
 
-//  "What happens next" timeline items
+// "What happens next" timeline items
 const TIMELINE = [
   {
     icon: "fa-paper-plane",

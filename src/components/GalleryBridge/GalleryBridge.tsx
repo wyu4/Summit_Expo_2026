@@ -86,7 +86,7 @@ export function GalleryBridge() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useGalleryBridgeCanvas(canvasRef);
 
-  //  Scroll-driven entrance
+  // Scroll-driven entrance
   useEffect(() => {
     const ctx = gsap.context(() => {
       // Eyebrow + headline

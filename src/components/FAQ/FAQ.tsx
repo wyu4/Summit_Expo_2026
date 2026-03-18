@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
-import {gsap, ScrollTrigger} from "../../utils/gsap";
+import { gsap, ScrollTrigger } from "../../utils/gsap";
 import "./FAQ.css";
 import { useVisibleCanvas } from "../../utils/useVisibleCanvas";
 
-;
-
-//  Data
+// Data
 export interface FaqItem {
   id: string;
   category: string;
@@ -156,115 +154,187 @@ const CAT_COLORS: Record<string, string> = {
   Exhibitors: "#9B5BBF",
 };
 
-//  Star canvas
+// Star canvas
 function useFaqCanvas(ref: React.RefObject<HTMLCanvasElement | null>) {
   const scrollRef = useRef(0);
   useEffect(() => {
-    const fn = () => { scrollRef.current = window.scrollY; };
+    const fn = () => {
+      scrollRef.current = window.scrollY;
+    };
     window.addEventListener("scroll", fn, { passive: true });
     return () => window.removeEventListener("scroll", fn);
   }, []);
- 
-  useVisibleCanvas(ref, (canvas) => {
-    interface Star { x:number; y:number; r:number; vx:number; vy:number; op:number; ph:number; sp:number; layer:number; hue:number; }
-    interface Shooter { x:number; y:number; vx:number; vy:number; life:number; max:number; len:number; }
- 
-    const LAYERS = [
-      { count: 60, speed: 0.006, rMax: 0.5, opMax: 0.38 },
-      { count: 35, speed: 0.018, rMax: 0.9, opMax: 0.58 },
-      { count: 14, speed: 0.042, rMax: 1.4, opMax: 0.82 },
-    ];
- 
-    let stars: Star[] = [], shooters: Shooter[] = [];
-    let t = 0, lastScrollY = 0, shooterTimer = 0;
-    let SHOOTER_INTERVAL = 220 + Math.random() * 200;
- 
-    const seed = () => {
-      stars = [];
-      const W = canvas.offsetWidth, H = canvas.offsetHeight;
-      LAYERS.forEach((cfg, li) => {
-        for (let i = 0; i < cfg.count; i++) {
-          const angle = Math.random() * Math.PI * 2, speed = cfg.speed * (0.5 + Math.random());
-          stars.push({
-            x: Math.random() * W, y: Math.random() * H,
-            r: Math.random() * cfg.rMax + 0.15,
-            vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
-            op: Math.random() * cfg.opMax + 0.15,
-            ph: Math.random() * Math.PI * 2, sp: Math.random() * 1.0 + 0.25,
-            layer: li,
-            hue: li === 2 ? 30 + Math.random() * 50 : 200 + Math.random() * 60,
-          });
-        }
-      });
-    };
-    seed();
- 
-    const spawnShooter = () => {
-      const W = canvas.offsetWidth, fromRight = Math.random() < 0.5;
-      const angle = (Math.random() * 20 + 10) * (Math.PI / 180) * (fromRight ? 1 : -1) + Math.PI / 2;
-      const speed = 8 + Math.random() * 8;
-      shooters.push({
-        x: fromRight ? W * (0.5 + Math.random() * 0.5) : W * Math.random() * 0.5,
-        y: -10, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
-        life: 0, max: 38 + Math.random() * 28, len: 50 + Math.random() * 70,
-      });
-    };
- 
-    return (_c: HTMLCanvasElement, ctx: CanvasRenderingContext2D, dt: number) => {
-      t += (dt / 1000) * 60 * 0.01;
-      const sd = (scrollRef.current - lastScrollY) * 0.45;
-      lastScrollY = scrollRef.current;
-      const W = _c.offsetWidth, H = _c.offsetHeight;
-      ctx.clearRect(0, 0, W, H);
- 
-      for (const s of stars) {
-        s.x += s.vx;
-        s.y += s.vy + sd * (s.layer === 0 ? 0.02 : s.layer === 1 ? 0.08 : 0.2);
-        if (s.x < -2) s.x = W + 2; if (s.x > W + 2) s.x = -2;
-        if (s.y < -2) s.y = H + 2; if (s.y > H + 2) s.y = -2;
-        const tw = 0.5 + 0.5 * Math.sin(t * s.sp + s.ph), al = s.op * (0.35 + 0.65 * tw);
-        if (s.layer >= 1) {
+
+  useVisibleCanvas(
+    ref,
+    (canvas) => {
+      interface Star {
+        x: number;
+        y: number;
+        r: number;
+        vx: number;
+        vy: number;
+        op: number;
+        ph: number;
+        sp: number;
+        layer: number;
+        hue: number;
+      }
+      interface Shooter {
+        x: number;
+        y: number;
+        vx: number;
+        vy: number;
+        life: number;
+        max: number;
+        len: number;
+      }
+
+      const LAYERS = [
+        { count: 60, speed: 0.006, rMax: 0.5, opMax: 0.38 },
+        { count: 35, speed: 0.018, rMax: 0.9, opMax: 0.58 },
+        { count: 14, speed: 0.042, rMax: 1.4, opMax: 0.82 },
+      ];
+
+      let stars: Star[] = [],
+        shooters: Shooter[] = [];
+      let t = 0,
+        lastScrollY = 0,
+        shooterTimer = 0;
+      let SHOOTER_INTERVAL = 220 + Math.random() * 200;
+
+      const seed = () => {
+        stars = [];
+        const W = canvas.offsetWidth,
+          H = canvas.offsetHeight;
+        LAYERS.forEach((cfg, li) => {
+          for (let i = 0; i < cfg.count; i++) {
+            const angle = Math.random() * Math.PI * 2,
+              speed = cfg.speed * (0.5 + Math.random());
+            stars.push({
+              x: Math.random() * W,
+              y: Math.random() * H,
+              r: Math.random() * cfg.rMax + 0.15,
+              vx: Math.cos(angle) * speed,
+              vy: Math.sin(angle) * speed,
+              op: Math.random() * cfg.opMax + 0.15,
+              ph: Math.random() * Math.PI * 2,
+              sp: Math.random() * 1.0 + 0.25,
+              layer: li,
+              hue:
+                li === 2 ? 30 + Math.random() * 50 : 200 + Math.random() * 60,
+            });
+          }
+        });
+      };
+      seed();
+
+      const spawnShooter = () => {
+        const W = canvas.offsetWidth,
+          fromRight = Math.random() < 0.5;
+        const angle =
+          (Math.random() * 20 + 10) * (Math.PI / 180) * (fromRight ? 1 : -1) +
+          Math.PI / 2;
+        const speed = 8 + Math.random() * 8;
+        shooters.push({
+          x: fromRight
+            ? W * (0.5 + Math.random() * 0.5)
+            : W * Math.random() * 0.5,
+          y: -10,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: 0,
+          max: 38 + Math.random() * 28,
+          len: 50 + Math.random() * 70,
+        });
+      };
+
+      return (
+        _c: HTMLCanvasElement,
+        ctx: CanvasRenderingContext2D,
+        dt: number,
+      ) => {
+        t += (dt / 1000) * 60 * 0.01;
+        const sd = (scrollRef.current - lastScrollY) * 0.45;
+        lastScrollY = scrollRef.current;
+        const W = _c.offsetWidth,
+          H = _c.offsetHeight;
+        ctx.clearRect(0, 0, W, H);
+
+        for (const s of stars) {
+          s.x += s.vx;
+          s.y +=
+            s.vy + sd * (s.layer === 0 ? 0.02 : s.layer === 1 ? 0.08 : 0.2);
+          if (s.x < -2) s.x = W + 2;
+          if (s.x > W + 2) s.x = -2;
+          if (s.y < -2) s.y = H + 2;
+          if (s.y > H + 2) s.y = -2;
+          const tw = 0.5 + 0.5 * Math.sin(t * s.sp + s.ph),
+            al = s.op * (0.35 + 0.65 * tw);
+          if (s.layer >= 1) {
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.r * (s.layer === 2 ? 5 : 3.2), 0, Math.PI * 2);
+            ctx.fillStyle = `hsla(${s.hue},70%,72%,${al * (s.layer === 2 ? 0.1 : 0.04)})`;
+            ctx.fill();
+          }
           ctx.beginPath();
-          ctx.arc(s.x, s.y, s.r * (s.layer === 2 ? 5 : 3.2), 0, Math.PI * 2);
-          ctx.fillStyle = `hsla(${s.hue},70%,72%,${al * (s.layer === 2 ? 0.1 : 0.04)})`;
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          ctx.fillStyle =
+            s.layer === 2
+              ? `hsla(${s.hue},65%,92%,${al})`
+              : `rgba(210,220,255,${al})`;
           ctx.fill();
+          if (s.layer === 2 && al > 0.55) {
+            const sp = s.r * 7 * al;
+            ctx.strokeStyle = `hsla(${s.hue},65%,85%,${al * 0.4})`;
+            ctx.lineWidth = 0.55;
+            ctx.beginPath();
+            ctx.moveTo(s.x - sp, s.y);
+            ctx.lineTo(s.x + sp, s.y);
+            ctx.moveTo(s.x, s.y - sp);
+            ctx.lineTo(s.x, s.y + sp);
+            ctx.stroke();
+          }
         }
-        ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = s.layer === 2 ? `hsla(${s.hue},65%,92%,${al})` : `rgba(210,220,255,${al})`;
-        ctx.fill();
-        if (s.layer === 2 && al > 0.55) {
-          const sp = s.r * 7 * al;
-          ctx.strokeStyle = `hsla(${s.hue},65%,85%,${al * 0.4})`; ctx.lineWidth = 0.55;
-          ctx.beginPath(); ctx.moveTo(s.x - sp, s.y); ctx.lineTo(s.x + sp, s.y);
-          ctx.moveTo(s.x, s.y - sp); ctx.lineTo(s.x, s.y + sp); ctx.stroke();
+
+        shooterTimer++;
+        if (shooterTimer > SHOOTER_INTERVAL) {
+          spawnShooter();
+          shooterTimer = 0;
+          SHOOTER_INTERVAL = 180 + Math.random() * 240;
         }
-      }
- 
-      shooterTimer++;
-      if (shooterTimer > SHOOTER_INTERVAL) {
-        spawnShooter(); shooterTimer = 0; SHOOTER_INTERVAL = 180 + Math.random() * 240;
-      }
-      shooters = shooters.filter((s) => s.life < s.max);
-      for (const s of shooters) {
-        const prog = s.life / s.max, alpha = 0.7 * (1 - prog) * Math.min(1, s.life / 4);
-        const spd = Math.hypot(s.vx, s.vy);
-        const tx = s.x - s.vx * (s.len / spd), ty = s.y - s.vy * (s.len / spd);
-        const grad = ctx.createLinearGradient(tx, ty, s.x, s.y);
-        grad.addColorStop(0, "rgba(255,220,150,0)");
-        grad.addColorStop(0.6, `rgba(255,220,150,${alpha * 0.4})`);
-        grad.addColorStop(1, `rgba(255,255,255,${alpha})`);
-        ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(s.x, s.y);
-        ctx.strokeStyle = grad; ctx.lineWidth = 1.3 * (1 - prog * 0.5); ctx.stroke();
-        ctx.beginPath(); ctx.arc(s.x, s.y, 1.3, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255,255,255,${alpha})`; ctx.fill();
-        s.x += s.vx; s.y += s.vy; s.life++;
-      }
-    };
-  }, { fps: 40 });
+        shooters = shooters.filter((s) => s.life < s.max);
+        for (const s of shooters) {
+          const prog = s.life / s.max,
+            alpha = 0.7 * (1 - prog) * Math.min(1, s.life / 4);
+          const spd = Math.hypot(s.vx, s.vy);
+          const tx = s.x - s.vx * (s.len / spd),
+            ty = s.y - s.vy * (s.len / spd);
+          const grad = ctx.createLinearGradient(tx, ty, s.x, s.y);
+          grad.addColorStop(0, "rgba(255,220,150,0)");
+          grad.addColorStop(0.6, `rgba(255,220,150,${alpha * 0.4})`);
+          grad.addColorStop(1, `rgba(255,255,255,${alpha})`);
+          ctx.beginPath();
+          ctx.moveTo(tx, ty);
+          ctx.lineTo(s.x, s.y);
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = 1.3 * (1 - prog * 0.5);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, 1.3, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+          ctx.fill();
+          s.x += s.vx;
+          s.y += s.vy;
+          s.life++;
+        }
+      };
+    },
+    { fps: 40 },
+  );
 }
 
-
-//  Single FAQ row
+// Single FAQ row
 function FaqRow({
   item,
   isOpen,
@@ -291,7 +361,7 @@ function FaqRow({
     if (!body || !answer || !scan || !row) return;
 
     if (isOpen && !prevOpen.current) {
-      //  OPEN
+      // OPEN
       // Clear any running typewriter
       if (typeTimer.current) clearInterval(typeTimer.current);
       answer.textContent = "";
@@ -347,7 +417,7 @@ function FaqRow({
         }
       }, 0.1);
     } else if (!isOpen && prevOpen.current) {
-      //  CLOSE
+      // CLOSE
       if (typeTimer.current) {
         clearInterval(typeTimer.current);
         typeTimer.current = null;
@@ -441,7 +511,7 @@ function FaqRow({
   );
 }
 
-//  Main component
+// Main component
 export function FAQ() {
   const sectionRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -508,11 +578,14 @@ export function FAQ() {
   // Scroll entrance
   useEffect(() => {
     const ctx = gsap.context(() => {
-
       gsap.set(".faq-header", { opacity: 0, y: 40 });
-    gsap.set(".faq-filters", { opacity: 0, y: 20 });
-    gsap.set(".faq-search", { opacity: 0, y: 16 });
-    if (listRef.current) gsap.set(listRef.current.querySelectorAll(".faq-row"), { opacity: 0, y: 20 });
+      gsap.set(".faq-filters", { opacity: 0, y: 20 });
+      gsap.set(".faq-search", { opacity: 0, y: 16 });
+      if (listRef.current)
+        gsap.set(listRef.current.querySelectorAll(".faq-row"), {
+          opacity: 0,
+          y: 20,
+        });
 
       ScrollTrigger.create({
         trigger: sectionRef.current,

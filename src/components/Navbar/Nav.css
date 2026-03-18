@@ -599,7 +599,7 @@
 
 /* Close button — FIXED bottom-right, always above everything 
    z-index: 20 puts it above stars (z:3) and canvas (z:1).
-   Position: fixed bottom-right so no star can ever land on top of it.      */
+   Position: fixed bottom-right so no star can ever land on top of it.     */
 .nav__overlay-close {
   position: fixed;
   bottom: 2rem;

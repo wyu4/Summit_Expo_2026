@@ -4,7 +4,7 @@ import "./Nav.css";
 
 ;
 
-//  Config
+// Config
 
 const LINKS = [
   { id: "hero", label: "Home", mag: 6.5, greekLetter: "α" },
@@ -15,7 +15,7 @@ const LINKS = [
   { id: "register", label: "Register", mag: 5.1, greekLetter: "ζ" },
 ];
 
-//  Mobile constellation layout
+// Mobile constellation layout
 // Stars are laid out in a VERTICAL chain that mirrors the page order:
 // top → Home, then down → About → Lineup → Info → FAQ → Register at bottom.
 // This creates a natural "path through the website" constellation.
@@ -52,7 +52,7 @@ function generatePositions(): [number, number][] {
   ]);
 }
 
-//  Star SVG
+// Star SVG
 
 function StarDot({
   mag,
@@ -148,7 +148,7 @@ function StarDot({
   );
 }
 
-//  Component
+// Component
 
 export function Nav() {
   const navRef = useRef<HTMLElement>(null);
@@ -177,7 +177,7 @@ export function Nav() {
     starPositionsRef.current = starPositions;
   }, [starPositions]);
 
-  //  Nav entrance
+  // Nav entrance
   useEffect(() => {
     const nav = navRef.current;
     if (!nav) return;
@@ -226,7 +226,7 @@ export function Nav() {
     return () => st.kill();
   }, []);
 
-  //  Active section tracking
+  // Active section tracking
   useEffect(() => {
     const onScroll = () => {
       if (tickRef.current) return;
@@ -253,7 +253,7 @@ export function Nav() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  //  Desktop canvas constellation
+  // Desktop canvas constellation
   useEffect(() => {
     const canvas = canvasRef.current;
     const nav = navRef.current;
@@ -382,7 +382,7 @@ export function Nav() {
     };
   }, []);
 
-  //  Mobile overlay canvas
+  // Mobile overlay canvas
   useEffect(() => {
     const canvas = overlayCanvas.current;
     if (!canvas) return;
@@ -475,7 +475,7 @@ export function Nav() {
     };
   }, []);
 
-  //  Scroll lock
+  // Scroll lock
   useEffect(() => {
     if (menuOpen) {
       document.body.style.overflow = "hidden";
@@ -490,7 +490,7 @@ export function Nav() {
     };
   }, [menuOpen]);
 
-  //  Open / Close
+  // Open / Close
   const openMenu = useCallback(() => {
     const overlay = overlayRef.current;
     if (!overlay) return;

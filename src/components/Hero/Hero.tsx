@@ -84,7 +84,7 @@ export function Hero() {
   // ← ADDED: lets render() schedule through the guard
   const guardedRenderRef = useRef<() => void>(() => {});
 
-  /* ── Canvas render loop ─────────────────────────────────────────────────── */
+  /* Canvas render loop */
   const render = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -178,7 +178,7 @@ export function Hero() {
     rafRef.current = requestAnimationFrame(() => guardedRenderRef.current());
   }, []);
 
-  /* ── Mount / cleanup ────────────────────────────────────────────────────── */
+  /* Mount / cleanup */
   useEffect(() => {
     const canvas = canvasRef.current!;
     const DPR = Math.min(window.devicePixelRatio, 1.5);
@@ -242,7 +242,7 @@ export function Hero() {
     };
   }, [render]);
 
-  /* ── CTA lines canvas ───────────────────────────────────────────────────── */
+  /* CTA lines canvas */
   useEffect(() => {
     const canvas = ctaLinesRef.current;
     if (!canvas) return;
@@ -350,7 +350,7 @@ export function Hero() {
     return () => cancelAnimationFrame(raf);
   }, []);
 
-  /* ── Warp intro + idle loop ─────────────────────────────────────────────── */
+  /* Warp intro + idle loop */
   useEffect(() => {
     warpRef.current.v = 1.0;
     let warpTween: gsap.core.Tween | null = null;
@@ -387,7 +387,7 @@ export function Hero() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  /* ── Scroll scrub timeline ──────────────────────────────────────────────── */
+  /* Scroll scrub timeline */
   useEffect(() => {
     const ctx = gsap.context(() => {
       gsap.set(".hero-c-edge", {
@@ -495,7 +495,7 @@ export function Hero() {
     return () => ctx.revert();
   }, []);
 
-  /* ── SVG elements ───────────────────────────────────────────────────────── */
+  /* SVG elements */
   const edges = C_EDGES.map(([a, b], i) => {
     const pa = C_STARS[a],
       pb = C_STARS[b];

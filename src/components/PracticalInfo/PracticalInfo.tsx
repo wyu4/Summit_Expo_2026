@@ -1,16 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import {gsap, ScrollTrigger} from "../../utils/gsap";
+import { gsap, ScrollTrigger } from "../../utils/gsap";
 import "./PracticalInfo.css";
 import { useVisibleCanvas } from "../../utils/useVisibleCanvas";
-
-;
 
 const VENUE_LAT = 45.3232;
 const VENUE_LNG = -75.8947;
 
-
-//  Leaflet Map
+// Leaflet Map
 
 function SpaceMap() {
   const mapRef = useRef<HTMLDivElement>(null);
@@ -102,7 +99,7 @@ function SpaceMap() {
   );
 }
 
-//  Sponsorship PDF Modal (portal-based)
+// Sponsorship PDF Modal (portal-based)
 
 function SponsorshipPDF({
   pdfUrl = "/sponsorship-package.pdf",
@@ -310,7 +307,7 @@ function SponsorshipPDF({
 
   const SIG_BARS = 9;
 
-  //  Portal content
+  // Portal content
   const modalContent = open ? (
     <PortalMountNotifier onMount={afterMount}>
       <div
@@ -365,21 +362,21 @@ function SponsorshipPDF({
                     aria-label="Close modal"
                   />
                   <span className="spdf-dot spdf-dot--min" title="Minimise" />
-                  <span 
-  className="spdf-dot spdf-dot--max" 
-  title="Fullscreen"
-  onClick={() => {
-    const viewer = vwRef.current;
-    if (!viewer) return;
-    if (!document.fullscreenElement) {
-      viewer.requestFullscreen();
-    } else {
-      document.exitFullscreen();
-    }
-  }}
-  role="button"
-  aria-label="Toggle fullscreen"
-/>
+                  <span
+                    className="spdf-dot spdf-dot--max"
+                    title="Fullscreen"
+                    onClick={() => {
+                      const viewer = vwRef.current;
+                      if (!viewer) return;
+                      if (!document.fullscreenElement) {
+                        viewer.requestFullscreen();
+                      } else {
+                        document.exitFullscreen();
+                      }
+                    }}
+                    role="button"
+                    aria-label="Toggle fullscreen"
+                  />
                 </div>
                 <span className="spdf-hud__tag">
                   <i className="fa-solid fa-circle spdf-hud__live-dot" />
@@ -509,7 +506,7 @@ function SponsorshipPDF({
   );
 }
 
-//  Helper: fires a callback after the portal's DOM is painted
+// Helper: fires a callback after the portal's DOM is painted
 // Wraps children in a fragment and calls onMount in a layout effect.
 
 function PortalMountNotifier({
@@ -530,7 +527,7 @@ function PortalMountNotifier({
   return <>{children}</>;
 }
 
-//  Countdown
+// Countdown
 
 const EVENT_DATE = new Date("2026-05-15T17:30:00");
 
@@ -591,53 +588,91 @@ function Countdown() {
   );
 }
 
-//  Star canvas
+// Star canvas
 
 function usePiCanvas(ref: React.RefObject<HTMLCanvasElement | null>) {
-  useVisibleCanvas(ref, (canvas) => {
-    interface S { x:number; y:number; r:number; vx:number; vy:number; op:number; ph:number; sp:number; hue:number; }
-    let stars: S[] = [], t = 0;
- 
-    const seed = () => {
-      const W = canvas.offsetWidth, H = canvas.offsetHeight;
-      stars = Array.from({ length: 90 }, () => {
-        const a = Math.random() * Math.PI * 2, s = 0.004 + Math.random() * 0.016;
-        return {
-          x: Math.random() * W, y: Math.random() * H,
-          r: Math.random() * 1.2 + 0.15,
-          vx: Math.cos(a) * s, vy: Math.sin(a) * s,
-          op: Math.random() * 0.7 + 0.2,
-          ph: Math.random() * Math.PI * 2, sp: Math.random() * 0.8 + 0.2,
-          hue: 165 + Math.random() * 60,
-        };
-      });
-    };
-    seed();
- 
-    return (_c: HTMLCanvasElement, ctx: CanvasRenderingContext2D, dt: number) => {
-      t += (dt / 1000) * 60 * 0.01;
-      const W = _c.offsetWidth, H = _c.offsetHeight;
-      ctx.clearRect(0, 0, W, H);
-      for (const s of stars) {
-        s.x += s.vx; s.y += s.vy;
-        if (s.x < -2) s.x = W + 2; if (s.x > W + 2) s.x = -2;
-        if (s.y < -2) s.y = H + 2; if (s.y > H + 2) s.y = -2;
-        const tw = 0.5 + 0.5 * Math.sin(t * s.sp + s.ph), al = s.op * (0.3 + 0.7 * tw);
-        ctx.beginPath(); ctx.arc(s.x, s.y, s.r * 3, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${s.hue},60%,68%,${al * 0.06})`; ctx.fill();
-        ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${s.hue},55%,90%,${al})`; ctx.fill();
-        if (al > 0.65 && s.r > 0.9) {
-          const sp = s.r * 5.5 * al;
-          ctx.strokeStyle = `hsla(${s.hue},55%,82%,${al * 0.32})`; ctx.lineWidth = 0.5;
-          ctx.beginPath(); ctx.moveTo(s.x - sp, s.y); ctx.lineTo(s.x + sp, s.y);
-          ctx.moveTo(s.x, s.y - sp); ctx.lineTo(s.x, s.y + sp); ctx.stroke();
-        }
+  useVisibleCanvas(
+    ref,
+    (canvas) => {
+      interface S {
+        x: number;
+        y: number;
+        r: number;
+        vx: number;
+        vy: number;
+        op: number;
+        ph: number;
+        sp: number;
+        hue: number;
       }
-    };
-  }, { fps: 40 });
+      let stars: S[] = [],
+        t = 0;
+
+      const seed = () => {
+        const W = canvas.offsetWidth,
+          H = canvas.offsetHeight;
+        stars = Array.from({ length: 90 }, () => {
+          const a = Math.random() * Math.PI * 2,
+            s = 0.004 + Math.random() * 0.016;
+          return {
+            x: Math.random() * W,
+            y: Math.random() * H,
+            r: Math.random() * 1.2 + 0.15,
+            vx: Math.cos(a) * s,
+            vy: Math.sin(a) * s,
+            op: Math.random() * 0.7 + 0.2,
+            ph: Math.random() * Math.PI * 2,
+            sp: Math.random() * 0.8 + 0.2,
+            hue: 165 + Math.random() * 60,
+          };
+        });
+      };
+      seed();
+
+      return (
+        _c: HTMLCanvasElement,
+        ctx: CanvasRenderingContext2D,
+        dt: number,
+      ) => {
+        t += (dt / 1000) * 60 * 0.01;
+        const W = _c.offsetWidth,
+          H = _c.offsetHeight;
+        ctx.clearRect(0, 0, W, H);
+        for (const s of stars) {
+          s.x += s.vx;
+          s.y += s.vy;
+          if (s.x < -2) s.x = W + 2;
+          if (s.x > W + 2) s.x = -2;
+          if (s.y < -2) s.y = H + 2;
+          if (s.y > H + 2) s.y = -2;
+          const tw = 0.5 + 0.5 * Math.sin(t * s.sp + s.ph),
+            al = s.op * (0.3 + 0.7 * tw);
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r * 3, 0, Math.PI * 2);
+          ctx.fillStyle = `hsla(${s.hue},60%,68%,${al * 0.06})`;
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          ctx.fillStyle = `hsla(${s.hue},55%,90%,${al})`;
+          ctx.fill();
+          if (al > 0.65 && s.r > 0.9) {
+            const sp = s.r * 5.5 * al;
+            ctx.strokeStyle = `hsla(${s.hue},55%,82%,${al * 0.32})`;
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(s.x - sp, s.y);
+            ctx.lineTo(s.x + sp, s.y);
+            ctx.moveTo(s.x, s.y - sp);
+            ctx.lineTo(s.x, s.y + sp);
+            ctx.stroke();
+          }
+        }
+      };
+    },
+    { fps: 40 },
+  );
 }
-//  Main section
+// Main section
 
 export function PracticalInfo() {
   const sectionRef = useRef<HTMLElement>(null);

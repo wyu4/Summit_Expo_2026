@@ -120,7 +120,7 @@ export function Footer() {
   const nodeRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const [hovered, setHovered] = useState<string | null>(null);
 
-  //  Constellation line canvas — exact same logic as Nav desktop canvas
+  // Constellation line canvas — exact same logic as Nav desktop canvas
   useEffect(() => {
     const canvas = canvasRef.current;
     const footer = footerRef.current;
@@ -242,7 +242,7 @@ export function Footer() {
     };
   }, []);
 
-  //  Scroll entrance — draw constellation lines + pop stars
+  // Scroll entrance — draw constellation lines + pop stars
   useEffect(() => {
     if (!footerRef.current) return;
     const ctx = gsap.context(() => {

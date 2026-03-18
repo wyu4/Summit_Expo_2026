@@ -581,7 +581,7 @@
 /* 
    ABOUT → LINEUP TRANSITION
    Sits at the bottom of the About section, overlaps into Lineup
-    */
+   */
 
 .about-transition {
   position: relative;
@@ -779,7 +779,7 @@
 
 /* 
    ABOUT — Embedded Trailer (Hologram Transmission Frame)
-    */
+   */
 
 .about-portal {
   position: absolute;
@@ -839,11 +839,6 @@
   );
 }
 
-@media (max-width: 900px) {
-  .about-portal {
-    display: none;
-  }
-}
 
 .about-trailer {
   margin-top: 5rem;
@@ -1468,4 +1463,20 @@
   color: rgba(180, 160, 220, 0.55);
   margin: 0;
   letter-spacing: 0.04em;
+}
+
+/* Rocket Media */
+@media (max-width: 900px) {
+  .about-portal--entry { width: 180px; right: -5.5%; top: 3%;}
+  .about-portal--exit  { width: 200px; left: -3%; top:62%}
+}
+
+@media (max-width: 700px) {
+  /* .about-portal--entry { width: 180px; right: -5.5%; top: 3%;} */
+  .about-portal--exit  { width: 180px; left: -3%; top:63%}
+}
+
+@media (max-width: 675px) {
+  .about-portal--entry { display: none;}
+  .about-portal--exit  { display: none;}
 }

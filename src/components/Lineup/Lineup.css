@@ -251,6 +251,7 @@
   );
   animation: luHalo 3.5s ease-in-out infinite alternate;
   pointer-events: none;
+  will-change: transform, opacity;
 }
 .lu-node__mid {
   position: absolute;
@@ -441,6 +442,7 @@
   border: 1.5px solid color-mix(in srgb, var(--nc, #5080ff) 65%, transparent);
   animation: luRing 2.8s ease-out infinite;
   pointer-events: none;
+  will-change: transform, opacity;
 }
 .lu-node__ring--2 {
   animation-delay: 1.4s;
@@ -1055,7 +1057,7 @@
 
 /* 
    PROJECT PHOTO CAROUSEL
-    */
+   */
 
 .lu-carousel {
   margin: 0 1.8rem 1.6rem;

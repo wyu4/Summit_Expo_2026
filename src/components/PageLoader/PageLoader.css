@@ -1,6 +1,6 @@
 /* 
    PAGE LOADER — "Website is Loading"
-    */
+   */
 
 .pl {
   position: fixed;
@@ -104,7 +104,7 @@
 
 /* 
    ORRERY — solar system animation
-    */
+   */
 .pl__orrery {
   position: relative;
   width: 260px;

@@ -12,11 +12,69 @@ interface ResolvedPt {
   y: number;
 }
 
-const PATH: AnchoredWaypoint[] = [
+// BREAKPOINT PATH SYSTEM
+//
+// Each entry: { maxWidth: number; path: AnchoredWaypoint[] }
+//
+// HOW SELECTION WORKS
+// The array is scanned top-to-bottom. The first entry whose
+// maxWidth >= window.innerWidth wins. So sort entries ascending by
+// maxWidth, and end with maxWidth: Infinity as the default / widest path.
+//
+// ADDING A NEW BREAKPOINT — only two steps:
+// 1. Define a new path constant (copy PATH_NARROW as a template).
+// 2. Insert { maxWidth: <px>, path: YOUR_PATH } in the right
+//    ascending position inside BREAKPOINT_PATHS.
+// Nothing else needs to change.
+//
+// EXAMPLE TABLE (three paths):
+//   { maxWidth: 600,      path: PATH_MOBILE  }   ← ≤ 600 px
+//   { maxWidth: 900,      path: PATH_NARROW  }   ← 601 – 900 px
+//   { maxWidth: Infinity, path: PATH_WIDE    }   ← > 900 px  (default)
+
+// Narrow Path Ex:
+// Tighter horizontal range so the rocket stays inside the single-column
+// layout and never clips the viewport edges.
+
+// const PATH_NARROW: AnchoredWaypoint[] = [
+//   { selector: "#about", xPct: 0.8, yPct: 0.05 },
+//   { selector: "#about", xPct: 0.55, yPct: 0.1 },
+//   { selector: "#about", xPct: 0.5, yPct: 0.17 },
+//   { selector: "#about", xPct: 0.52, yPct: 0.25 },
+//   { selector: "#about", xPct: 0.78, yPct: 0.27 },
+//   { selector: "#about", xPct: 0.7, yPct: 0.36 },
+//   { selector: "#about", xPct: 0.36, yPct: 0.38 },
+//   { selector: "#about", xPct: 0.22, yPct: 0.4 },
+//   { selector: "#about", xPct: 0.25, yPct: 0.47 },
+//   { selector: "#about", xPct: 0.62, yPct: 0.49 },
+//   { selector: "#about", xPct: 0.72, yPct: 0.55 },
+//   { selector: "#about", xPct: 0.82, yPct: 0.57 },
+//   { selector: "#about", xPct: 0.8, yPct: 0.64 },
+//   { selector: "#about", xPct: 0.5, yPct: 0.61 },
+//   { selector: "#about", xPct: 0.18, yPct: 0.66 },
+// ];
+
+const PATH_NARROW: AnchoredWaypoint[] = [
+  { selector: "#about", xPct: 0.9254, yPct: 0.0657 },
+  { selector: "#about", xPct: 0.7404, yPct: 0.0777 },
+  { selector: "#about", xPct: 0.9674, yPct: 0.1921 },
+  { selector: "#about", xPct: 0.8767, yPct: 0.3605 },
+  { selector: "#about", xPct: 0.6937, yPct: 0.4076 },
+  { selector: "#about", xPct: 0.1263, yPct: 0.4124 },
+  { selector: "#about", xPct: 0.0282, yPct: 0.4460 },
+  { selector: "#about", xPct: 0.2202, yPct: 0.4892 },
+  { selector: "#about", xPct: 0.8318, yPct: 0.4931 },
+  { selector: "#about", xPct: 0.9508, yPct: 0.5473 },
+  { selector: "#about", xPct: 0.9255, yPct: 0.6282 },
+  { selector: "#about", xPct: 0.5099, yPct: 0.6513 },
+  { selector: "#about", xPct: 0.0823, yPct: 0.6612 },
+];
+// Path: wide / default  (> 900 px)
+const PATH_WIDE: AnchoredWaypoint[] = [
   { selector: "#about", xPct: 0.9423, yPct: 0.0796 },
   { selector: "#about", xPct: 0.7121, yPct: 0.0801 },
   { selector: "#about", xPct: 0.5329, yPct: 0.1378 },
-  { selector: "#about", xPct: 0.5340, yPct: 0.2414 },
+  { selector: "#about", xPct: 0.534, yPct: 0.2414 },
   { selector: "#about", xPct: 0.9347, yPct: 0.2365 },
   { selector: "#about", xPct: 0.8662, yPct: 0.3531 },
   { selector: "#about", xPct: 0.3582, yPct: 0.3655 },
@@ -24,11 +82,35 @@ const PATH: AnchoredWaypoint[] = [
   { selector: "#about", xPct: 0.2299, yPct: 0.4524 },
   { selector: "#about", xPct: 0.6421, yPct: 0.4669 },
   { selector: "#about", xPct: 0.7194, yPct: 0.5268 },
-  { selector: "#about", xPct: 0.9188, yPct: 0.5340 },
+  { selector: "#about", xPct: 0.9188, yPct: 0.534 },
   { selector: "#about", xPct: 0.9255, yPct: 0.6282 },
   { selector: "#about", xPct: 0.5248, yPct: 0.5931 },
   { selector: "#about", xPct: 0.0606, yPct: 0.6402 },
 ];
+
+// Breakpoint table
+interface BreakpointPath {
+  maxWidth: number; // inclusive upper bound (px). Use Infinity for the default.
+  path: AnchoredWaypoint[];
+}
+
+const BREAKPOINT_PATHS: BreakpointPath[] = [
+  // Sorted ascending. First match (maxWidth >= window.innerWidth) wins.
+  { maxWidth: 900, path: PATH_NARROW },
+  { maxWidth: Infinity, path: PATH_WIDE },
+];
+
+/** Returns the path whose maxWidth is the first value >= window.innerWidth. */
+function getActivePath(): AnchoredWaypoint[] {
+  const w = window.innerWidth;
+  for (const bp of BREAKPOINT_PATHS) {
+    if (w <= bp.maxWidth) return bp.path;
+  }
+  // Safety fallback — unreachable when table ends with Infinity
+  return BREAKPOINT_PATHS[BREAKPOINT_PATHS.length - 1].path;
+}
+
+// Path geometry helpers — unchanged from original
 
 function resolve(path: AnchoredWaypoint[]): ResolvedPt[] {
   return path.flatMap((a) => {
@@ -160,6 +242,8 @@ function bakedLookup(baked: BakedPt[], progress: number): BakedPt {
     angle: a.angle + (b.angle - a.angle) * f,
   };
 }
+
+// Fire canvas
 
 function useVisibleFire(
   fireRef: React.RefObject<HTMLCanvasElement | null>,
@@ -301,6 +385,7 @@ function useVisibleFire(
   }, []);
 }
 
+
 interface Props {
   rocketSrc?: string;
 }
@@ -326,7 +411,9 @@ export function RocketPath({ rocketSrc = "/rocket.png" }: Props) {
     if (!wrap) return;
 
     let vh = window.innerHeight;
-    let pts = resolve(PATH);
+
+    let activePath = getActivePath();
+    let pts = resolve(activePath);
     let built = buildSVGPath(pts);
     let lut: LutEntry[] = [];
     let baked: BakedPt[] = [];
@@ -342,31 +429,33 @@ export function RocketPath({ rocketSrc = "/rocket.png" }: Props) {
     );
 
     let rebuildTimer: ReturnType<typeof setTimeout>;
+
     const rebuild = () => {
       clearTimeout(rebuildTimer);
       rebuildTimer = setTimeout(() => {
         built.remove();
         vh = window.innerHeight;
-        pts = resolve(PATH);
+        // Re-run selection — picks a different path array if a breakpoint
+        // boundary was crossed, or just re-resolves pixel coords otherwise.
+        activePath = getActivePath();
+        pts = resolve(activePath);
         built = buildSVGPath(pts);
         lut = buildLUT(built.el, built.len, vh);
         baked = bakePath(built.el, built.len);
       }, 300);
     };
+
     window.addEventListener("resize", rebuild);
 
-    // Exit begins at this progress value and completes at 1.0
     const ENTRY_THRESHOLD = 0.04;
     const EXIT_START = 0.975;
 
     let targetP = 0;
     let smoothP = 0;
-    // Two lerp speeds: normal travel vs exit (slower = smoother fade)
     const LERP_NORMAL = 0.07;
     const LERP_EXIT = 0.04;
     let posRaf = 0;
     let visible = false;
-    // When true, renderLoop skips writes — onScroll owns the styles
     let exiting = false;
 
     const hide = () => {
@@ -390,25 +479,19 @@ export function RocketPath({ rocketSrc = "/rocket.png" }: Props) {
         wrap.style.top = `${pt.y - window.scrollY}px`;
 
         if (smoothP <= ENTRY_THRESHOLD) {
-          // Fade + scale in at start
           const p = 1 - smoothP / ENTRY_THRESHOLD;
           wrap.style.transform = `translate(-50%,-50%) rotate(${angle + 90}deg) scale(${Math.max(0, 1 - p)})`;
           wrap.style.opacity = String(Math.max(0, 1 - p * p));
           wrap.style.visibility = "visible";
         } else if (smoothP >= EXIT_START) {
-          // Fade + scale out at end — driven by smoothP so lerp controls speed
-          const p = (smoothP - EXIT_START) / (1 - EXIT_START); // 0→1
+          const p = (smoothP - EXIT_START) / (1 - EXIT_START);
           const scale = Math.max(0, 1 - p);
           const alpha = Math.max(0, 1 - p * p);
           wrap.style.transform = `translate(-50%,-50%) rotate(${angle + 90}deg) scale(${scale})`;
           wrap.style.opacity = String(alpha);
           wrap.style.visibility = scale < 0.02 ? "hidden" : "visible";
-          // Once fully faded, latch hidden
-          if (scale < 0.02) {
-            hide();
-          }
+          if (scale < 0.02) hide();
         } else {
-          // Normal travel
           wrap.style.transform = `translate(-50%,-50%) rotate(${angle + 90}deg)`;
           wrap.style.opacity = "1";
           wrap.style.visibility = "visible";
@@ -425,14 +508,12 @@ export function RocketPath({ rocketSrc = "/rocket.png" }: Props) {
       const sy = window.scrollY;
       const firstDoc = lut[0].scrollY;
 
-      // Before path starts — hide
       if (sy < firstDoc - 50) {
         hide();
         isScrollingRef.current = false;
         return;
       }
 
-      // Show wrapper if not yet visible
       if (!visible) {
         visible = true;
         exiting = false;
@@ -440,11 +521,7 @@ export function RocketPath({ rocketSrc = "/rocket.png" }: Props) {
         wrap.style.opacity = "0";
       }
 
-      const raw = lutLookup(lut, sy);
-
-      // Hand targetP to renderLoop — it handles both normal + exit fade
-      // renderLoop uses EXIT_START threshold to switch behaviour
-      targetP = Math.min(raw, 1);
+      targetP = Math.min(lutLookup(lut, sy), 1);
       isScrollingRef.current = true;
 
       clearTimeout(stopTimer);

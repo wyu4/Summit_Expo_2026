@@ -46,7 +46,7 @@ const STATS = [
   { value: "All", label: "Schools welcome" },
 ];
 
-//  Decorative star glyphs for the margins
+// Decorative star glyphs for the margins
 const MARGIN_GLYPHS = [
   { top: "8%", left: "2%", size: 28, rot: 15, delay: 0 },
   { top: "18%", right: "1.5%", size: 18, rot: -10, delay: 0.6 },
@@ -452,7 +452,7 @@ function useConstellations(
   );
 }
 
-//  Embedded trailer — lives inside About
+// Embedded trailer — lives inside About
 // Hologram-style transmission frame. States: idle → loading → live
 // HUD: top bar (tag + signal bars + REC), bottom bar (subtitle + coords + ping)
 function AboutTrailer({ youtubeId = "dQw4w9WgXcQ" }: { youtubeId?: string }) {
@@ -933,7 +933,7 @@ function AboutTrailer({ youtubeId = "dQw4w9WgXcQ" }: { youtubeId?: string }) {
   );
 }
 
-//  About → Lineup transition component
+// About → Lineup transition component
 // Scatter of constellation nodes + connecting lines that visually
 // carry the eye from About's magenta-purple stars into Lineup's blue.
 // Lives at the bottom of the About section with a negative margin
