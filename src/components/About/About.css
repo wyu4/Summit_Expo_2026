@@ -1477,6 +1477,6 @@
 }
 
 @media (max-width: 675px) {
-  .about-portal--entry { display: none;}
+  .about-portal--entry { display: none;}  
   .about-portal--exit  { display: none;}
 }
