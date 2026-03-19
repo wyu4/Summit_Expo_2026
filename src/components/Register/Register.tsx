@@ -218,8 +218,7 @@ export function Register() {
             </div>
             <ul className="reg-card__features">
               <li>
-                <i className="fa-solid fa-check" /> Open to all schools, grades
-                9–12
+                <i className="fa-solid fa-check" /> Open to students from all schools (age ≤ 19)
               </li>
               <li>
                 <i className="fa-solid fa-check" /> Solo or team (up to 4)
@@ -278,7 +277,7 @@ export function Register() {
                 Act II
               </li>
               <li>
-                <i className="fa-solid fa-check" /> Score exhibits like a judge
+                <i className="fa-solid fa-check" /> Score the exhibits — your votes count
               </li>
               <li>
                 <i className="fa-solid fa-check" /> Live awards ceremony
