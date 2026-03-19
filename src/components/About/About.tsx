@@ -1495,10 +1495,10 @@ export function About() {
             <a
               href="#register"
               className="about-cta-btn"
-              aria-label="Register your project"
+              aria-label="Register for Summit EXPO"
             >
               <span className="cta-shimmer" aria-hidden="true" />
-              <span className="cta-label">Register your project</span>
+              <span className="cta-label">Register now</span>
             </a>
           </div>
 
