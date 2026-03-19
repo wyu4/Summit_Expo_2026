@@ -289,7 +289,7 @@
   background: rgba(2, 0, 14, 0.85);
   border-top: 1px solid rgba(80, 130, 200, 0.2);
   font-family: var(--font-ui, "Chakra Petch", monospace);
-  font-size: var(--sp-2);
+  font-size: var(--sp-3);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: rgb(160, 200, 240);
