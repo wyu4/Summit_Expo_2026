@@ -286,7 +286,7 @@
 }
 .pi-terminal__key {
   font-family: var(--font-ui, "Chakra Petch", monospace);
-  font-size: 0.5rem;
+  font-size: 0.75rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: rgba(80, 210, 210, 0.65);
