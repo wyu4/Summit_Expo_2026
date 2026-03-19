@@ -220,12 +220,12 @@ export function GalleryBridge() {
             <span className="gb-pip" />
           </p>
           <h2 className="gb-headline" style={{ opacity: 0 }}>
-            From Last Year's
+            From 2024's
             <br />
             <em>Launch.</em>
           </h2>
           <p className="gb-sub" style={{ opacity: 0 }}>
-            Science, in action.
+            Our previous flagship event, the Summit, showed STEM in action.
           </p>
         </div>
 
