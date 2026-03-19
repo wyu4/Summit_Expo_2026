@@ -6,10 +6,10 @@ import { useVisibleCanvas } from "../../utils/useVisibleCanvas";
 ;
 
 const PHOTOS = [
-  { src: "/gallery/interlude-2.jpg", caption: "Live pitches, Act I" },
-  { src: "/gallery/interlude.jpg", caption: "Project demos, Act II" },
-  { src: "/gallery/stage.jpg", caption: "Live performances" },
-  { src: "/gallery/liquid-nitrogen-ice-cream.jpg", caption: "HAVING FUN!" },
+  { src: "/gallery/robotics-demo.jpg", caption: "FIRST Robotics Demo" },
+  { src: "/gallery/liquid-nitrogen-ice-cream.jpg", caption: "Liquid-nitrogen ice cream!" },
+  { src: "/gallery/stage.jpg", caption: "A night of tech talks" },
+  { src: "/gallery/interlude.jpg", caption: "STEM Fair at the Summit" },
 ];
 
 // Scattered grid positions — each photo gets a slight rotation and vertical offset
