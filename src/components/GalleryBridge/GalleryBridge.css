@@ -72,7 +72,7 @@
 .gb__inner {
   position: relative;
   z-index: 2;
-  max-width: 1200px;
+  /* max-width: 1200px; */
   margin: 0 auto;
   padding: 0 3rem;
   display: flex;
@@ -315,7 +315,7 @@
 }
 
 /* Responsive */
-@media (max-width: 900px) {
+@media (max-width: 1000px) {
   .gb-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 1.2rem;
