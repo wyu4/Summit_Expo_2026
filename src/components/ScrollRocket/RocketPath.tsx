@@ -61,7 +61,7 @@ const PATH_NARROW: AnchoredWaypoint[] = [
   { selector: "#about", xPct: 0.8767, yPct: 0.3605 },
   { selector: "#about", xPct: 0.6937, yPct: 0.4076 },
   { selector: "#about", xPct: 0.1263, yPct: 0.4124 },
-  { selector: "#about", xPct: 0.0282, yPct: 0.4460 },
+  { selector: "#about", xPct: 0.0282, yPct: 0.446 },
   { selector: "#about", xPct: 0.2202, yPct: 0.4892 },
   { selector: "#about", xPct: 0.8318, yPct: 0.4931 },
   { selector: "#about", xPct: 0.9508, yPct: 0.5473 },
@@ -236,10 +236,11 @@ function bakedLookup(baked: BakedPt[], progress: number): BakedPt {
   const f = raw - lo;
   const a = baked[lo],
     b = baked[hi];
+  const w = ((b.angle - a.angle + 180 + 360) % 360) - 180;
   return {
     x: a.x + (b.x - a.x) * f,
     y: a.y + (b.y - a.y) * f,
-    angle: a.angle + (b.angle - a.angle) * f,
+    angle: a.angle + w * f,
   };
 }
 
@@ -385,7 +386,6 @@ function useVisibleFire(
   }, []);
 }
 
-
 interface Props {
   rocketSrc?: string;
 }
@@ -474,6 +474,7 @@ export function RocketPath({ rocketSrc = "/rocket.png" }: Props) {
 
         const pt = bakedLookup(baked, smoothP);
         const angle = pt.angle;
+        // console.log(angle);
 
         wrap.style.left = `${pt.x}px`;
         wrap.style.top = `${pt.y - window.scrollY}px`;
