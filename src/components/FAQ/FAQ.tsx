@@ -19,7 +19,7 @@ export const FAQ_DATA: FaqItem[] = [
     category: "General",
     color: "#CE3072",
     q: "I'm not a student from Earl of March SS. Can I still attend, or be an exhibitor?",
-    a: "Yes! Summit EXPO is a community event open to everyone, including younger students, students from other schools, alumni, and parents. Exhibitors can also come from other schools, but must be under the age of nineteen (19).",
+    a: "Yes! Summit EXPO is a community event open to everyone, including younger students, students from other schools, alumni, and parents. Exhibitors can also come from other schools, but must not exceed the age of nineteen (19).",
   },
   {
     id: "g2",
