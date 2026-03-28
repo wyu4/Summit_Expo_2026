@@ -386,7 +386,7 @@ function useSpaceCanvas(ref: React.RefObject<HTMLCanvasElement | null>) {
         }
       };
     },
-    { fps: 40 },
+    { fps: 24 },
   );
 }
 
@@ -575,7 +575,9 @@ function ProjectCarousel({
     >
       {/* Section label */}
       <div className="lu-carousel__header">
-        <span className="lu-carousel__label">◈ Project Photos</span>
+        <span className="lu-carousel__label">
+  <i className="fa-solid fa-images" /> Project Photos  {/* was ◈ Project Photos */}
+</span>
         <span className="lu-carousel__counter">
           {current + 1} / {photos.length}
         </span>
@@ -758,28 +760,29 @@ export function Lineup({
         trigger: headerRef.current,
         start: "top 80%",
         onEnter() {
+          const header = headerRef.current;
+          if (!header) return;
           gsap
             .timeline()
             .fromTo(
-              ".lu-eyebrow",
+             header.querySelector(".lu-eyebrow"),
               { opacity: 0, y: 30, scale: 0.95 },
               { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "power3.out" },
             )
             .fromTo(
-              ".lu-title",
-              { opacity: 0, y: 40, scale: 0.9, filter: "blur(8px)" },
+              header.querySelector(".lu-title"),
+              { opacity: 0, y: 40, scale: 0.9 },
               {
                 opacity: 1,
                 y: 0,
                 scale: 1,
-                filter: "blur(0px)",
                 duration: 0.8,
                 ease: "power3.out",
               },
               "-=0.3",
             )
             .fromTo(
-              ".lu-sub",
+             header.querySelector(".lu-sub"),
               { opacity: 0, y: 20 },
               { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" },
               "-=0.4",
@@ -813,7 +816,7 @@ export function Lineup({
 
       ScrollTrigger.create({
         trigger: mapRef.current,
-        start: "top 75%",
+        start: "top 65%",
         onEnter() {
           const lines = svgLineRefs.current.filter(Boolean);
           lines.forEach((l) => {
@@ -825,10 +828,10 @@ export function Lineup({
           gsap.to(nodes, {
             scale: 1,
             opacity: 1,
-            stagger: { each: 0.08, from: "center" },
-            duration: 0.7,
-            ease: "back.out(2.8)",
-            delay: 0.2,
+            stagger: { each: 0.05, from: "center" },
+            duration: 0.5,
+            ease: "back.out(1.8)",
+            delay: 0.1,
             onComplete() {
               lines.forEach((l, ei) => {
                 if (!l) return;
@@ -1123,15 +1126,15 @@ export function Lineup({
       <div className="lu__nebula" aria-hidden="true" />
 
       <header ref={headerRef} className="lu__header">
-        <p className="lu-eyebrow" style={{ opacity: 0 }}>
+        <p className="lu-eyebrow" >
           <span className="lu-pip" />
           EXHIBITOR CONSTELLATION · {exhibitors.length} STARS
           <span className="lu-pip" />
         </p>
-        <h2 className="lu-title" style={{ opacity: 0 }}>
+        <h2 className="lu-title" >
           THE LINEUP
         </h2>
-        <p className="lu-sub" style={{ opacity: 0 }}>
+        <p className="lu-sub" >
           Hover to preview · click to explore.
         </p>
       </header>

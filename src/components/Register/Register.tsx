@@ -83,7 +83,7 @@ function useRegisterCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>)
         }
       }
     };
-  }, { fps: 40 });
+  }, { fps: 24 });
 }
 
 

@@ -258,8 +258,17 @@ function useVisibleFire(
     const ctx = canvas.getContext("2d")!;
     canvas.width = 80;
     canvas.height = 120;
-    const CX = 40,
-      NOZZLE_Y = 56;
+    const CX = 40, NOZZLE_Y = 56;
+
+    const FADE_GRAD = ctx.createLinearGradient(
+      0,
+      NOZZLE_Y + canvas.height * 0.3,
+      0,
+      canvas.height,
+    );
+    FADE_GRAD.addColorStop(0, "rgba(0,0,0,0)");
+    FADE_GRAD.addColorStop(1, "rgba(0,0,0,1)");
+
     interface Flame {
       x: number;
       y: number;
@@ -275,17 +284,14 @@ function useVisibleFire(
       running = false,
       lastT = 0;
     const FPS_MS = 1000 / 30;
-    const TIER_COLORS = [
-      { fill: "#ff6a00", stroke: "#c93a00" },
-      { fill: "#ffd200", stroke: "#e08a00" },
-      { fill: "#ffffff", stroke: "#ffe680" },
-    ];
     const spawnPuff = (big: boolean) => {
-      const ox = CX + (Math.random() - 0.5) * (big ? 10 : 5);
-      const oy = NOZZLE_Y + Math.random() * 3;
-      const vy = (big ? 2.8 : 1.8) + Math.random() * 1.5;
-      const vx = (Math.random() - 0.5) * (big ? 1.8 : 0.8);
-      const max = (big ? 16 : 10) + Math.random() * 6;
+      const ox = CX + (Math.random() - 0.5) * (big ? 8 : 4);
+      const oy = NOZZLE_Y + Math.random() * 2;
+      const vy = (big ? 2.5 : 1.6) + Math.random() * 1.2;
+      const vx = (Math.random() - 0.5) * (big ? 1.4 : 0.6);
+      const max = (big ? 14 : 9) + Math.random() * 5;
+
+      // Outer puff — orange
       flames.push({
         x: ox,
         y: oy,
@@ -293,85 +299,97 @@ function useVisibleFire(
         vy,
         life: 0,
         max,
-        r: big ? 11 : 7,
+        r: big ? 10 : 6,
         tier: 0,
       });
+      // Inner core — yellow/white
       flames.push({
         x: ox,
         y: oy,
-        vx: vx * 0.8,
-        vy: vy * 1.05,
+        vx: vx * 0.6,
+        vy: vy * 1.08,
         life: 0,
-        max: max * 0.8,
-        r: big ? 7 : 4.5,
-        tier: 1,
-      });
-      flames.push({
-        x: ox,
-        y: oy,
-        vx: vx * 0.5,
-        vy: vy * 1.1,
-        life: 0,
-        max: max * 0.6,
-        r: big ? 4 : 2.5,
+        max: max * 0.7,
+        r: big ? 5.5 : 3.5,
         tier: 2,
       });
     };
-    const loop = (now: number) => {
-      raf = requestAnimationFrame(loop);
+    const loop = () => {
+      const now = Date.now();
       if (now - lastT < FPS_MS) return;
       lastT = now;
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+
       const scrolling = isScrollingRef.current;
+
+      // Spawn fewer particles, cartoonier sizes
       if (scrolling) {
-        if (Math.random() < 0.85) spawnPuff(true);
-        if (Math.random() < 0.5) spawnPuff(false);
+        if (Math.random() < 0.7) spawnPuff(true);
       } else {
-        if (Math.random() < 0.3) spawnPuff(false);
+        if (Math.random() < 0.25) spawnPuff(false);
       }
-      flames.sort((a, b) => a.tier - b.tier);
+
+      // Age out dead flames, no sort needed, draw order doesn't matter for cartoon style
       flames = flames.filter((f) => f.life < f.max);
+
       for (const f of flames) {
-        const p = f.life / f.max;
-        const fade = scrolling ? 1 - p * 0.85 : (1 - p * 0.9) * 0.55;
-        const r = f.r * (1 - p * 0.45);
-        const col = TIER_COLORS[f.tier];
-        ctx.globalAlpha = fade;
+        const p = f.life / f.max; // 0  to 1 progress
+        const inv = 1 - p;
+
+        // Cartoon: flat opaque color that pops on, then hard-cuts out
+        const alpha =
+          p < 0.15
+            ? p / 0.15 // quick pop-in
+            : inv * (scrolling ? 1 : 0.6); // linear fade
+
+        const r = f.r * (0.5 + inv * 0.5); // shrinks as it ages
+
+        ctx.globalAlpha = alpha;
         ctx.beginPath();
         ctx.arc(f.x, f.y, r, 0, Math.PI * 2);
-        ctx.fillStyle = col.fill;
+
+        // Cartoon 3-stop color: white core → yellow → orange, based on tier
+        if (f.tier === 2) {
+          ctx.fillStyle = "#ffffff";
+        } else if (f.tier === 1) {
+          ctx.fillStyle = "#ffe033";
+        } else {
+          ctx.fillStyle = p < 0.4 ? "#ff8800" : "#ff4400";
+        }
+
         ctx.fill();
-        ctx.lineWidth = f.tier === 0 ? 1.8 : 1.2;
-        ctx.strokeStyle = col.stroke;
-        ctx.stroke();
+
+        // Thick cartoon outline on the biggest puffs only
+        if (f.tier === 0 && r > 5) {
+          ctx.lineWidth = 1.5;
+          ctx.strokeStyle = "rgba(180, 40, 0, 0.55)";
+          ctx.stroke();
+        }
+
         ctx.globalAlpha = 1;
+
         f.x += f.vx;
-        f.y += f.vy * (1 + p * 0.5);
-        f.vx *= 0.96;
+        f.y += f.vy * (1 + p * 0.4);
+        f.vx *= 0.94;
         f.life++;
       }
-      const topFade = ctx.createLinearGradient(
-        0,
-        NOZZLE_Y + canvas.height * 0.35,
-        0,
-        canvas.height,
-      );
-      topFade.addColorStop(0, "rgba(0,0,0,0)");
-      topFade.addColorStop(1, "rgba(0,0,0,1)");
+
+      // Soft fade at the bottom so flames don't hard-clip — reuse a cached gradient
       ctx.globalCompositeOperation = "destination-out";
-      ctx.fillStyle = topFade;
+      ctx.fillStyle = FADE_GRAD;
       ctx.fillRect(0, NOZZLE_Y, canvas.width, canvas.height - NOZZLE_Y);
       ctx.globalCompositeOperation = "source-over";
     };
     const start = () => {
       if (running) return;
       running = true;
-      raf = requestAnimationFrame(loop);
+      raf = window.setInterval(loop, 1000 / 30) as unknown as number;
     };
     const stop = () => {
       if (!running) return;
       running = false;
-      cancelAnimationFrame(raf);
+      clearInterval(raf);
     };
     const observer = new IntersectionObserver(
       ([entry]) => (entry.isIntersecting ? start() : stop()),
@@ -390,7 +408,7 @@ interface Props {
   rocketSrc?: string;
 }
 
-export function RocketPath({ rocketSrc = "/rocket.png" }: Props) {
+export function RocketPath({ rocketSrc = "/rocketship.webp" }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const rocketRef = useRef<HTMLImageElement>(null);
   const fireRef = useRef<HTMLCanvasElement>(null);
@@ -410,8 +428,10 @@ export function RocketPath({ rocketSrc = "/rocket.png" }: Props) {
     const wrap = wrapRef.current;
     if (!wrap) return;
 
+    let dirty = false;
+    wrap.style.left = "0px";
+    wrap.style.top = "0px";
     let vh = window.innerHeight;
-
     let activePath = getActivePath();
     let pts = resolve(activePath);
     let built = buildSVGPath(pts);
@@ -424,6 +444,13 @@ export function RocketPath({ rocketSrc = "/rocket.png" }: Props) {
         lut = buildLUT(built.el, built.len, vh);
         baked = bakePath(built.el, built.len);
         ready = true;
+        // Re-run scroll logic now that we're ready
+        const sy = window.scrollY;
+        if (sy >= lut[0]?.scrollY - 50) {
+          visible = true;
+          targetP = Math.min(lutLookup(lut, sy), 1);
+          dirty = true;
+        }
       },
       { timeout: 2000 },
     );
@@ -452,8 +479,8 @@ export function RocketPath({ rocketSrc = "/rocket.png" }: Props) {
 
     let targetP = 0;
     let smoothP = 0;
-    const LERP_NORMAL = 0.07;
-    const LERP_EXIT = 0.04;
+    const LERP_NORMAL = 0.1;
+    const LERP_EXIT = 0.05;
     let posRaf = 0;
     let visible = false;
     let exiting = false;
@@ -463,72 +490,87 @@ export function RocketPath({ rocketSrc = "/rocket.png" }: Props) {
       exiting = false;
       wrap.style.visibility = "hidden";
       wrap.style.opacity = "0";
-      wrap.style.transform = "translate(-50%,-50%)";
+      // wrap.style.transform = "translate(-50%,-50%)";
     };
 
     const renderLoop = () => {
-      if (visible && !exiting) {
-        const lerp = smoothP >= EXIT_START ? LERP_EXIT : LERP_NORMAL;
-        smoothP += (targetP - smoothP) * lerp;
-        if (Math.abs(targetP - smoothP) < 0.00005) smoothP = targetP;
-
-        const pt = bakedLookup(baked, smoothP);
-        const angle = pt.angle;
-        // console.log(angle);
-
-        wrap.style.left = `${pt.x}px`;
-        wrap.style.top = `${pt.y - window.scrollY}px`;
-
-        if (smoothP <= ENTRY_THRESHOLD) {
-          const p = 1 - smoothP / ENTRY_THRESHOLD;
-          wrap.style.transform = `translate(-50%,-50%) rotate(${angle + 90}deg) scale(${Math.max(0, 1 - p)})`;
-          wrap.style.opacity = String(Math.max(0, 1 - p * p));
-          wrap.style.visibility = "visible";
-        } else if (smoothP >= EXIT_START) {
-          const p = (smoothP - EXIT_START) / (1 - EXIT_START);
-          const scale = Math.max(0, 1 - p);
-          const alpha = Math.max(0, 1 - p * p);
-          wrap.style.transform = `translate(-50%,-50%) rotate(${angle + 90}deg) scale(${scale})`;
-          wrap.style.opacity = String(alpha);
-          wrap.style.visibility = scale < 0.02 ? "hidden" : "visible";
-          if (scale < 0.02) hide();
-        } else {
-          wrap.style.transform = `translate(-50%,-50%) rotate(${angle + 90}deg)`;
-          wrap.style.opacity = "1";
-          wrap.style.visibility = "visible";
-        }
-      }
       posRaf = requestAnimationFrame(renderLoop);
+
+      // Skip all work if nothing changed or not visible
+      if (!dirty || !visible) return;
+      dirty = false;
+
+      const lerp = smoothP >= EXIT_START ? LERP_EXIT : LERP_NORMAL;
+      smoothP += (targetP - smoothP) * lerp;
+
+      // If fully settled, stop doing work
+      if (Math.abs(targetP - smoothP) < 0.000005) {
+        smoothP = targetP;
+      }
+
+      const pt = bakedLookup(baked, smoothP);
+      const angle = pt.angle;
+
+      if (smoothP <= ENTRY_THRESHOLD) {
+        const p = 1 - smoothP / ENTRY_THRESHOLD;
+        wrap.style.transform = `translate(${pt.x}px, ${pt.y - window.scrollY}px) rotate(${angle + 90}deg) scale(${Math.max(0, 1 - p)})`;
+        wrap.style.opacity = String(Math.max(0, 1 - p * p));
+        wrap.style.visibility = "visible";
+      } else if (smoothP >= EXIT_START) {
+        const p = (smoothP - EXIT_START) / (1 - EXIT_START);
+        const scale = Math.max(0, 1 - p);
+        wrap.style.transform = `translate(${pt.x}px, ${pt.y - window.scrollY}px) rotate(${angle + 90}deg) scale(${scale})`;
+        wrap.style.opacity = String(Math.max(0, 1 - p * p));
+        wrap.style.visibility = scale < 0.02 ? "hidden" : "visible";
+        if (scale < 0.02) hide();
+      } else {
+        wrap.style.transform = `translate(${pt.x}px, ${pt.y - window.scrollY}px) rotate(${angle + 90}deg)`;
+        wrap.style.opacity = "1";
+        wrap.style.visibility = "visible";
+      }
+
+      // Keep animating until settled
+      if (Math.abs(targetP - smoothP) > 0.000005) dirty = true;
     };
     renderLoop();
 
     let stopTimer: ReturnType<typeof setTimeout>;
+    let ticking = false;
 
     const onScroll = () => {
-      if (!ready || !built.len || !lut.length) return;
-      const sy = window.scrollY;
-      const firstDoc = lut[0].scrollY;
+      if (ticking) return;
+      ticking = true;
 
-      if (sy < firstDoc - 50) {
-        hide();
-        isScrollingRef.current = false;
-        return;
-      }
+      requestAnimationFrame(() => {
+        ticking = false;
 
-      if (!visible) {
-        visible = true;
-        exiting = false;
-        wrap.style.visibility = "visible";
-        wrap.style.opacity = "0";
-      }
+        if (!ready || !built.len || !lut.length) return;
 
-      targetP = Math.min(lutLookup(lut, sy), 1);
-      isScrollingRef.current = true;
+        const sy = window.scrollY;
+        const firstDoc = lut[0].scrollY;
 
-      clearTimeout(stopTimer);
-      stopTimer = setTimeout(() => {
-        isScrollingRef.current = false;
-      }, 150);
+        if (sy < firstDoc - 50) {
+          hide();
+          isScrollingRef.current = false;
+          return;
+        }
+
+        if (!visible) {
+          visible = true;
+          exiting = false;
+          wrap.style.visibility = "visible";
+          wrap.style.opacity = "0";
+        }
+
+        targetP = Math.min(lutLookup(lut, sy), 1);
+        dirty = true;
+        isScrollingRef.current = true;
+
+        clearTimeout(stopTimer);
+        stopTimer = setTimeout(() => {
+          isScrollingRef.current = false;
+        }, 150);
+      });
     };
 
     wrap.style.opacity = "0";

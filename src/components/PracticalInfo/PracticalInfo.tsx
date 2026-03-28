@@ -669,7 +669,7 @@ function usePiCanvas(ref: React.RefObject<HTMLCanvasElement | null>) {
         }
       };
     },
-    { fps: 40 },
+    { fps: 24 },
   );
 }
 // Main section
@@ -681,31 +681,32 @@ export function PracticalInfo() {
   usePiCanvas(canvasRef);
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      sectionRef.current
-        ?.querySelectorAll<HTMLElement>(".pi-row")
-        .forEach((row) => {
-          ScrollTrigger.create({
-            trigger: row,
-            start: "top 83%",
-            onEnter() {
-              gsap.fromTo(
-                row.querySelectorAll(".pi-animate"),
-                { opacity: 0, y: 28 },
-                {
-                  opacity: 1,
-                  y: 0,
-                  stagger: 0.1,
-                  duration: 0.65,
-                  ease: "power3.out",
-                },
-              );
-            },
-          });
+  const ctx = gsap.context(() => {
+    sectionRef.current
+      ?.querySelectorAll<HTMLElement>(".pi-row")
+      .forEach((row) => {
+        // Set initial state explicitly on the children
+        gsap.set(row.querySelectorAll(".pi-animate"), { opacity: 0, y: 28 });
+
+        ScrollTrigger.create({
+          trigger: row,
+          start: "top 83%",
+          onEnter() {
+            gsap.to(row.querySelectorAll(".pi-animate"), {
+              opacity: 1,
+              y: 0,
+              stagger: 0.1,
+              duration: 0.65,
+              ease: "power3.out",
+            });
+          },
         });
-    }, sectionRef);
-    return () => ctx.revert();
-  }, []);
+      });
+
+    ScrollTrigger.refresh(); // ← recalculate positions after mount
+  }, sectionRef);
+  return () => ctx.revert();
+}, []);
 
   return (
     <section ref={sectionRef} id="practical-info" className="pi">

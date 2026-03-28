@@ -1,8 +1,9 @@
 .reg {
   position: relative;
-  background: #030108;
+  background: linear-gradient(to bottom, hsl(252, 50%, 4%), #020008);
   overflow: hidden;
   padding: 8rem 0 10rem;
+  z-index: 2;
 }
 
 .reg__canvas {
@@ -106,6 +107,7 @@
   flex-direction: column;
   gap: 1.4rem;
   border: 1px solid transparent;
+  will-change: transform, opacity;
   transition:
     transform 0.25s,
     box-shadow 0.25s,
@@ -114,6 +116,8 @@
 .reg-card:hover {
   transform: translateY(-5px);
 }
+
+
 
 /* Exhibitor card — magenta/rose */
 .reg-card--exhibitor {
@@ -216,16 +220,16 @@
 }
 .reg-card__eyebrow {
   font-family: var(--font-ui, "Chakra Petch", monospace);
-  font-size: 0.48rem;
+  font-size: var(--sp-2);
   letter-spacing: 0.24em;
   text-transform: uppercase;
   margin: 0 0 0.22rem;
 }
 .reg-card--exhibitor .reg-card__eyebrow {
-  color: rgba(206, 80, 140, 0.6);
+  color: rgba(206, 80, 140, 0.75);
 }
 .reg-card--attendee .reg-card__eyebrow {
-  color: rgba(80, 150, 230, 0.6);
+  color: rgba(80, 150, 230, 0.75);
 }
 .reg-card__title {
   font-family: var(--font-display, "Orbitron", sans-serif);
@@ -347,7 +351,7 @@
 /* Note below button */
 .reg-card__note {
   font-family: var(--font-ui, "Chakra Petch", monospace);
-  font-size: 0.55rem;
+  font-size: calc(var(--sp-2) * 1.1);
   letter-spacing: 0.12em;
   display: flex;
   align-items: flex-start;
@@ -357,10 +361,10 @@
   z-index: 1;
 }
 .reg-card--exhibitor .reg-card__note {
-  color: rgba(180, 120, 160, 0.5);
+  color: rgba(180, 120, 160, 0.75);
 }
 .reg-card--attendee .reg-card__note {
-  color: rgba(100, 150, 210, 0.5);
+  color: rgba(100, 150, 210, 0.75);
 }
 .reg-card__note i {
   flex-shrink: 0;
@@ -466,7 +470,7 @@
 }
 .reg-step__num {
   font-family: var(--font-ui, "Chakra Petch", monospace);
-  font-size: 0.46rem;
+  font-size: var(--sp-3);
   letter-spacing: 0.28em;
   text-transform: uppercase;
   display: block;
@@ -486,6 +490,15 @@
   line-height: 1.75;
   color: rgba(195, 215, 235, 0.72);
   margin: 0;
+}
+
+.reg-eyebrow,
+.reg-title,
+.reg-sub,
+.reg-card,
+.reg-timeline__title,
+.reg-step {
+  opacity: 0;
 }
 
 /* Footer CTA */

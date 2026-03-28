@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  useMemo,
+  useLayoutEffect,
+} from "react";
 import { gsap, ScrollTrigger } from "../../utils/gsap";
 import "./FAQ.css";
 import { useVisibleCanvas } from "../../utils/useVisibleCanvas";
@@ -153,7 +160,6 @@ const CAT_COLORS: Record<string, string> = {
   Attendees: "#6789A3",
   Exhibitors: "#9B5BBF",
 };
-
 // Star canvas
 function useFaqCanvas(ref: React.RefObject<HTMLCanvasElement | null>) {
   const scrollRef = useRef(0);
@@ -330,7 +336,7 @@ function useFaqCanvas(ref: React.RefObject<HTMLCanvasElement | null>) {
         }
       };
     },
-    { fps: 40 },
+    { fps: 24 },
   );
 }
 
@@ -516,6 +522,7 @@ export function FAQ() {
   const sectionRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const hasEnteredRef = useRef(false);
 
   const [openId, setOpenId] = useState<string | null>(null);
   const [category, setCategory] = useState("All");
@@ -542,14 +549,19 @@ export function FAQ() {
   }, [visible, openId]);
 
   // Animate list items in/out when filter changes
-  useEffect(() => {
+  useLayoutEffect(() => {
+    if (!hasEnteredRef.current) return;
     if (!listRef.current) return;
     const rows = listRef.current.querySelectorAll<HTMLDivElement>(".faq-row");
-    gsap.fromTo(
-      rows,
-      { opacity: 0, y: 12 },
-      { opacity: 1, y: 0, stagger: 0.04, duration: 0.35, ease: "power2.out" },
-    );
+    gsap.set(rows, { opacity: 0, y: 12 });
+    gsap.to(rows, {
+      opacity: 1,
+      y: 0,
+      stagger: 0.08,
+      duration: 0.7,
+      ease: "power2.out",
+      onComplete: () => ScrollTrigger.refresh(),
+    });
   }, [visible.length, category]);
 
   const toggle = useCallback((id: string) => {
@@ -578,69 +590,58 @@ export function FAQ() {
   // Scroll entrance
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.set(".faq-header", { opacity: 0, y: 40 });
-      gsap.set(".faq-filters", { opacity: 0, y: 20 });
-      gsap.set(".faq-search", { opacity: 0, y: 16 });
-      if (listRef.current)
-        gsap.set(listRef.current.querySelectorAll(".faq-row"), {
-          opacity: 0,
-          y: 20,
-        });
+      // Use refs, not global class selectors, for reliability
+      const header = sectionRef.current?.querySelector(".faq-header");
+      const filters = sectionRef.current?.querySelector(".faq-filters");
+      const search = sectionRef.current?.querySelector(".faq-search");
+
+      gsap.set([header, filters, search], { opacity: 0, y: 30 });
+      const rows = listRef.current?.querySelectorAll(".faq-row");
+      if (rows) gsap.set(rows, { opacity: 0, y: 20 });
 
       ScrollTrigger.create({
         trigger: sectionRef.current,
         start: "top 75%",
         onEnter() {
-          gsap.fromTo(
-            ".faq-header",
-            { opacity: 0, y: 40 },
-            {
+          hasEnteredRef.current = true;
+
+          if (header)
+            gsap.to(header, {
               opacity: 1,
               y: 0,
               duration: 0.8,
               ease: "power3.out",
-              stagger: 0.1,
-            },
-          );
-          gsap.fromTo(
-            ".faq-filters",
-            { opacity: 0, y: 20 },
-            {
+            });
+          if (filters)
+            gsap.to(filters, {
               opacity: 1,
               y: 0,
               duration: 0.6,
               ease: "power2.out",
               delay: 0.25,
-            },
-          );
-          gsap.fromTo(
-            ".faq-search",
-            { opacity: 0, y: 16 },
-            {
+            });
+          if (search)
+            gsap.to(search, {
               opacity: 1,
               y: 0,
               duration: 0.5,
               ease: "power2.out",
               delay: 0.35,
-            },
-          );
-          const rows = listRef.current?.querySelectorAll(".faq-row");
-          if (rows) {
-            gsap.fromTo(
-              rows,
-              { opacity: 0, y: 20 },
-              {
-                opacity: 1,
-                y: 0,
-                stagger: 0.045,
-                duration: 0.5,
-                ease: "power2.out",
-                delay: 0.45,
-              },
-            );
-          }
+            });
+          if (rows)
+            gsap.to(rows, {
+              opacity: 1,
+              y: 0,
+              stagger: 0.07,
+              duration: 0.75,
+              ease: "power2.out",
+              delay: 0.55,
+            });
+          ScrollTrigger.refresh();
         },
       });
+
+      ScrollTrigger.refresh();
     }, sectionRef);
     return () => ctx.revert();
   }, []);

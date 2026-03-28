@@ -64,7 +64,9 @@
   gap: 4rem;
 }
 .pi-row {
-  display: contents;
+  display: flex;
+  flex-direction: column;
+  gap: inherit;
 }
 
 /* Section header */
@@ -101,6 +103,14 @@
   color: rgba(185, 218, 228, 0.72);
   margin: 0;
 }
+
+
+.pi__header,
+.pi-venue-row,
+.pi-cards-grid {
+  will-change: transform, opacity;
+}
+
 
 /* Countdown */
 .pi-countdown {
@@ -182,6 +192,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  will-change: transform, opacity;
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.03),
     0 8px 28px rgba(0, 0, 0, 0.6);
@@ -519,6 +530,7 @@
   gap: 1rem;
   position: relative;
   overflow: visible; /* must be visible so portal can escape */
+  will-change: transform, opacity;
   transition:
     border-color 0.25s,
     background 0.25s,
@@ -820,7 +832,7 @@
   inset: 0;
   z-index: 9500;
   background: rgba(0, 0, 8, 0.9);
-  backdrop-filter: blur(14px) saturate(1.4);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;

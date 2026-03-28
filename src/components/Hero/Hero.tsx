@@ -81,7 +81,6 @@ export function Hero() {
   const mouseRef = useRef({ x: 0.5, y: 0.5 });
   const mouseTgtRef = useRef({ x: 0.5, y: 0.5 });
   const warpRef = useRef({ v: 1.0 });
-  // ← ADDED: lets render() schedule through the guard
   const guardedRenderRef = useRef<() => void>(() => {});
 
   /* Canvas render loop */

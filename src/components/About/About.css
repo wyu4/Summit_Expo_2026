@@ -403,6 +403,12 @@
   line-height: 1.45;
 }
 
+.about-card,
+.about-stat,
+.about-manifesto-block {
+  will-change: transform, opacity;
+}
+
 /* Quote */
 .about-quote-wrap {
   display: grid;
@@ -1480,3 +1486,13 @@
   .about-portal--entry { display: none;}  
   .about-portal--exit  { display: none;}
 }
+/* 
+.about-trailer__intro-eyebrow,
+.about-trailer__intro-title,
+.about-trailer__intro-sub,
+.about-trailer__eyebrow,
+.about-trailer__hint,
+.about-trailer__frame {
+  opacity: 0;
+  will-change: opacity;
+} */

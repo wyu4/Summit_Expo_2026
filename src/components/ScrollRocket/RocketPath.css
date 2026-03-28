@@ -19,11 +19,19 @@
   height: auto;
   translate: -50% -50%;
   transform-origin: center center;
-  filter: drop-shadow(0 0 5px rgba(206, 140, 255, 0.45))
-    drop-shadow(0 0 14px rgba(160, 80, 206, 0.22));
+  /* filter: drop-shadow(0 0 5px rgba(206, 140, 255, 0.45))
+    drop-shadow(0 0 14px rgba(160, 80, 206, 0.22)); */
   pointer-events: none;
   user-select: none;
   z-index: 2;
+}
+
+.rocket-img::after {
+  content: '';
+  position: absolute;
+  inset: -20px;
+  background: radial-gradient(circle, rgba(160, 80, 206, 0.18) 0%, transparent 70%);
+  pointer-events: none;
 }
 
 .rocket-fire {

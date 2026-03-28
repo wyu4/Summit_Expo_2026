@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import {gsap, ScrollTrigger} from "../../utils/gsap";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { gsap, ScrollTrigger } from "../../utils/gsap";
 import "./About.css";
 import { RocketPath } from "../ScrollRocket/RocketPath";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -448,14 +448,14 @@ function useConstellations(
         }
       };
     },
-    { fps: 50 },
+    { fps: 24 },
   );
 }
 
 // Embedded trailer — lives inside About
 // Hologram-style transmission frame. States: idle → loading → live
 // HUD: top bar (tag + signal bars + REC), bottom bar (subtitle + coords + ping)
-function AboutTrailer({ youtubeId = "dQw4w9WgXcQ" }: { youtubeId?: string }) {
+function AboutTrailer({ youtubeId = "BANxJH0zZWk" }: { youtubeId?: string }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const noiseRef = useRef<HTMLCanvasElement>(null);
@@ -508,10 +508,21 @@ function AboutTrailer({ youtubeId = "dQw4w9WgXcQ" }: { youtubeId?: string }) {
   );
 
   // Scroll entrance
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
     const ctx = gsap.context(() => {
+      // gsap.set(".about-trailer__intro", { opacity: 0 });
+      gsap.set(".about-trailer__intro-eyebrow", { opacity: 0, y: 18 });
+      gsap.set(".about-trailer__intro-title", {
+        opacity: 0,
+        y: 32,
+        filter: "blur(6px)",
+      });
+      gsap.set(".about-trailer__intro-sub", { opacity: 0, y: 16 });
+      gsap.set(".about-trailer__eyebrow", { opacity: 0, y: 16 });
+      gsap.set(".about-trailer__hint", { opacity: 0 });
+
       ScrollTrigger.create({
         trigger: el,
         start: "top 82%",
@@ -545,11 +556,7 @@ function AboutTrailer({ youtubeId = "dQw4w9WgXcQ" }: { youtubeId?: string }) {
               delay: 0.28,
             },
           );
-          gsap.fromTo(
-            ".about-trailer__intro",
-            { opacity: 0 },
-            { opacity: 1, duration: 0.01 },
-          );
+
           gsap.fromTo(
             ".about-trailer__eyebrow",
             { opacity: 0, y: 16 },
@@ -740,7 +747,7 @@ function AboutTrailer({ youtubeId = "dQw4w9WgXcQ" }: { youtubeId?: string }) {
   return (
     <div ref={wrapRef} className="about-trailer" id="trailer">
       {/* Sway-in headline above the frame */}
-      <div className="about-trailer__intro" style={{ opacity: 0 }}>
+      <div className="about-trailer__intro">
         <p className="about-trailer__intro-eyebrow">
           <i className="fa-solid fa-satellite-dish" />
           Incoming Transmission
@@ -756,7 +763,7 @@ function AboutTrailer({ youtubeId = "dQw4w9WgXcQ" }: { youtubeId?: string }) {
       </div>
 
       {/* Divider into frame */}
-      <div className="about-trailer__eyebrow" style={{ opacity: 0 }}>
+      <div className="about-trailer__eyebrow">
         <span className="about-trailer__line" />
         <span className="about-trailer__label">
           <i
@@ -769,11 +776,7 @@ function AboutTrailer({ youtubeId = "dQw4w9WgXcQ" }: { youtubeId?: string }) {
       </div>
 
       {/* Frame */}
-      <div
-        ref={frameRef}
-        className="about-trailer__frame"
-        style={{ opacity: 0 }}
-      >
+      <div ref={frameRef} className="about-trailer__frame">
         {/* TOP HUD */}
         <div className="about-trailer__hud about-trailer__hud--top">
           <span className="at-hud__tag">
@@ -860,11 +863,7 @@ function AboutTrailer({ youtubeId = "dQw4w9WgXcQ" }: { youtubeId?: string }) {
 
           {/* LOADING */}
           {phase === "loading" && (
-            <div
-              ref={loadingRef}
-              className="about-trailer__loading"
-              style={{ opacity: 0 }}
-            >
+            <div ref={loadingRef} className="about-trailer__loading">
               <div className="about-trailer__scanlines" aria-hidden="true" />
               <div className="at-load__scan" />
 
@@ -926,7 +925,7 @@ function AboutTrailer({ youtubeId = "dQw4w9WgXcQ" }: { youtubeId?: string }) {
         </div>
       </div>
 
-      <p className="about-trailer__hint" style={{ opacity: 0 }}>
+      <p className="about-trailer__hint">
         Summit EXPO 2026 · Earl of March Secondary School · Kanata, ON
       </p>
     </div>
@@ -1053,54 +1052,45 @@ function AboutToLineupTransition() {
   useEffect(() => {
     const el = transRef.current;
     if (!el) return;
+
+    const nodes = el.querySelectorAll<HTMLElement>(".about-transition__node");
+    const lines = el.querySelectorAll<HTMLElement>(".about-transition__line");
+    const label = el.querySelector<HTMLElement>(".about-transition__label");
+    const edges = el.querySelectorAll<SVGLineElement>(
+      ".about-transition__edge",
+    );
+
+    gsap.set(nodes, { scale: 0, opacity: 0 });
+    gsap.set(lines, { scaleX: 0, opacity: 0 });
+    gsap.set(label, { opacity: 0 });
+    gsap.set(edges, { opacity: 0, strokeDasharray: 60, strokeDashoffset: 60 });
+
     const ctx = gsap.context(() => {
       ScrollTrigger.create({
         trigger: el,
-        start: "top 90%",
+        start: "top bottom",
+        once: true,
         onEnter() {
-          // Nodes burst in staggered from center outward
-          gsap.fromTo(
-            ".about-transition__node",
-            { scale: 0, opacity: 0 },
-            {
-              scale: 1,
-              opacity: 1,
-              stagger: { each: 0.06, from: "center" },
-              duration: 0.6,
-              ease: "back.out(2.5)",
-            },
-          );
-          // Edges draw on after nodes
-          const edges = el.querySelectorAll<SVGLineElement>(
-            ".about-transition__edge",
-          );
-          edges.forEach((edge, i) => {
-            const len = edge.getTotalLength?.() ?? 100;
-            gsap.set(edge, { strokeDasharray: len, strokeDashoffset: len });
-            gsap.to(edge, {
-              strokeDashoffset: 0,
-              duration: 0.5,
-              delay: 0.4 + i * 0.06,
-              ease: "power2.inOut",
-            });
+          gsap.to(nodes, {
+            scale: 1,
+            opacity: 1,
+            stagger: { each: 0.06, from: "center" },
+            duration: 0.6,
+            ease: "back.out(2.5)",
           });
-          // Lines fade in
+
+          gsap.to(lines, {
+            scaleX: 1,
+            opacity: 1,
+            stagger: 0.15,
+            duration: 0.9,
+            ease: "power3.out",
+            transformOrigin: "center center",
+            delay: 0.2,
+          });
+
           gsap.fromTo(
-            ".about-transition__line",
-            { scaleX: 0, opacity: 0 },
-            {
-              scaleX: 1,
-              opacity: 1,
-              stagger: 0.15,
-              duration: 0.9,
-              ease: "power3.out",
-              transformOrigin: "center center",
-              delay: 0.2,
-            },
-          );
-          // Label fades in last
-          gsap.fromTo(
-            ".about-transition__label",
+            label,
             { opacity: 0, letterSpacing: "0.8em" },
             {
               opacity: 0.45,
@@ -1110,9 +1100,21 @@ function AboutToLineupTransition() {
               delay: 0.8,
             },
           );
+
+          edges.forEach((edge, i) => {
+            gsap.to(edge, {
+              opacity: 1,
+              strokeDashoffset: 0,
+              strokeDasharray: "3 4",
+              duration: 0.6,
+              delay: 0.4 + i * 0.06,
+              ease: "power2.inOut",
+            });
+          });
         },
       });
     }, el);
+
     return () => ctx.revert();
   }, []);
 
@@ -1120,12 +1122,10 @@ function AboutToLineupTransition() {
     <div ref={transRef} className="about-transition" aria-hidden="true">
       <div className="about-transition__fade" />
 
-      {/* Constellation lines */}
       <div className="about-transition__line about-transition__line--1" />
       <div className="about-transition__line about-transition__line--2" />
       <div className="about-transition__line about-transition__line--3" />
 
-      {/* SVG edges between nodes */}
       <svg
         className="about-transition__svg"
         viewBox="0 0 100 100"
@@ -1138,7 +1138,6 @@ function AboutToLineupTransition() {
             ay = parseFloat(a.y);
           const bx = parseFloat(b.x),
             by = parseFloat(b.y);
-          // Blend color from node a
           return (
             <line
               key={ei}
@@ -1151,13 +1150,11 @@ function AboutToLineupTransition() {
                 ei < 6 ? "rgba(160,80,220,0.35)" : "rgba(80,140,255,0.30)"
               }
               strokeWidth="0.3"
-              strokeDasharray="3 4"
             />
           );
         })}
       </svg>
 
-      {/* Star nodes */}
       {TRANS_NODES.map((n, i) => (
         <div
           key={i}
@@ -1382,6 +1379,10 @@ export function About() {
         delay: 1,
       });
 
+      gsap.set(".about-transition__node", { scale: 0, opacity: 0 });
+      gsap.set(".about-transition__line", { scaleX: 0, opacity: 0 });
+      gsap.set(".about-transition__label", { opacity: 0 });
+
       gsap.to(".about-portal__glow--blue", {
         opacity: 0.5,
         scale: 1.6,
@@ -1409,13 +1410,13 @@ export function About() {
       {/* Entry portal*/}
       <div className="about-portal about-portal--entry" ref={portalEntryRef}>
         <div className="about-portal__glow about-portal__glow--blue" />
-        <img src="/portals/enter.PNG" alt="" draggable={false} />
+        <img src="/portals/enter_portal.webp" alt="" draggable={false} />
       </div>
 
       {/* Exit portal*/}
       <div className="about-portal about-portal--exit" ref={portalExitRef}>
         <div className="about-portal__glow about-portal__glow--pink" />
-        <img src="/portals/exit.PNG" alt="" draggable={false} />
+        <img src="/portals/exit_portal.webp" alt="" draggable={false} />
       </div>
 
       {/* Background layers */}
@@ -1473,7 +1474,7 @@ export function About() {
         </div>
       ))}
 
-      <RocketPath rocketSrc="/rocket.png" />
+      <RocketPath rocketSrc="/rocketship.webp" />
 
       <div className="about-inner">
         <div ref={headRef} className="about-head">

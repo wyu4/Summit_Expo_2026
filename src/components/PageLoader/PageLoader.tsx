@@ -11,7 +11,6 @@ interface Props {
 function usePageLoaderCanvas(
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
 ) {
-  // 30fps is plenty for a loader — was 60fps, halves main thread time
   useVisibleCanvas(
     canvasRef,
     (canvas) => {
@@ -93,8 +92,8 @@ function usePageLoaderCanvas(
         }
       };
     },
-    { fps: 30 },
-  ); // was 60
+    { fps: 24 },
+  ); 
 }
 
 export function PageLoader({ onComplete, onDone }: Props) {

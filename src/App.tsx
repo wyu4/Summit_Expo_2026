@@ -6,11 +6,12 @@ import { PageLoader } from "./components/PageLoader/PageLoader";
 
 import { About } from "./components/About/About";
 import { WaypointEditor } from './components/Waypoint/WaypointEditor';
+import { useSmoothScroll } from './utils/useSmoothScroll';
 
 // Lazy load everything below the fold
 // These components' JS won't parse until they're needed
 const Lineup = lazy(() => import("./components/Lineup/Lineup").then(m => ({ default: m.Lineup })));
-const GalleryBridge = lazy(() => import("./components/GalleryBridge/GalleryBridge").then(m => ({ default: m.GalleryBridge })));
+const GalleryBridge = lazy(() => import("./components/Bridges/Gallery/GalleryBridge").then(m => ({ default: m.GalleryBridge })));
 const PracticalInfo = lazy(() => import("./components/PracticalInfo/PracticalInfo").then(m => ({ default: m.PracticalInfo })));
 const FAQ = lazy(() => import("./components/FAQ/FAQ").then(m => ({ default: m.FAQ })));
 const Register = lazy(() => import("./components/Register/Register").then(m => ({ default: m.Register })));

@@ -7,7 +7,7 @@ import {
 } from "react";
 import "./WaypointEditor.css";
 
-//  Types
+// Types
 
 export interface AnchoredWaypoint {
   selector: string;
@@ -27,7 +27,7 @@ interface ResolvedPt {
   yPct: number;
 }
 
-//  Storage
+// Storage
 
 const STORAGE_KEY = "rocketAnchors_v1";
 
@@ -54,7 +54,7 @@ function saveAnchors(data: AnchoredWaypoint[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 
-//  Resolve helpers
+// Resolve helpers
 
 function resolveOne(a: AnchoredWaypoint): ResolvedPt | null {
   const el = document.querySelector<HTMLElement>(a.selector);
@@ -79,7 +79,7 @@ function resolveAll(anchors: AnchoredWaypoint[]): ResolvedPt[] {
   return anchors.map(resolveOne).filter(Boolean) as ResolvedPt[];
 }
 
-//  SVG path string
+// SVG path string
 
 function buildD(pts: ResolvedPt[]): string {
   if (pts.length < 2) return "";
@@ -98,7 +98,7 @@ function buildD(pts: ResolvedPt[]): string {
   return d;
 }
 
-//  Section highlight rects
+// Section highlight rects
 
 interface SectionRect {
   selector: string;
@@ -127,7 +127,7 @@ function getSectionRects(selectors: string[]): SectionRect[] {
   });
 }
 
-//  Copy to clipboard
+// Copy to clipboard
 
 function buildExportString(anchors: AnchoredWaypoint[]): string {
   const lines = anchors.map((a) => {
@@ -140,7 +140,7 @@ function buildExportString(anchors: AnchoredWaypoint[]): string {
   return `const PATH: AnchoredWaypoint[] = [\n${lines.join("\n")}\n];`;
 }
 
-//  Main editor
+// Main editor
 
 type DragKind = "point" | "handle";
 
@@ -173,14 +173,14 @@ export function WaypointEditor() {
     elRect: DOMRect;
   } | null>(null);
 
-  //  Scroll tracking
+  // Scroll tracking
   useEffect(() => {
     const onScroll = () => setScrollY(window.scrollY);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  //  Build section rects whenever editor opens or user scrolls
+  // Build section rects whenever editor opens or user scrolls
   useLayoutEffect(() => {
     if (!open) return;
     const update = () => setSectionRects(getSectionRects(DEFAULT_SECTIONS));
@@ -193,12 +193,12 @@ export function WaypointEditor() {
     };
   }, [open]);
 
-  //  Persist
+  // Persist
   useEffect(() => {
     saveAnchors(anchors);
   }, [anchors]);
 
-  //  W key toggle
+  // W key toggle
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement).tagName;
@@ -213,8 +213,8 @@ export function WaypointEditor() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  //  Add-mode: click on page places a waypoint anchored to whatever element
-  //    is directly under the cursor
+  // Add-mode: click on page places a waypoint anchored to whatever element
+  //   is directly under the cursor
   useEffect(() => {
     if (!addMode) return;
 
@@ -265,7 +265,7 @@ export function WaypointEditor() {
       window.removeEventListener("click", onClick, { capture: true });
   }, [addMode, sectionRects]);
 
-  //  Panel header drag
+  // Panel header drag
   const onPanelHeaderDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if ((e.target as HTMLElement).closest("button, select, input")) return;
     e.currentTarget.setPointerCapture(e.pointerId);
@@ -293,7 +293,7 @@ export function WaypointEditor() {
     panelDragRef.current = null;
   };
 
-  //  Node drag: drag in screen space, convert back to element-relative %
+  // Node drag: drag in screen space, convert back to element-relative %
   const onNodeDown = useCallback(
     (e: React.PointerEvent<SVGCircleElement>, idx: number, kind: DragKind) => {
       e.stopPropagation();
@@ -344,7 +344,7 @@ export function WaypointEditor() {
     };
   }, []);
 
-  //  Actions
+  // Actions
   const deletePoint = (idx: number) => {
     setAnchors((p) => p.filter((_, i) => i !== idx));
     setSel(null);
@@ -401,14 +401,14 @@ export function WaypointEditor() {
     });
   };
 
-  //  Resolve for rendering
+  // Resolve for rendering
   const resolved = resolveAll(anchors);
   const svgD = buildD(resolved);
 
   // viewport Y from doc Y
   const vy = (docY: number) => docY - scrollY;
 
-  //  Closed state
+  // Closed state
   if (!open) {
     return (
       <button
@@ -421,7 +421,7 @@ export function WaypointEditor() {
     );
   }
 
-  //  Open state
+  // Open state
   return (
     <>
       {/* Full-viewport overlay SVG */}
