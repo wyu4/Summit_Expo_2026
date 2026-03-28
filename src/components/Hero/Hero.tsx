@@ -626,7 +626,6 @@ export function Hero() {
                   ctaNodeRefs.current[0] = el;
                 }}
               >
-                <span className="hscta-greek">α</span>
                 <span className="hscta-node" aria-hidden="true">
                   <span className="hscta-halo hscta-halo--outer" />
                   <span className="hscta-halo hscta-halo--mid" />
@@ -638,7 +637,7 @@ export function Hero() {
                   <span className="hscta-eyebrow">watch the</span>
                   <span className="hscta-title">Trailer</span>
                 </span>
-                <span className="hscta-play">▶</span>
+                {/* <span className="hscta-play">▶</span> */}
               </a>
               <a
                 href="#register"
@@ -647,7 +646,7 @@ export function Hero() {
                   ctaNodeRefs.current[1] = el;
                 }}
               >
-                <span className="hscta-greek">β</span>
+                {/* <span className="hscta-greek">β</span> */}
                 <span className="hscta-node" aria-hidden="true">
                   <span className="hscta-halo hscta-halo--outer" />
                   <span className="hscta-halo hscta-halo--mid" />
@@ -668,7 +667,7 @@ export function Hero() {
                   ctaNodeRefs.current[2] = el;
                 }}
               >
-                <span className="hscta-greek">γ</span>
+                {/* <span className="hscta-greek">γ</span> */}
                 <span className="hscta-node" aria-hidden="true">
                   <span className="hscta-halo hscta-halo--outer" />
                   <span className="hscta-halo hscta-halo--mid" />
