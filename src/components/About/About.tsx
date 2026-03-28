@@ -1059,7 +1059,7 @@ function AboutToLineupTransition() {
     const edges = el.querySelectorAll<SVGLineElement>(
       ".about-transition__edge",
     );
-
+    gsap.set(el, { opacity: 0 });
     gsap.set(nodes, { scale: 0, opacity: 0 });
     gsap.set(lines, { scaleX: 0, opacity: 0 });
     gsap.set(label, { opacity: 0 });
@@ -1068,9 +1068,11 @@ function AboutToLineupTransition() {
     const ctx = gsap.context(() => {
       ScrollTrigger.create({
         trigger: el,
-        start: "top bottom",
-        once: true,
+        start: "top 95%",
+        toggleActions: "play none none reverse",
+
         onEnter() {
+          gsap.to(el, { opacity: 1, duration: 0.3, ease: "power2.out" });
           gsap.to(nodes, {
             scale: 1,
             opacity: 1,
@@ -1379,9 +1381,9 @@ export function About() {
         delay: 1,
       });
 
-      gsap.set(".about-transition__node", { scale: 0, opacity: 0 });
-      gsap.set(".about-transition__line", { scaleX: 0, opacity: 0 });
-      gsap.set(".about-transition__label", { opacity: 0 });
+      // gsap.set(".about-transition__node", { scale: 0, opacity: 0 });
+      // gsap.set(".about-transition__line", { scaleX: 0, opacity: 0 });
+      // gsap.set(".about-transition__label", { opacity: 0 });
 
       gsap.to(".about-portal__glow--blue", {
         opacity: 0.5,

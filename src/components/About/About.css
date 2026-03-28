@@ -599,6 +599,7 @@
   /* Pulls up so it overlaps the top of Lineup */
   margin-bottom: -130px;
   z-index: 10;
+  opacity: 0;
 }
 
 /* Main gradient wipe — About bg fading to transparent so Lineup shows through */
